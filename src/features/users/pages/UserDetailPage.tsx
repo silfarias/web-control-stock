@@ -27,7 +27,7 @@ export function UserDetailPage() {
   const { id: idParam } = useParams()
   const id = Number(idParam)
   const navigate = useNavigate()
-  const { user: authUser, syncUser, logout } = useAuth()
+  const { user: authUser, refreshUser, logout } = useAuth()
   const { pushToast } = useToast()
 
   const userQuery = useUser(Number.isFinite(id) && id > 0 ? id : undefined)
@@ -48,15 +48,11 @@ export function UserDetailPage() {
     })
 
     if (authUser?.id === updated.id) {
-      syncUser({
-        id: updated.id,
-        nombre: updated.nombre,
-        email: updated.email,
-        role: updated.role,
-        createdAt: updated.createdAt,
-        updatedAt: updated.updatedAt,
-        deletedAt: updated.deletedAt,
-      })
+      try {
+        await refreshUser()
+      } catch {
+        return
+      }
     }
 
     pushToast({

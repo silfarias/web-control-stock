@@ -14,6 +14,8 @@ export type AuthContextValue = {
   logout: () => Promise<void>
   /** Actualiza datos del usuario autenticado sin tocar tokens (p. ej. tras editar el propio perfil). */
   syncUser: (next: AuthUsuario) => void
+  /** Recupera el usuario actual vía GET /auth/me (tokens vigentes). */
+  refreshUser: () => Promise<AuthUsuario>
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null)

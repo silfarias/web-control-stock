@@ -17,6 +17,18 @@ function applySession(data: LoginResponse) {
   return data.usuario
 }
 
+function toAuthUsuario(user: AuthUsuario): AuthUsuario {
+  return {
+    id: user.id,
+    nombre: user.nombre,
+    email: user.email,
+    role: user.role,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
+    deletedAt: user.deletedAt,
+  }
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient()
   const [status, setStatus] = useState<AuthStatus>('bootstrapping')
@@ -28,6 +40,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setStatus('anonymous')
     queryClient.clear()
   }, [queryClient])
+
+  const loadCurrentUser = useCallback(async (): Promise<AuthUsuario> => {
+    const me = await authApi.me()
+    const next = toAuthUsuario(me)
+    setUser(next)
+    return next
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -44,8 +63,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const data = await authApi.refresh({ refresh_token: refreshToken })
         if (cancelled) return
-        setUser(applySession(data))
-        setStatus('authenticated')
+        applySession(data)
+
+        // Confirmar estado real en DB (rol, baja, etc.) con el access token renovado.
+        try {
+          const me = await authApi.me()
+          if (cancelled) return
+          setUser(toAuthUsuario(me))
+          setStatus('authenticated')
+        } catch {
+          if (cancelled) return
+          // Token válido pero usuario inexistente / inaccesible.
+          tokenStore.clear()
+          setUser(null)
+          setStatus('anonymous')
+          queryClient.clear()
+        }
       } catch {
         if (cancelled) return
         tokenStore.clear()
@@ -59,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [queryClient])
 
   useEffect(() => {
     return onAuthSessionInvalid(() => {
@@ -69,10 +102,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(async (credentials: LoginRequest) => {
     const data = await authApi.login(credentials)
-    const nextUser = applySession(data)
-    setUser(nextUser)
-    setStatus('authenticated')
-    return nextUser
+    applySession(data)
+
+    try {
+      const me = await authApi.me()
+      const nextUser = toAuthUsuario(me)
+      setUser(nextUser)
+      setStatus('authenticated')
+      return nextUser
+    } catch {
+      // Fallback al payload de login si /me falla de forma transitoria.
+      const nextUser = toAuthUsuario(data.usuario)
+      setUser(nextUser)
+      setStatus('authenticated')
+      return nextUser
+    }
   }, [])
 
   const logout = useCallback(async () => {
@@ -88,8 +132,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [clearSession])
 
   const syncUser = useCallback((next: AuthUsuario) => {
-    setUser(next)
+    setUser(toAuthUsuario(next))
   }, [])
+
+  const refreshUser = useCallback(async () => {
+    if (!tokenStore.getAccessToken() && !tokenStore.getRefreshToken()) {
+      clearSession()
+      throw new Error('No hay sesión activa.')
+    }
+    try {
+      return await loadCurrentUser()
+    } catch (error) {
+      clearSession()
+      throw error
+    }
+  }, [clearSession, loadCurrentUser])
 
   const value = useMemo<AuthContextValue>(
     () => ({
@@ -100,8 +157,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       logout,
       syncUser,
+      refreshUser,
     }),
-    [status, user, login, logout, syncUser],
+    [status, user, login, logout, syncUser, refreshUser],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

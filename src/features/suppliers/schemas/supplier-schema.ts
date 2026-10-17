@@ -71,11 +71,14 @@ export function toCreateProveedorRequest(values: SupplierFormValues): CreateProv
 }
 
 export function toUpdateProveedorRequest(values: SupplierFormValues): UpdateProveedorRequest {
+  const email = values.email.trim()
+
   return {
     nombre: values.nombre.trim(),
     cuit: values.cuit.trim(),
     telefono: values.telefono.trim(),
-    email: values.email.trim().toLowerCase(),
+    // Nest @IsEmail rechaza ""; null limpia (IsOptional) y el mapper trata falsy como undefined.
+    email: email ? email.toLowerCase() : null,
     direccion: values.direccion.trim(),
     activo: values.activo,
   }

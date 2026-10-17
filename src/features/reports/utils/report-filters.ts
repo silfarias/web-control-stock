@@ -1,5 +1,6 @@
 import type { FiltroReporte } from '@/features/reports/types'
 
+/** Fecha de calendario YYYY-MM-DD (como espera la API). Sin conversión a Date/UTC. */
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 
 export function parseIsoDate(value: string | null): string | undefined {

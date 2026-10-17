@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { inventoryKeys } from '@/features/inventory/api/query-keys'
 import { purchasesApi } from '@/features/purchases/api/purchases-api'
 import { purchaseKeys } from '@/features/purchases/api/query-keys'
+import { reportKeys } from '@/features/reports/api/query-keys'
 import type { CreateCompraRequest, UpdateCompraRequest } from '@/features/purchases/types'
 
 export function useCreatePurchase() {
@@ -47,6 +48,8 @@ export function useConfirmPurchase() {
         queryClient.setQueryData(purchaseKeys.detail(purchase.id), purchase),
         // Confirmación genera movimientos COMPRA y cambia existencias.
         queryClient.invalidateQueries({ queryKey: inventoryKeys.all }),
+        queryClient.invalidateQueries({ queryKey: reportKeys.stockBajoRoot() }),
+        queryClient.invalidateQueries({ queryKey: reportKeys.inventarioRoot() }),
       ])
     },
   })

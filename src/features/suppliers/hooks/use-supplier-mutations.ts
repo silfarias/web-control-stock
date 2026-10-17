@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { purchaseKeys } from '@/features/purchases/api/query-keys'
 import { suppliersApi } from '@/features/suppliers/api/suppliers-api'
 import { supplierKeys } from '@/features/suppliers/api/query-keys'
 import type {
@@ -27,6 +28,9 @@ export function useUpdateSupplier() {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: supplierKeys.lists() }),
         queryClient.invalidateQueries({ queryKey: supplierKeys.detail(variables.id) }),
+        // Compras embeben datos del proveedor.
+        queryClient.invalidateQueries({ queryKey: purchaseKeys.lists() }),
+        queryClient.invalidateQueries({ queryKey: purchaseKeys.details() }),
       ])
     },
   })
@@ -42,6 +46,8 @@ export function useDeleteSupplier() {
         queryClient.invalidateQueries({ queryKey: supplierKeys.lists() }),
         queryClient.invalidateQueries({ queryKey: supplierKeys.detail(id) }),
         queryClient.removeQueries({ queryKey: supplierKeys.detail(id) }),
+        queryClient.invalidateQueries({ queryKey: purchaseKeys.lists() }),
+        queryClient.invalidateQueries({ queryKey: purchaseKeys.details() }),
       ])
     },
   })

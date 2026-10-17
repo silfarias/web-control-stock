@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { cashRegisterKeys } from '@/features/cash-register/api/query-keys'
 import { inventoryKeys } from '@/features/inventory/api/query-keys'
+import { reportKeys } from '@/features/reports/api/query-keys'
 import { salesApi } from '@/features/sales/api/sales-api'
 import { saleKeys } from '@/features/sales/api/query-keys'
 import { normalizeApiError } from '@/lib/api/errors'
@@ -18,6 +19,12 @@ export function useCreateSale() {
       const tasks = [
         queryClient.invalidateQueries({ queryKey: saleKeys.lists() }),
         queryClient.invalidateQueries({ queryKey: inventoryKeys.all }),
+        // Venta confirmada afecta totales, ranking y stock valorizado / bajo.
+        queryClient.invalidateQueries({ queryKey: reportKeys.ventasRoot() }),
+        queryClient.invalidateQueries({ queryKey: reportKeys.ventasDiarioRoot() }),
+        queryClient.invalidateQueries({ queryKey: reportKeys.productosTopRoot() }),
+        queryClient.invalidateQueries({ queryKey: reportKeys.stockBajoRoot() }),
+        queryClient.invalidateQueries({ queryKey: reportKeys.inventarioRoot() }),
       ]
 
       if (sale.metodoPago === 'EFECTIVO') {
@@ -38,6 +45,11 @@ export function useCreateSale() {
         queryClient.invalidateQueries({ queryKey: inventoryKeys.all }),
         queryClient.invalidateQueries({ queryKey: cashRegisterKeys.active() }),
         queryClient.invalidateQueries({ queryKey: cashRegisterKeys.movements() }),
+        queryClient.invalidateQueries({ queryKey: reportKeys.ventasRoot() }),
+        queryClient.invalidateQueries({ queryKey: reportKeys.ventasDiarioRoot() }),
+        queryClient.invalidateQueries({ queryKey: reportKeys.productosTopRoot() }),
+        queryClient.invalidateQueries({ queryKey: reportKeys.stockBajoRoot() }),
+        queryClient.invalidateQueries({ queryKey: reportKeys.inventarioRoot() }),
       ])
     },
   })

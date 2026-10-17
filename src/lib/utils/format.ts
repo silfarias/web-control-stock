@@ -46,7 +46,25 @@ const shortDateFormatter = new Intl.DateTimeFormat('es-AR', {
   year: 'numeric',
 })
 
+/**
+ * Interpreta `YYYY-MM-DD` como fecha de calendario local (sin shift UTC).
+ * Otras cadenas ISO / Date se formatean con el timezone del entorno.
+ */
 export function formatShortDate(value: string | Date) {
+  if (typeof value === 'string') {
+    const trimmed = value.trim()
+    const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed)
+    if (dateOnly) {
+      const date = new Date(
+        Number(dateOnly[1]),
+        Number(dateOnly[2]) - 1,
+        Number(dateOnly[3]),
+      )
+      if (Number.isNaN(date.getTime())) return '—'
+      return shortDateFormatter.format(date)
+    }
+  }
+
   const date = typeof value === 'string' ? new Date(value) : value
   if (Number.isNaN(date.getTime())) return '—'
   return shortDateFormatter.format(date)

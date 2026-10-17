@@ -19,7 +19,7 @@ export function DailySalesChart({ items, className }: DailySalesChartProps) {
         return (
           <div key={item.fecha} className="grid gap-1.5 sm:grid-cols-[7.5rem_1fr_auto] sm:items-center sm:gap-3">
             <div className="text-sm font-medium tabular-nums">
-              {formatShortDate(`${item.fecha}T12:00:00`)}
+              {formatShortDate(item.fecha)}
             </div>
             <div className="h-8 overflow-hidden rounded-lg bg-surface-muted">
               <div

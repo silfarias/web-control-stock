@@ -26,7 +26,8 @@ export type UpdateProveedorRequest = {
   nombre?: string
   cuit?: string
   telefono?: string
-  email?: string
+  /** `null` limpia el email; omitir deja el valor actual. No enviar `""` (@IsEmail). */
+  email?: string | null
   direccion?: string
   activo?: boolean
 }

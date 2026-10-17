@@ -1,8 +1,9 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { Link, NavLink } from 'react-router'
 import { PanelLeftClose, PanelLeftOpen, X } from 'lucide-react'
 import { BrandMark } from '@/components/navigation/BrandMark'
-import { navigation } from '@/components/navigation/nav-items'
+import { getNavigationForRole } from '@/components/navigation/nav-items'
+import { useAuth } from '@/features/auth/hooks/use-auth'
 import { cn } from '@/lib/utils/cn'
 
 type SidebarProps = {
@@ -20,6 +21,8 @@ export function Sidebar({
   onClose,
   onToggleCollapsed,
 }: SidebarProps) {
+  const { user } = useAuth()
+  const sections = useMemo(() => getNavigationForRole(user?.role), [user?.role])
   const closeRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
@@ -67,7 +70,7 @@ export function Sidebar({
       </div>
 
       <nav className="sidebar-scroll flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto overscroll-contain px-3 py-4">
-        {navigation.map((section) => (
+        {sections.map((section) => (
           <div key={section.label} className="flex flex-col gap-1">
             <p
               className={cn(

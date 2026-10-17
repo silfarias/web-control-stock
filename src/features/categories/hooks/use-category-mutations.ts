@@ -1,6 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { categoriesApi } from '@/features/categories/api/categories-api'
 import { categoryKeys } from '@/features/categories/api/query-keys'
+import { productKeys } from '@/features/products/api/query-keys'
+import { reportKeys } from '@/features/reports/api/query-keys'
 import type {
   CreateCategoriaRequest,
   UpdateCategoriaRequest,
@@ -27,6 +29,10 @@ export function useUpdateCategory() {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: categoryKeys.lists() }),
         queryClient.invalidateQueries({ queryKey: categoryKeys.detail(variables.id) }),
+        // Productos y stock-bajo embeben el nombre de categoría.
+        queryClient.invalidateQueries({ queryKey: productKeys.lists() }),
+        queryClient.invalidateQueries({ queryKey: productKeys.details() }),
+        queryClient.invalidateQueries({ queryKey: reportKeys.stockBajoRoot() }),
       ])
     },
   })
@@ -41,6 +47,9 @@ export function useDeleteCategory() {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: categoryKeys.lists() }),
         queryClient.invalidateQueries({ queryKey: categoryKeys.detail(id) }),
+        queryClient.invalidateQueries({ queryKey: productKeys.lists() }),
+        queryClient.invalidateQueries({ queryKey: productKeys.details() }),
+        queryClient.invalidateQueries({ queryKey: reportKeys.stockBajoRoot() }),
       ])
     },
   })

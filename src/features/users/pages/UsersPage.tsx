@@ -33,7 +33,7 @@ const selectClassName = cn(
 )
 
 export function UsersPage() {
-  const { user: authUser, syncUser, logout } = useAuth()
+  const { user: authUser, refreshUser, logout } = useAuth()
   const { pushToast } = useToast()
 
   const [searchInput, setSearchInput] = useState('')
@@ -103,15 +103,12 @@ export function UsersPage() {
     })
 
     if (authUser?.id === updated.id) {
-      syncUser({
-        id: updated.id,
-        nombre: updated.nombre,
-        email: updated.email,
-        role: updated.role,
-        createdAt: updated.createdAt,
-        updatedAt: updated.updatedAt,
-        deletedAt: updated.deletedAt,
-      })
+      // GET /auth/me refleja rol/perfil actuales; limpia sesión si la cuenta ya no es válida.
+      try {
+        await refreshUser()
+      } catch {
+        return
+      }
     }
 
     pushToast({
