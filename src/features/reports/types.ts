@@ -1,3 +1,5 @@
+import type { MetodoPago } from '@/features/sales/types'
+
 export type FiltroReporte = {
   desde?: string
   hasta?: string
@@ -7,11 +9,20 @@ export type FiltroReporte = {
   limite?: number
 }
 
+export type ReporteVentasPorMetodoPago = {
+  metodoPago: MetodoPago
+  cantidadVentas: number
+  totalIngresos: number
+  unidadesVendidas: number
+  porcentajeIngresos: number
+}
+
 export type ReporteVentas = {
   cantidadVentas: number
   totalIngresos: number
   unidadesVendidas: number
   ticketPromedio: number
+  porMetodoPago: ReporteVentasPorMetodoPago[]
 }
 
 export type ReporteVentasDiarioItem = {

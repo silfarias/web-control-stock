@@ -121,7 +121,7 @@ export function SaleForm({
           <Card className="p-5">
             <h3 className="text-sm font-semibold tracking-tight">Pago y caja</h3>
             <p className="mt-1 text-sm text-muted">
-              El total definitivo lo calcula el servidor con los precios de venta actuales.
+              Elegí cómo cobrás. Los precios son los de venta actuales del catálogo.
             </p>
 
             <div className="mt-4 flex flex-col gap-4">
@@ -355,7 +355,7 @@ export function SaleForm({
       <Card className="p-5">
         <h3 className="text-sm font-semibold tracking-tight">Resumen estimado</h3>
         <p className="mt-1 text-sm text-muted">
-          Referencia con precios de catálogo. El total definitivo lo define el servidor.
+          Estimación con precios de catálogo. El total final se confirma al registrar la venta.
         </p>
         <dl className="mt-4 grid gap-3 sm:grid-cols-3">
           <div className="rounded-xl bg-surface-muted px-4 py-3">

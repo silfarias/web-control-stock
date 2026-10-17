@@ -6,14 +6,13 @@ import {
   ShoppingBag,
   Warehouse,
 } from 'lucide-react'
-import { Card } from '@/components/ui/Card'
 import { cn } from '@/lib/utils/cn'
 
 const reports = [
   {
     to: '/reportes/ventas',
     title: 'Ventas',
-    description: 'Cantidad de ventas, ingresos, unidades y ticket promedio.',
+    description: 'Totales del período y desglose por método de pago.',
     icon: ShoppingBag,
   },
   {
@@ -64,13 +63,6 @@ export function ReportsHubPage() {
           </Link>
         )
       })}
-      <Card className="border-dashed px-5 py-6 sm:col-span-2 xl:col-span-3">
-        <p className="text-sm text-muted">
-          Los totales y rankings provienen de los endpoints{' '}
-          <code className="rounded bg-surface-muted px-1.5 py-0.5 text-xs">/reporte/*</code>.
-          No se calculan indicadores adicionales en el cliente.
-        </p>
-      </Card>
     </div>
   )
 }

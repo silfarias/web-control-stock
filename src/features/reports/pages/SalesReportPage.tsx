@@ -1,4 +1,5 @@
 import { Card } from '@/components/ui/Card'
+import { PaymentMethodsTable } from '@/features/reports/components/PaymentMethodsTable'
 import { ReportFiltersBar } from '@/features/reports/components/ReportFiltersBar'
 import { ReportQueryState } from '@/features/reports/components/ReportQueryState'
 import { ReportStatGrid } from '@/features/reports/components/ReportStatGrid'
@@ -16,7 +17,8 @@ export function SalesReportPage() {
       <div>
         <h2 className="text-lg font-semibold tracking-tight">Resumen de ventas</h2>
         <p className="mt-1 text-sm text-muted">
-          Totales de ventas confirmadas según los filtros aplicados.
+          Totales de ventas confirmadas y desglose por método de pago según los filtros
+          aplicados.
         </p>
       </div>
 
@@ -38,27 +40,39 @@ export function SalesReportPage() {
         onRetry={() => void query.refetch()}
       >
         {data ? (
-          <ReportStatGrid
-            stats={[
-              {
-                label: 'Ventas',
-                value: data.cantidadVentas,
-                hint: 'Confirmadas en el período',
-              },
-              {
-                label: 'Ingresos',
-                value: formatMoney(data.totalIngresos),
-              },
-              {
-                label: 'Unidades',
-                value: data.unidadesVendidas,
-              },
-              {
-                label: 'Ticket promedio',
-                value: formatMoney(data.ticketPromedio),
-              },
-            ]}
-          />
+          <div className="space-y-5">
+            <ReportStatGrid
+              stats={[
+                {
+                  label: 'Ventas',
+                  value: data.cantidadVentas,
+                  hint: 'Confirmadas en el período',
+                },
+                {
+                  label: 'Ingresos',
+                  value: formatMoney(data.totalIngresos),
+                },
+                {
+                  label: 'Unidades',
+                  value: data.unidadesVendidas,
+                },
+                {
+                  label: 'Ticket promedio',
+                  value: formatMoney(data.ticketPromedio),
+                },
+              ]}
+            />
+
+            <Card className="overflow-hidden">
+              <div className="border-b border-border px-4 py-3.5 sm:px-5">
+                <h3 className="text-sm font-semibold tracking-tight">Por método de pago</h3>
+                <p className="mt-0.5 text-sm text-muted">
+                  Cantidad, unidades e ingresos de cada medio usado en el período.
+                </p>
+              </div>
+              <PaymentMethodsTable items={data.porMetodoPago} />
+            </Card>
+          </div>
         ) : null}
       </ReportQueryState>
     </div>

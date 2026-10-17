@@ -1,9 +1,9 @@
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useToast } from '@/components/common/use-toast'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
-import { Input } from '@/components/ui/Input'
+import { MoneyInput } from '@/components/ui/MoneyInput'
 import { Textarea } from '@/components/ui/Textarea'
 import { useCreateCashMovement } from '@/features/cash-register/hooks/use-cash-register-mutations'
 import {
@@ -51,6 +51,7 @@ function CashMovementDialogContent({
   const mutation = useCreateCashMovement()
 
   const {
+    control,
     register,
     handleSubmit,
     setError,
@@ -126,14 +127,24 @@ function CashMovementDialogContent({
           ) : null}
         </label>
 
-        <Input
-          label="Monto"
-          required
-          inputMode="decimal"
-          disabled={busy}
-          error={errors.monto?.message}
-          hint="Mayor a 0, hasta 2 decimales."
-          {...register('monto')}
+        <Controller
+          name="monto"
+          control={control}
+          render={({ field }) => (
+            <MoneyInput
+              label="Monto"
+              required
+              prefix="$"
+              disabled={busy}
+              error={errors.monto?.message}
+              hint="Mayor a 0, hasta 2 decimales."
+              name={field.name}
+              value={field.value}
+              onBlur={field.onBlur}
+              getInputRef={field.ref}
+              onValueChange={(values) => field.onChange(values.value)}
+            />
+          )}
         />
 
         <Textarea

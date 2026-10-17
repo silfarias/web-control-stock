@@ -36,7 +36,7 @@ export function SaleProductPicker({
     () => ({
       q: debouncedQ || undefined,
       pageNumber: page,
-      pageSize: PAGE_SIZE,
+      pageSize: DEFAULT_PAGE_SIZE,
       orderBy: 'nombre',
       orderDirection: 'ASC' as const,
     }),

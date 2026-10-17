@@ -177,7 +177,7 @@ export function SuppliersPage() {
       {suppliersQuery.isLoading ? (
         <Card className="px-6 py-16 text-center">
           <p className="text-sm font-medium">Cargando proveedores…</p>
-          <p className="mt-1 text-sm text-muted">Consultando la información del servidor.</p>
+          <p className="mt-1 text-sm text-muted">Un momento, por favor.</p>
         </Card>
       ) : null}
 
@@ -272,7 +272,7 @@ export function SuppliersPage() {
         title="Eliminar proveedor"
         description={
           deletingSupplier
-            ? `Se va a dar de baja “${deletingSupplier.nombre}” (eliminación lógica). Si tiene compras asociadas, el servidor puede rechazar la operación.`
+            ? `Se va a dar de baja “${deletingSupplier.nombre}”. Dejará de aparecer en los listados. Si tiene compras asociadas, la operación puede no completarse.`
             : ''
         }
         confirmLabel="Eliminar"

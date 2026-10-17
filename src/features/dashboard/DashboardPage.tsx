@@ -25,7 +25,7 @@ export function DashboardPage() {
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-muted">
             {dashboard.isAdmin
-              ? 'Resumen del día con indicadores del servidor.'
+              ? 'Resumen del día: ventas, stock y movimientos.'
               : 'Vista operativa con la información disponible para tu rol.'}
           </p>
         </div>

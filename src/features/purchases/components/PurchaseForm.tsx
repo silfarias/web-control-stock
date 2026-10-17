@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useFieldArray, useForm, useWatch } from 'react-hook-form'
+import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Package, Trash2 } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
@@ -7,6 +7,7 @@ import { useToast } from '@/components/common/use-toast'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
+import { MoneyInput } from '@/components/ui/MoneyInput'
 import { PurchaseProductPicker } from '@/features/purchases/components/PurchaseProductPicker'
 import {
   emptyPurchaseFormValues,
@@ -288,13 +289,21 @@ export function PurchaseForm({
                                 />
                               </td>
                               <td className="px-3 py-3 align-top">
-                                <Input
-                                  type="text"
-                                  inputMode="decimal"
-                                  disabled={busy}
-                                  className="min-w-[5.5rem]"
-                                  error={errors.items?.[index]?.costoUnitario?.message}
-                                  {...register(`items.${index}.costoUnitario`)}
+                                <Controller
+                                  name={`items.${index}.costoUnitario`}
+                                  control={control}
+                                  render={({ field }) => (
+                                    <MoneyInput
+                                      disabled={busy}
+                                      className="min-w-[5.5rem]"
+                                      error={errors.items?.[index]?.costoUnitario?.message}
+                                      name={field.name}
+                                      value={field.value}
+                                      onBlur={field.onBlur}
+                                      getInputRef={field.ref}
+                                      onValueChange={(values) => field.onChange(values.value)}
+                                    />
+                                  )}
                                 />
                               </td>
                               <td className="px-3 py-3 align-top whitespace-nowrap tabular-nums">
@@ -348,7 +357,7 @@ export function PurchaseForm({
         <Card className="p-5">
           <h3 className="text-sm font-semibold tracking-tight">Resumen estimado</h3>
           <p className="mt-1 text-sm text-muted">
-            Cálculo orientativo. El total definitivo lo define el servidor al guardar.
+            Estimación orientativa. El total final se confirma al guardar.
           </p>
           <dl className="mt-4 grid gap-3 sm:grid-cols-3">
             <div className="rounded-xl bg-surface-muted px-4 py-3">

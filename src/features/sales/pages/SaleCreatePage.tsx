@@ -38,8 +38,7 @@ export function SaleCreatePage() {
           Nueva venta
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-muted">
-          Agregá productos y elegí el método de pago. Los precios y el total los define el
-          servidor. En efectivo se necesita caja abierta.
+          Agregá productos y elegí el método de pago. En efectivo se necesita caja abierta.
         </p>
       </div>
 

@@ -5,17 +5,17 @@ import type {
   CreateItemCompraRequest,
   UpdateCompraRequest,
 } from '@/features/purchases/types'
+import {
+  isValidMoneyInput,
+  parseMoneyInput,
+  toMoneyInputValue,
+} from '@/lib/utils/money-input'
 
-const moneyRegex = /^\d+([.,]\d{1,2})?$/
-
-export function parseMoneyInput(value: string) {
-  return Number(value.trim().replace(',', '.'))
-}
+export { parseMoneyInput }
 
 export function formatMoneyInput(value: number | string) {
-  const amount = typeof value === 'string' ? Number(value) : value
-  if (!Number.isFinite(amount)) return '0'
-  return String(amount)
+  const normalized = toMoneyInputValue(value)
+  return normalized === '' ? '0' : normalized
 }
 
 const purchaseItemSchema = z.object({
@@ -32,7 +32,7 @@ const purchaseItemSchema = z.object({
     .string()
     .trim()
     .min(1, 'Ingresá el costo unitario.')
-    .refine((value) => moneyRegex.test(value), 'Usá un número con hasta 2 decimales.')
+    .refine((value) => isValidMoneyInput(value), 'Usá un número con hasta 2 decimales.')
     .refine((value) => parseMoneyInput(value) >= 0, 'El costo no puede ser negativo.'),
 })
 
@@ -112,7 +112,7 @@ export function toUpdateCompraRequest(values: PurchaseFormValues): UpdateCompraR
 
 /** Subtotal informativo (2 decimales), alineado al cálculo del backend. */
 export function estimateItemSubtotal(cantidad: string, costoUnitario: string) {
-  if (!/^\d+$/.test(cantidad.trim()) || !moneyRegex.test(costoUnitario.trim())) return null
+  if (!/^\d+$/.test(cantidad.trim()) || !isValidMoneyInput(costoUnitario.trim())) return null
   const qty = Number(cantidad)
   const cost = parseMoneyInput(costoUnitario)
   if (!Number.isFinite(qty) || !Number.isFinite(cost) || qty < 1 || cost < 0) return null

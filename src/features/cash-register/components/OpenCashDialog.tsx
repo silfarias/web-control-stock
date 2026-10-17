@@ -1,9 +1,9 @@
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useToast } from '@/components/common/use-toast'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
-import { Input } from '@/components/ui/Input'
+import { MoneyInput } from '@/components/ui/MoneyInput'
 import { useOpenCashRegister } from '@/features/cash-register/hooks/use-cash-register-mutations'
 import {
   emptyOpenCashFormValues,
@@ -32,7 +32,7 @@ function OpenCashDialogContent({
   const mutation = useOpenCashRegister()
 
   const {
-    register,
+    control,
     handleSubmit,
     setError,
     formState: { errors, isSubmitting },
@@ -82,15 +82,25 @@ function OpenCashDialogContent({
       }
     >
       <form id="open-cash-form" className="flex flex-col gap-4" onSubmit={submit} noValidate>
-        <Input
-          label="Monto de apertura"
-          required
-          inputMode="decimal"
-          autoFocus
-          disabled={busy}
-          error={errors.montoApertura?.message}
-          hint="Puede ser 0. Usá hasta 2 decimales."
-          {...register('montoApertura')}
+        <Controller
+          name="montoApertura"
+          control={control}
+          render={({ field }) => (
+            <MoneyInput
+              label="Monto de apertura"
+              required
+              prefix="$"
+              autoFocus
+              disabled={busy}
+              error={errors.montoApertura?.message}
+              hint="Puede ser 0. Usá hasta 2 decimales."
+              name={field.name}
+              value={field.value}
+              onBlur={field.onBlur}
+              getInputRef={field.ref}
+              onValueChange={(values) => field.onChange(values.value)}
+            />
+          )}
         />
         {errors.root?.message ? (
           <p className="text-sm text-error-ink" role="alert">

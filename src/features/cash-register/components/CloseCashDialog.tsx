@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useToast } from '@/components/common/use-toast'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
-import { Input } from '@/components/ui/Input'
+import { MoneyInput } from '@/components/ui/MoneyInput'
 import { useCloseCashRegister } from '@/features/cash-register/hooks/use-cash-register-mutations'
 import {
   closeCashFormSchema,
@@ -62,7 +62,7 @@ function CloseCashDialogContent({ caja, onOpenChange, onClosed }: ContentProps) 
   const [result, setResult] = useState<CierreCajaResponse | null>(null)
 
   const {
-    register,
+    control,
     handleSubmit,
     setError,
     formState: { errors, isSubmitting },
@@ -97,7 +97,7 @@ function CloseCashDialogContent({ caja, onOpenChange, onClosed }: ContentProps) 
         open
         onOpenChange={onOpenChange}
         title={`Cierre de caja #${result.caja.id}`}
-        description="Resumen calculado por el servidor al cerrar."
+        description="Resumen del cierre de caja."
         footer={
           <div className="flex justify-end">
             <Button type="button" onClick={() => onOpenChange(false)}>
@@ -121,8 +121,7 @@ function CloseCashDialogContent({ caja, onOpenChange, onClosed }: ContentProps) 
           </div>
         </dl>
         <p className="mt-4 text-xs text-muted">
-          La diferencia es contado menos esperado, según el backend (apertura + ventas + ingresos −
-          egresos).
+          La diferencia es el contado menos el esperado (apertura + ventas + ingresos − egresos).
         </p>
       </Dialog>
     )
@@ -135,7 +134,7 @@ function CloseCashDialogContent({ caja, onOpenChange, onClosed }: ContentProps) 
         if (!busy) onOpenChange(next)
       }}
       title={`Cerrar caja #${caja.id}`}
-      description="Indicá el efectivo contado. El monto esperado y la diferencia los calcula el servidor al cerrar."
+      description="Indicá el efectivo contado. Al cerrar se mostrará el monto esperado y la diferencia."
       footer={
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button
@@ -160,15 +159,25 @@ function CloseCashDialogContent({ caja, onOpenChange, onClosed }: ContentProps) 
           </p>
           <p className="mt-1 text-muted">Responsable: {caja.usuario?.nombre ?? '—'}</p>
         </div>
-        <Input
-          label="Monto contado"
-          required
-          inputMode="decimal"
-          autoFocus
-          disabled={busy}
-          error={errors.montoCierre?.message}
-          hint="Efectivo físico al momento del cierre."
-          {...register('montoCierre')}
+        <Controller
+          name="montoCierre"
+          control={control}
+          render={({ field }) => (
+            <MoneyInput
+              label="Monto contado"
+              required
+              prefix="$"
+              autoFocus
+              disabled={busy}
+              error={errors.montoCierre?.message}
+              hint="Efectivo físico al momento del cierre."
+              name={field.name}
+              value={field.value}
+              onBlur={field.onBlur}
+              getInputRef={field.ref}
+              onValueChange={(values) => field.onChange(values.value)}
+            />
+          )}
         />
         {errors.root?.message ? (
           <p className="text-sm text-error-ink" role="alert">

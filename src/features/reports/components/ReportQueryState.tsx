@@ -30,7 +30,7 @@ export function ReportQueryState({
     return (
       <Card className="px-6 py-16 text-center">
         <p className="text-sm font-medium">Cargando reporte…</p>
-        <p className="mt-1 text-sm text-muted">Consultando datos del servidor.</p>
+        <p className="mt-1 text-sm text-muted">Un momento, por favor.</p>
       </Card>
     )
   }

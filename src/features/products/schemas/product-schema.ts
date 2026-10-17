@@ -4,12 +4,7 @@ import type {
   Producto,
   UpdateProductoRequest,
 } from '@/features/products/types'
-
-const moneyRegex = /^\d+([.,]\d{1,2})?$/
-
-function parseMoney(value: string) {
-  return Number(value.trim().replace(',', '.'))
-}
+import { isValidMoneyInput, parseMoneyInput, toMoneyInputValue } from '@/lib/utils/money-input'
 
 /** Esquema sin transforms: RHF trabaja con strings; la conversión numérica va al mapear al DTO. */
 export const productFormSchema = z.object({
@@ -42,14 +37,14 @@ export const productFormSchema = z.object({
     .string()
     .trim()
     .min(1, 'Ingresá un importe.')
-    .refine((value) => moneyRegex.test(value), 'Usá un número con hasta 2 decimales.')
-    .refine((value) => parseMoney(value) >= 0, 'El importe no puede ser negativo.'),
+    .refine((value) => isValidMoneyInput(value), 'Usá un número con hasta 2 decimales.')
+    .refine((value) => parseMoneyInput(value) >= 0, 'El importe no puede ser negativo.'),
   precioVenta: z
     .string()
     .trim()
     .min(1, 'Ingresá un importe.')
-    .refine((value) => moneyRegex.test(value), 'Usá un número con hasta 2 decimales.')
-    .refine((value) => parseMoney(value) >= 0, 'El importe no puede ser negativo.'),
+    .refine((value) => isValidMoneyInput(value), 'Usá un número con hasta 2 decimales.')
+    .refine((value) => parseMoneyInput(value) >= 0, 'El importe no puede ser negativo.'),
   minimoStock: z
     .string()
     .trim()
@@ -75,8 +70,8 @@ export function productToFormValues(product: Producto): ProductFormValues {
     codigo: product.codigo,
     codigoBarras: product.codigoBarras,
     categoriaId: String(product.categoria.id),
-    precioCosto: String(product.precioCosto),
-    precioVenta: String(product.precioVenta),
+    precioCosto: toMoneyInputValue(product.precioCosto),
+    precioVenta: toMoneyInputValue(product.precioVenta),
     minimoStock: String(product.minimoStock),
     stockInicial: '',
   }
@@ -101,8 +96,8 @@ export function toCreateProductoRequest(values: ProductFormValues): CreateProduc
     codigo: values.codigo.trim(),
     codigoBarras: values.codigoBarras.trim(),
     categoriaId: Number(values.categoriaId),
-    precioCosto: parseMoney(values.precioCosto),
-    precioVenta: parseMoney(values.precioVenta),
+    precioCosto: parseMoneyInput(values.precioCosto),
+    precioVenta: parseMoneyInput(values.precioVenta),
     minimoStock: Number(values.minimoStock),
   }
 
@@ -146,14 +141,14 @@ export const purchaseProductQuickFormSchema = z.object({
     .string()
     .trim()
     .min(1, 'Ingresá un importe.')
-    .refine((value) => moneyRegex.test(value), 'Usá un número con hasta 2 decimales.')
-    .refine((value) => parseMoney(value) >= 0, 'El importe no puede ser negativo.'),
+    .refine((value) => isValidMoneyInput(value), 'Usá un número con hasta 2 decimales.')
+    .refine((value) => parseMoneyInput(value) >= 0, 'El importe no puede ser negativo.'),
   precioVenta: z
     .string()
     .trim()
     .min(1, 'Ingresá un importe.')
-    .refine((value) => moneyRegex.test(value), 'Usá un número con hasta 2 decimales.')
-    .refine((value) => parseMoney(value) >= 0, 'El importe no puede ser negativo.'),
+    .refine((value) => isValidMoneyInput(value), 'Usá un número con hasta 2 decimales.')
+    .refine((value) => parseMoneyInput(value) >= 0, 'El importe no puede ser negativo.'),
   minimoStock: z
     .string()
     .trim()
@@ -194,8 +189,8 @@ export function toCreateProductoFromPurchaseQuick(
     codigo,
     codigoBarras,
     categoriaId: Number(values.categoriaId),
-    precioCosto: parseMoney(values.precioCosto),
-    precioVenta: parseMoney(values.precioVenta),
+    precioCosto: parseMoneyInput(values.precioCosto),
+    precioVenta: parseMoneyInput(values.precioVenta),
     minimoStock: Number(values.minimoStock),
   }
 
@@ -213,8 +208,8 @@ export function toUpdateProductoRequest(values: ProductFormValues): UpdateProduc
     codigo: values.codigo.trim(),
     codigoBarras: values.codigoBarras.trim(),
     categoriaId: Number(values.categoriaId),
-    precioCosto: parseMoney(values.precioCosto),
-    precioVenta: parseMoney(values.precioVenta),
+    precioCosto: parseMoneyInput(values.precioCosto),
+    precioVenta: parseMoneyInput(values.precioVenta),
     minimoStock: Number(values.minimoStock),
   }
 }

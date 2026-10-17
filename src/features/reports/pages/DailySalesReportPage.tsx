@@ -17,8 +17,7 @@ export function DailySalesReportPage() {
       <div>
         <h2 className="text-lg font-semibold tracking-tight">Ventas diarias</h2>
         <p className="mt-1 text-sm text-muted">
-          Cantidad e ingresos agrupados por día. El gráfico usa solo los valores del
-          backend.
+          Cantidad e ingresos agrupados por día.
         </p>
       </div>
 

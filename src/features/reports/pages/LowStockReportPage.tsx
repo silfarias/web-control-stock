@@ -17,8 +17,7 @@ export function LowStockReportPage() {
       <div>
         <h2 className="text-lg font-semibold tracking-tight">Stock bajo</h2>
         <p className="mt-1 text-sm text-muted">
-          Productos con cantidad menor o igual al mínimo configurado. Las fechas no
-          aplican a este endpoint.
+          Productos con cantidad menor o igual al mínimo configurado.
         </p>
       </div>
 

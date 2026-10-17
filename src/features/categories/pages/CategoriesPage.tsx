@@ -152,7 +152,7 @@ export function CategoriesPage() {
       {categoriesQuery.isLoading ? (
         <Card className="px-6 py-16 text-center">
           <p className="text-sm font-medium">Cargando categorías…</p>
-          <p className="mt-1 text-sm text-muted">Consultando la información del servidor.</p>
+          <p className="mt-1 text-sm text-muted">Un momento, por favor.</p>
         </Card>
       ) : null}
 
@@ -245,7 +245,7 @@ export function CategoriesPage() {
         title="Eliminar categoría"
         description={
           deletingCategory
-            ? `Se va a eliminar “${deletingCategory.nombre}”. Esta acción es un borrado lógico y puede fallar si existen restricciones en el servidor.`
+            ? `Se va a eliminar “${deletingCategory.nombre}”. Dejará de aparecer en los listados. Si está en uso, la operación puede no completarse.`
             : ''
         }
         confirmLabel="Eliminar"

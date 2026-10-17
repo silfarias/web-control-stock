@@ -20,8 +20,7 @@ export function InventoryReportPage() {
       <div>
         <h2 className="text-lg font-semibold tracking-tight">Inventario valorizado</h2>
         <p className="mt-1 text-sm text-muted">
-          Stock actual valorizado a costo y a precio de venta. Totales calculados por el
-          backend.
+          Stock actual valorizado a costo y a precio de venta.
         </p>
       </div>
 

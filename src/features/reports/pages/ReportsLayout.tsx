@@ -13,8 +13,7 @@ export function ReportsLayout() {
           <div>
             <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Reportes</h1>
             <p className="mt-1 text-sm text-muted">
-              Indicadores y listados generados por el servidor. Solo disponibles para
-              administradores.
+              Consultá ventas, productos, stock e inventario valorizado.
             </p>
           </div>
         </div>

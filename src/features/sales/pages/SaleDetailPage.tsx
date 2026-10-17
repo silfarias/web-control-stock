@@ -72,7 +72,7 @@ export function SaleDetailPage() {
       {saleQuery.isLoading ? (
         <Card className="px-6 py-16 text-center">
           <p className="text-sm font-medium">Cargando venta…</p>
-          <p className="mt-1 text-sm text-muted">Consultando la información del servidor.</p>
+          <p className="mt-1 text-sm text-muted">Un momento, por favor.</p>
         </Card>
       ) : null}
 
@@ -149,7 +149,7 @@ export function SaleDetailPage() {
             <div>
               <h3 className="text-base font-semibold tracking-tight">Productos vendidos</h3>
               <p className="mt-1 text-sm text-muted">
-                Precios unitarios y subtotales informados por el servidor.
+                Precios unitarios y subtotales de la venta.
               </p>
             </div>
 

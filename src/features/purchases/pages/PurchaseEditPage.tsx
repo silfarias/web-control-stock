@@ -97,8 +97,8 @@ export function PurchaseEditPage() {
           {purchase ? <PurchaseStatusBadge estado={purchase.estado} /> : null}
         </div>
         <p className="mt-2 text-sm leading-relaxed text-muted">
-          Solo las compras en borrador se pueden modificar. Al guardar, los ítems se reemplazan
-          según el contrato de la API.
+          Solo las compras en borrador se pueden modificar. Al guardar se actualizan proveedor e
+          ítems.
         </p>
       </div>
 

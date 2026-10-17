@@ -1,8 +1,9 @@
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
+import { MoneyInput } from '@/components/ui/MoneyInput'
 import { Textarea } from '@/components/ui/Textarea'
 import { useCategoryOptions } from '@/features/categories/hooks/use-category-options'
 import {
@@ -38,6 +39,7 @@ export function ProductForm({
   const categories = categoriesQuery.data ?? []
 
   const {
+    control,
     register,
     handleSubmit,
     setError,
@@ -186,25 +188,41 @@ export function ProductForm({
               Importes en pesos argentinos ($), con hasta 2 decimales.
             </p>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
-              <Input
-                label="Precio de costo"
-                required
-                prefix="$"
-                inputMode="decimal"
-                disabled={busy}
-                error={errors.precioCosto?.message}
-                placeholder="0.00"
-                {...register('precioCosto')}
+              <Controller
+                name="precioCosto"
+                control={control}
+                render={({ field }) => (
+                  <MoneyInput
+                    label="Precio de costo"
+                    required
+                    prefix="$"
+                    disabled={busy}
+                    error={errors.precioCosto?.message}
+                    name={field.name}
+                    value={field.value}
+                    onBlur={field.onBlur}
+                    getInputRef={field.ref}
+                    onValueChange={(values) => field.onChange(values.value)}
+                  />
+                )}
               />
-              <Input
-                label="Precio de venta"
-                required
-                prefix="$"
-                inputMode="decimal"
-                disabled={busy}
-                error={errors.precioVenta?.message}
-                placeholder="0.00"
-                {...register('precioVenta')}
+              <Controller
+                name="precioVenta"
+                control={control}
+                render={({ field }) => (
+                  <MoneyInput
+                    label="Precio de venta"
+                    required
+                    prefix="$"
+                    disabled={busy}
+                    error={errors.precioVenta?.message}
+                    name={field.name}
+                    value={field.value}
+                    onBlur={field.onBlur}
+                    getInputRef={field.ref}
+                    onValueChange={(values) => field.onChange(values.value)}
+                  />
+                )}
               />
             </div>
           </Card>

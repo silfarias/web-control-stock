@@ -250,7 +250,7 @@ function StockAdjustmentDialogContent({
               )}
             >
               {insufficientClient || estimated < 0 ? (
-                <p>La cantidad supera el stock disponible. El servidor rechazará la salida.</p>
+                <p>La cantidad supera el stock disponible. No se puede registrar esta salida.</p>
               ) : (
                 <p>
                   Resultado estimado:{' '}
@@ -258,7 +258,7 @@ function StockAdjustmentDialogContent({
                     {baselineStock} → {estimated}
                   </span>
                   <span className="mt-1 block text-xs">
-                    Orientativo. El valor definitivo lo confirma el servidor.
+                    Estimación. El stock final se confirma al guardar.
                   </span>
                 </p>
               )}

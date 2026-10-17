@@ -125,7 +125,7 @@ export function ProductDetailPage() {
       {productQuery.isLoading ? (
         <Card className="px-6 py-16 text-center">
           <p className="text-sm font-medium">Cargando producto…</p>
-          <p className="mt-1 text-sm text-muted">Consultando la información del servidor.</p>
+          <p className="mt-1 text-sm text-muted">Un momento, por favor.</p>
         </Card>
       ) : null}
 
@@ -243,7 +243,7 @@ export function ProductDetailPage() {
         title="Eliminar producto"
         description={
           product
-            ? `Se va a dar de baja “${product.nombre}”. Dejará de aparecer en los listados operativos (eliminación lógica).`
+            ? `Se va a dar de baja “${product.nombre}”. Dejará de aparecer en los listados.`
             : ''
         }
         confirmLabel="Eliminar"

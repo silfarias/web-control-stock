@@ -4,19 +4,14 @@ import type {
   CerrarCajaRequest,
   CreateMovimientoCajaRequest,
 } from '@/features/cash-register/types'
-
-const moneyRegex = /^\d+([.,]\d{1,2})?$/
-
-function parseMoneyInput(value: string) {
-  return Number(value.trim().replace(',', '.'))
-}
+import { isValidMoneyInput, parseMoneyInput } from '@/lib/utils/money-input'
 
 export const openCashFormSchema = z.object({
   montoApertura: z
     .string()
     .trim()
     .min(1, 'Ingresá el monto de apertura.')
-    .refine((value) => moneyRegex.test(value), 'Usá un número con hasta 2 decimales.')
+    .refine((value) => isValidMoneyInput(value), 'Usá un número con hasta 2 decimales.')
     .refine((value) => parseMoneyInput(value) >= 0, 'El monto no puede ser negativo.'),
 })
 
@@ -37,7 +32,7 @@ export const closeCashFormSchema = z.object({
     .string()
     .trim()
     .min(1, 'Ingresá el monto contado.')
-    .refine((value) => moneyRegex.test(value), 'Usá un número con hasta 2 decimales.')
+    .refine((value) => isValidMoneyInput(value), 'Usá un número con hasta 2 decimales.')
     .refine((value) => parseMoneyInput(value) >= 0, 'El monto no puede ser negativo.'),
 })
 
@@ -61,7 +56,7 @@ export const cashMovementFormSchema = z.object({
     .string()
     .trim()
     .min(1, 'Ingresá el monto.')
-    .refine((value) => moneyRegex.test(value), 'Usá un número con hasta 2 decimales.')
+    .refine((value) => isValidMoneyInput(value), 'Usá un número con hasta 2 decimales.')
     .refine((value) => parseMoneyInput(value) >= 0.01, 'El monto debe ser mayor a 0.'),
   descripcion: z
     .string()

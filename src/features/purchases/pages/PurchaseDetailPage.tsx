@@ -91,7 +91,7 @@ export function PurchaseDetailPage() {
       {purchaseQuery.isLoading ? (
         <Card className="px-6 py-16 text-center">
           <p className="text-sm font-medium">Cargando compra…</p>
-          <p className="mt-1 text-sm text-muted">Consultando la información del servidor.</p>
+          <p className="mt-1 text-sm text-muted">Un momento, por favor.</p>
         </Card>
       ) : null}
 
@@ -196,7 +196,7 @@ export function PurchaseDetailPage() {
             <div>
               <h3 className="text-base font-semibold tracking-tight">Productos incluidos</h3>
               <p className="mt-1 text-sm text-muted">
-                Cantidades y costos unitarios informados por el servidor.
+                Cantidades y costos unitarios de la compra.
               </p>
             </div>
 

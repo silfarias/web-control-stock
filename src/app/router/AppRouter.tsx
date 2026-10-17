@@ -243,62 +243,62 @@ const router = createBrowserRouter([
             } satisfies RouteHandle,
           },
           {
-            element: <RequireAdmin />,
+            path: 'reportes',
+            element: <ReportsLayout />,
+            handle: {
+              title: 'Reportes',
+              breadcrumb: ['Inicio', 'Reportes'],
+            } satisfies RouteHandle,
             children: [
               {
-                path: 'reportes',
-                element: <ReportsLayout />,
-                handle: {
-                  title: 'Reportes',
-                  breadcrumb: ['Inicio', 'Reportes'],
-                } satisfies RouteHandle,
-                children: [
-                  {
-                    index: true,
-                    element: <ReportsHubPage />,
-                  },
-                  {
-                    path: 'ventas',
-                    element: <SalesReportPage />,
-                    handle: {
-                      title: 'Reporte de ventas',
-                      breadcrumb: ['Inicio', 'Reportes', 'Ventas'],
-                    } satisfies RouteHandle,
-                  },
-                  {
-                    path: 'ventas-diarias',
-                    element: <DailySalesReportPage />,
-                    handle: {
-                      title: 'Ventas diarias',
-                      breadcrumb: ['Inicio', 'Reportes', 'Ventas diarias'],
-                    } satisfies RouteHandle,
-                  },
-                  {
-                    path: 'productos-top',
-                    element: <TopProductsReportPage />,
-                    handle: {
-                      title: 'Productos más vendidos',
-                      breadcrumb: ['Inicio', 'Reportes', 'Más vendidos'],
-                    } satisfies RouteHandle,
-                  },
-                  {
-                    path: 'stock-bajo',
-                    element: <LowStockReportPage />,
-                    handle: {
-                      title: 'Stock bajo',
-                      breadcrumb: ['Inicio', 'Reportes', 'Stock bajo'],
-                    } satisfies RouteHandle,
-                  },
-                  {
-                    path: 'inventario',
-                    element: <InventoryReportPage />,
-                    handle: {
-                      title: 'Inventario valorizado',
-                      breadcrumb: ['Inicio', 'Reportes', 'Inventario'],
-                    } satisfies RouteHandle,
-                  },
-                ],
+                index: true,
+                element: <ReportsHubPage />,
               },
+              {
+                path: 'ventas',
+                element: <SalesReportPage />,
+                handle: {
+                  title: 'Reporte de ventas',
+                  breadcrumb: ['Inicio', 'Reportes', 'Ventas'],
+                } satisfies RouteHandle,
+              },
+              {
+                path: 'ventas-diarias',
+                element: <DailySalesReportPage />,
+                handle: {
+                  title: 'Ventas diarias',
+                  breadcrumb: ['Inicio', 'Reportes', 'Ventas diarias'],
+                } satisfies RouteHandle,
+              },
+              {
+                path: 'productos-top',
+                element: <TopProductsReportPage />,
+                handle: {
+                  title: 'Productos más vendidos',
+                  breadcrumb: ['Inicio', 'Reportes', 'Más vendidos'],
+                } satisfies RouteHandle,
+              },
+              {
+                path: 'stock-bajo',
+                element: <LowStockReportPage />,
+                handle: {
+                  title: 'Stock bajo',
+                  breadcrumb: ['Inicio', 'Reportes', 'Stock bajo'],
+                } satisfies RouteHandle,
+              },
+              {
+                path: 'inventario',
+                element: <InventoryReportPage />,
+                handle: {
+                  title: 'Inventario valorizado',
+                  breadcrumb: ['Inicio', 'Reportes', 'Inventario'],
+                } satisfies RouteHandle,
+              },
+            ],
+          },
+          {
+            element: <RequireAdmin />,
+            children: [
               {
                 path: 'usuarios',
                 element: <UsersPage />,

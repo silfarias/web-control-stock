@@ -104,7 +104,6 @@ export const navigation: NavSection[] = [
         to: '/reportes',
         icon: ChartColumn,
         available: true,
-        roles: ['ADMIN'],
       },
       {
         title: 'Usuarios',
