@@ -3,11 +3,15 @@ import { salesApi } from '@/features/sales/api/sales-api'
 import { saleKeys } from '@/features/sales/api/query-keys'
 import type { SearchVentasParams } from '@/features/sales/types'
 
-export function useSales(params: SearchVentasParams) {
+export function useSales(
+  params: SearchVentasParams,
+  options?: { enabled?: boolean },
+) {
   return useQuery({
     queryKey: saleKeys.list(params),
     queryFn: () => salesApi.search(params),
     placeholderData: keepPreviousData,
+    enabled: options?.enabled ?? true,
   })
 }
 

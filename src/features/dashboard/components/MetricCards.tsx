@@ -1,7 +1,10 @@
-import { AlertTriangle, ArrowLeftRight, Package, type LucideIcon } from 'lucide-react'
+import { AlertTriangle, ArrowLeftRight, Package, Wallet, type LucideIcon } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
-import type { DashboardSummary } from '@/features/dashboard/data/mock-dashboard'
-import { formatCurrency } from '@/lib/utils/format'
+import type {
+  DashboardSummary,
+  EmployeeDashboardSummary,
+} from '@/features/dashboard/types'
+import { formatMoney } from '@/lib/utils/format'
 import { cn } from '@/lib/utils/cn'
 
 type Metric = {
@@ -13,36 +16,97 @@ type Metric = {
   iconClassName?: string
 }
 
-export function MetricCards({ summary }: { summary: DashboardSummary }) {
-  const metrics: Metric[] = [
-    {
-      label: 'Ventas del día',
-      value: formatCurrency(summary.salesToday),
-      detail: summary.salesDetail,
-      featured: true,
-    },
-    {
-      label: 'Productos',
-      value: String(summary.products),
-      detail: summary.productsDetail,
-      icon: Package,
-      iconClassName: 'bg-surface-muted text-primary',
-    },
-    {
-      label: 'Stock bajo',
-      value: String(summary.lowStock),
-      detail: summary.lowStockDetail,
-      icon: AlertTriangle,
-      iconClassName: 'bg-warning-soft text-warning-ink',
-    },
-    {
-      label: 'Movimientos',
-      value: String(summary.movements),
-      detail: summary.movementsDetail,
-      icon: ArrowLeftRight,
-      iconClassName: 'bg-accent-soft text-accent-ink',
-    },
-  ]
+type MetricCardsProps = {
+  summary?: DashboardSummary | null
+  employeeSummary?: EmployeeDashboardSummary | null
+  loading?: boolean
+}
+
+export function MetricCards({
+  summary,
+  employeeSummary,
+  loading = false,
+}: MetricCardsProps) {
+  const metrics: Metric[] = summary
+    ? [
+        {
+          label: 'Ventas del día',
+          value: formatMoney(summary.salesToday),
+          detail: summary.salesDetail,
+          featured: true,
+        },
+        {
+          label: 'Productos',
+          value: String(summary.products),
+          detail: summary.productsDetail,
+          icon: Package,
+          iconClassName: 'bg-surface-muted text-primary',
+        },
+        {
+          label: 'Stock bajo',
+          value: String(summary.lowStock),
+          detail: summary.lowStockDetail,
+          icon: AlertTriangle,
+          iconClassName: 'bg-warning-soft text-warning-ink',
+        },
+        {
+          label: 'Movimientos',
+          value: String(summary.movements),
+          detail: summary.movementsDetail,
+          icon: ArrowLeftRight,
+          iconClassName: 'bg-accent-soft text-accent-ink',
+        },
+      ]
+    : employeeSummary
+      ? [
+          {
+            label: 'Caja',
+            value: employeeSummary.cashLabel,
+            detail: employeeSummary.cashDetail,
+            featured: true,
+            icon: Wallet,
+            iconClassName: 'bg-white/15 text-white',
+          },
+          {
+            label: 'Productos',
+            value: String(employeeSummary.products),
+            detail: employeeSummary.productsDetail,
+            icon: Package,
+            iconClassName: 'bg-surface-muted text-primary',
+          },
+          {
+            label: 'Ventas',
+            value: String(employeeSummary.salesTotal),
+            detail: employeeSummary.salesDetail,
+            icon: ArrowLeftRight,
+            iconClassName: 'bg-accent-soft text-accent-ink',
+          },
+          {
+            label: 'Inventario',
+            value: String(employeeSummary.stockRecords),
+            detail: employeeSummary.stockDetail,
+            icon: AlertTriangle,
+            iconClassName: 'bg-warning-soft text-warning-ink',
+          },
+        ]
+      : []
+
+  if (loading && metrics.length === 0) {
+    return (
+      <section aria-labelledby="indicadores-dia" aria-busy="true">
+        <h2 id="indicadores-dia" className="sr-only">
+          Indicadores del día
+        </h2>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <Card key={index} className="min-h-[138px] animate-pulse bg-surface-muted/60 p-4" />
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  if (metrics.length === 0) return null
 
   return (
     <section aria-labelledby="indicadores-dia">
@@ -76,7 +140,7 @@ export function MetricCards({ summary }: { summary: DashboardSummary }) {
                 >
                   {metric.label}
                 </p>
-                {Icon ? (
+                {Icon && !metric.featured ? (
                   <span
                     className={cn(
                       'grid size-9 shrink-0 place-items-center rounded-xl',

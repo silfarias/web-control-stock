@@ -3,11 +3,15 @@ import { inventoryApi } from '@/features/inventory/api/inventory-api'
 import { inventoryKeys } from '@/features/inventory/api/query-keys'
 import type { SearchMovimientosParams } from '@/features/inventory/types'
 
-export function useStockMovements(params: SearchMovimientosParams) {
+export function useStockMovements(
+  params: SearchMovimientosParams,
+  options?: { enabled?: boolean },
+) {
   return useQuery({
     queryKey: inventoryKeys.movementList(params),
     queryFn: () => inventoryApi.searchMovements(params),
     placeholderData: keepPreviousData,
+    enabled: options?.enabled ?? true,
   })
 }
 
