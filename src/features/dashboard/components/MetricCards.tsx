@@ -82,9 +82,9 @@ export function MetricCards({
             iconClassName: 'bg-accent-soft text-accent-ink',
           },
           {
-            label: 'Inventario',
-            value: String(employeeSummary.stockRecords),
-            detail: employeeSummary.stockDetail,
+            label: 'Stock bajo',
+            value: String(employeeSummary.lowStock),
+            detail: employeeSummary.lowStockDetail,
             icon: AlertTriangle,
             iconClassName: 'bg-warning-soft text-warning-ink',
           },

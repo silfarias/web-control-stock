@@ -78,7 +78,7 @@ export function LoginForm() {
             aria-describedby={errors.password ? 'password-error' : undefined}
             className={cn(
               'h-11 w-full rounded-xl border border-border bg-surface py-0 pr-12 pl-3.5 text-sm text-foreground transition-colors placeholder:text-muted',
-              'hover:border-[#c5d0c8] focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
+              'hover:border-border-strong focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
               'disabled:cursor-not-allowed disabled:opacity-60',
               errors.password &&
                 'border-error focus-visible:border-error focus-visible:ring-error/20',

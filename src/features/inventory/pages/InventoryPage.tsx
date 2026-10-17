@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { History, Search, Warehouse } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
+import { ListPagination } from '@/components/common/ListPagination'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
@@ -12,9 +13,8 @@ import { StockAdjustmentDialog } from '@/features/inventory/components/StockAdju
 import { useInventory } from '@/features/inventory/hooks/use-inventory'
 import type { Stock } from '@/features/inventory/types'
 import { getApiErrorMessage } from '@/lib/api/errors'
+import { DEFAULT_PAGE_SIZE } from '@/lib/api/pagination'
 import { cn } from '@/lib/utils/cn'
-
-const PAGE_SIZE = 10
 
 function parsePage(value: string | null) {
   const parsed = Number(value)
@@ -55,7 +55,7 @@ export function InventoryPage() {
     () => ({
       q: qFromUrl || undefined,
       pageNumber: pageFromUrl,
-      pageSize: PAGE_SIZE,
+      pageSize: DEFAULT_PAGE_SIZE,
       orderBy: 'id',
       orderDirection: 'DESC' as const,
     }),
@@ -97,24 +97,16 @@ export function InventoryPage() {
       </div>
 
       <Card className="p-4 sm:p-5">
-        <div className="relative max-w-md">
-          <Search
-            className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted"
-            aria-hidden
-          />
+        <div className="max-w-md">
           <Input
             type="search"
             value={searchInput}
             onChange={(event) => setSearchInput(event.target.value)}
             placeholder="Buscar por nombre, código o código de barras"
-            className="pl-10"
+            leadingIcon={<Search className="size-4" aria-hidden />}
             aria-label="Buscar en inventario"
           />
         </div>
-        <p className="mt-2 text-xs text-muted">
-          La búsqueda se aplica sobre el catálogo de stock del servidor. No hay filtro por
-          categoría en este endpoint.
-        </p>
       </Card>
 
       {inventoryQuery.isLoading ? (
@@ -179,30 +171,16 @@ export function InventoryPage() {
           />
 
           {metadata && metadata.totalPages > 1 ? (
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-muted">
-                Mostrando página {metadata.pageNumber} de {metadata.totalPages}
-                {hasFilters ? ` · ${metadata.count} resultados` : null}
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={pageFromUrl <= 1 || inventoryQuery.isFetching}
-                  onClick={() => setPage(pageFromUrl - 1)}
-                >
-                  Anterior
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={pageFromUrl >= metadata.totalPages || inventoryQuery.isFetching}
-                  onClick={() => setPage(pageFromUrl + 1)}
-                >
-                  Siguiente
-                </Button>
-              </div>
-            </div>
+            <ListPagination
+              pageNumber={metadata.pageNumber}
+              totalPages={metadata.totalPages}
+              count={hasFilters ? metadata.count : undefined}
+              itemLabel={
+                hasFilters ? { singular: 'resultado', plural: 'resultados' } : undefined
+              }
+              disabled={inventoryQuery.isFetching}
+              onPageChange={setPage}
+            />
           ) : null}
         </div>
       ) : null}
@@ -213,7 +191,7 @@ export function InventoryPage() {
           if (!open) setAdjusting(null)
         }}
         product={
-          adjusting
+          adjusting?.producto
             ? {
                 id: adjusting.producto.id,
                 nombre: adjusting.producto.nombre,

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import { ArrowLeftRight, History, Lock, Unlock, Wallet } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
+import { ListPagination } from '@/components/common/ListPagination'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { buttonVariants } from '@/components/ui/button-variants'
@@ -18,11 +19,9 @@ import {
   useCashRegisters,
 } from '@/features/cash-register/hooks/use-cash-register'
 import { getApiErrorMessage } from '@/lib/api/errors'
+import { DEFAULT_PAGE_SIZE } from '@/lib/api/pagination'
 import { cn } from '@/lib/utils/cn'
 import { formatDateTime, formatMoney } from '@/lib/utils/format'
-
-const HISTORY_PAGE_SIZE = 8
-const MOVEMENTS_PAGE_SIZE = 10
 
 export function CashRegisterPage() {
   const { user } = useAuth()
@@ -41,7 +40,7 @@ export function CashRegisterPage() {
   const historyParams = useMemo(
     () => ({
       pageNumber: historyPage,
-      pageSize: HISTORY_PAGE_SIZE,
+      pageSize: DEFAULT_PAGE_SIZE,
       orderBy: 'id',
       orderDirection: 'DESC' as const,
     }),
@@ -54,7 +53,7 @@ export function CashRegisterPage() {
   const movementsParams = useMemo(
     () => ({
       pageNumber: movementsPage,
-      pageSize: MOVEMENTS_PAGE_SIZE,
+      pageSize: DEFAULT_PAGE_SIZE,
       orderBy: 'id',
       orderDirection: 'DESC' as const,
     }),
@@ -269,33 +268,13 @@ export function CashRegisterPage() {
             movements.length > 0 ? (
               <div className="flex flex-col gap-4">
                 <CashMovementsTable movements={movements} />
-                {movementsMeta && movementsMeta.totalPages > 1 ? (
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <p className="text-sm text-muted">
-                      Página {movementsMeta.pageNumber} de {movementsMeta.totalPages}
-                    </p>
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        disabled={movementsPage <= 1 || movementsQuery.isFetching}
-                        onClick={() => setMovementsPage((p) => Math.max(1, p - 1))}
-                      >
-                        Anterior
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        disabled={
-                          movementsPage >= movementsMeta.totalPages ||
-                          movementsQuery.isFetching
-                        }
-                        onClick={() => setMovementsPage((p) => p + 1)}
-                      >
-                        Siguiente
-                      </Button>
-                    </div>
-                  </div>
+                {movementsMeta ? (
+                  <ListPagination
+                    pageNumber={movementsMeta.pageNumber}
+                    totalPages={movementsMeta.totalPages}
+                    disabled={movementsQuery.isFetching}
+                    onPageChange={setMovementsPage}
+                  />
                 ) : null}
               </div>
             ) : null}
@@ -350,37 +329,15 @@ export function CashRegisterPage() {
         {!historyQuery.isLoading && !historyQuery.isError && history.length > 0 ? (
           <div className="flex flex-col gap-4">
             <CashHistoryTable cajas={history} />
-            {historyMeta && historyMeta.totalPages > 1 ? (
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm text-muted">
-                  Página {historyMeta.pageNumber} de {historyMeta.totalPages} ·{' '}
-                  {historyMeta.count} {historyMeta.count === 1 ? 'caja' : 'cajas'}
-                </p>
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    disabled={historyPage <= 1 || historyQuery.isFetching}
-                    onClick={() => setHistoryPage((p) => Math.max(1, p - 1))}
-                  >
-                    Anterior
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    disabled={
-                      historyPage >= historyMeta.totalPages || historyQuery.isFetching
-                    }
-                    onClick={() => setHistoryPage((p) => p + 1)}
-                  >
-                    Siguiente
-                  </Button>
-                </div>
-              </div>
-            ) : historyMeta ? (
-              <p className="text-sm text-muted">
-                {historyMeta.count} {historyMeta.count === 1 ? 'caja' : 'cajas'}
-              </p>
+            {historyMeta ? (
+              <ListPagination
+                pageNumber={historyMeta.pageNumber}
+                totalPages={historyMeta.totalPages}
+                count={historyMeta.count}
+                itemLabel={{ singular: 'caja', plural: 'cajas' }}
+                disabled={historyQuery.isFetching}
+                onPageChange={setHistoryPage}
+              />
             ) : null}
           </div>
         ) : null}

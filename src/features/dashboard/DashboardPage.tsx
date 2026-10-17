@@ -68,7 +68,6 @@ export function DashboardPage() {
           items={dashboard.lowStockItems}
           loading={dashboard.lowStockLoading}
           error={dashboard.lowStockError}
-          restricted={!dashboard.isAdmin}
           onRetry={() => dashboard.refetchAll()}
         />
       </div>

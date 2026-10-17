@@ -73,13 +73,18 @@ export const emptyPurchaseFormValues: PurchaseFormValues = {
 export function purchaseToFormValues(purchase: Compra): PurchaseFormValues {
   return {
     proveedorId: String(purchase.proveedor.id),
-    items: purchase.items.map((item) => ({
-      productoId: item.producto.id,
-      nombre: item.producto.nombre,
-      codigo: item.producto.codigo,
-      cantidad: String(item.cantidad),
-      costoUnitario: formatMoneyInput(item.costoUnitario),
-    })),
+    items: purchase.items.flatMap((item) => {
+      if (!item.producto) return []
+      return [
+        {
+          productoId: item.producto.id,
+          nombre: item.producto.nombre,
+          codigo: item.producto.codigo,
+          cantidad: String(item.cantidad),
+          costoUnitario: formatMoneyInput(item.costoUnitario),
+        },
+      ]
+    }),
   }
 }
 

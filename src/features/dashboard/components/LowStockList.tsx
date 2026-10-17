@@ -9,7 +9,6 @@ type LowStockListProps = {
   error?: boolean
   errorMessage?: string
   onRetry?: () => void
-  restricted?: boolean
 }
 
 export function LowStockList({
@@ -18,7 +17,6 @@ export function LowStockList({
   error = false,
   errorMessage,
   onRetry,
-  restricted = false,
 }: LowStockListProps) {
   return (
     <Card className="min-w-0 p-4 sm:p-5">
@@ -26,15 +24,13 @@ export function LowStockList({
         <div className="min-w-0">
           <h2 className="text-base font-semibold tracking-tight">Stock bajo</h2>
           <p className="mt-1 text-sm text-muted">
-            {restricted
-              ? 'Disponible para administradores.'
-              : loading
-                ? 'Cargando alertas…'
-                : error
-                  ? 'No se pudo cargar.'
-                  : items.length === 0
-                    ? 'Sin productos por debajo del mínimo.'
-                    : `${items.length} producto${items.length === 1 ? '' : 's'} por debajo del mínimo.`}
+            {loading
+              ? 'Cargando alertas…'
+              : error
+                ? 'No se pudo cargar.'
+                : items.length === 0
+                  ? 'Sin productos por debajo del mínimo.'
+                  : `${items.length} producto${items.length === 1 ? '' : 's'} por debajo del mínimo.`}
           </p>
         </div>
         <Link
@@ -45,14 +41,7 @@ export function LowStockList({
         </Link>
       </div>
 
-      {restricted ? (
-        <p className="mt-6 text-sm text-muted">
-          Consultá el inventario para revisar existencias. El ranking de stock bajo
-          requiere permisos de administrador.
-        </p>
-      ) : null}
-
-      {loading && !restricted ? (
+      {loading ? (
         <div className="mt-5 space-y-4" aria-busy="true">
           {Array.from({ length: 4 }).map((_, index) => (
             <div key={index} className="h-10 animate-pulse rounded-lg bg-surface-muted/70" />
@@ -60,7 +49,7 @@ export function LowStockList({
         </div>
       ) : null}
 
-      {error && !restricted ? (
+      {error ? (
         <div className="mt-6">
           <p className="text-sm text-error-ink">{errorMessage ?? 'Error al consultar stock bajo.'}</p>
           {onRetry ? (
@@ -75,7 +64,7 @@ export function LowStockList({
         </div>
       ) : null}
 
-      {!loading && !error && !restricted && items.length > 0 ? (
+      {!loading && !error && items.length > 0 ? (
         <ul className="mt-5 flex flex-col gap-4">
           {items.slice(0, 6).map((item) => {
             const ratio = item.minimum === 0 ? 0 : Math.min(item.stock / item.minimum, 1)

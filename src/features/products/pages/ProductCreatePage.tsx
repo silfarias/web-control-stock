@@ -24,7 +24,7 @@ export function ProductCreatePage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl min-w-0 flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-5xl min-w-0 flex-col gap-6">
       <div className="min-w-0">
         <Link
           to="/productos"

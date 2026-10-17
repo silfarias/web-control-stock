@@ -24,7 +24,7 @@ export function PurchaseCreatePage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl min-w-0 flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-6xl min-w-0 flex-col gap-6">
       <div className="min-w-0">
         <Link
           to="/compras"

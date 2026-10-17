@@ -13,7 +13,6 @@ import type {
   DashboardSummary,
   EmployeeDashboardSummary,
 } from '@/features/dashboard/types'
-import { useInventory } from '@/features/inventory/hooks/use-inventory'
 import { useStockMovements } from '@/features/inventory/hooks/use-stock-movements'
 import { useProducts } from '@/features/products/hooks/use-products'
 import {
@@ -49,11 +48,10 @@ export function useDashboard() {
 
   const salesTodayQuery = useSalesReport(todaySalesFiltro, { enabled: isAdmin })
   const dailySalesQuery = useDailySalesReport(weekSalesFiltro, { enabled: isAdmin })
-  const lowStockQuery = useLowStockReport({}, { enabled: isAdmin })
+  const lowStockQuery = useLowStockReport({})
 
   const productsQuery = useProducts(COUNT_PARAMS)
   const movementsQuery = useStockMovements(COUNT_PARAMS, { enabled: isAdmin })
-  const stockCountQuery = useInventory(COUNT_PARAMS, { enabled: !isAdmin })
   const salesTotalQuery = useSales(
     { ...COUNT_PARAMS, estado: 'CONFIRMADA' },
     { enabled: !isAdmin },
@@ -112,7 +110,7 @@ export function useDashboard() {
     if (
       productsQuery.isLoading ||
       salesTotalQuery.isLoading ||
-      stockCountQuery.isLoading ||
+      lowStockQuery.isLoading ||
       activeCashQuery.isLoading
     ) {
       return null
@@ -120,6 +118,7 @@ export function useDashboard() {
 
     const caja = activeCashQuery.data
     const cashOpen = caja?.estado === 'ABIERTA'
+    const lowStockCount = lowStockQuery.data?.length ?? 0
 
     return {
       cashLabel: cashOpen ? 'Caja abierta' : 'Sin caja abierta',
@@ -130,8 +129,9 @@ export function useDashboard() {
       productsDetail: 'Productos registrados',
       salesTotal: salesTotalQuery.data?.metadata.count ?? 0,
       salesDetail: 'Ventas confirmadas (total)',
-      stockRecords: stockCountQuery.data?.metadata.count ?? 0,
-      stockDetail: 'Registros de inventario',
+      lowStock: lowStockCount,
+      lowStockDetail:
+        lowStockCount === 0 ? 'Sin alertas de mínimo' : 'Por debajo del mínimo',
     }
   }, [
     isAdmin,
@@ -139,8 +139,8 @@ export function useDashboard() {
     productsQuery.data,
     salesTotalQuery.isLoading,
     salesTotalQuery.data,
-    stockCountQuery.isLoading,
-    stockCountQuery.data,
+    lowStockQuery.isLoading,
+    lowStockQuery.data,
     activeCashQuery.isLoading,
     activeCashQuery.data,
   ])
@@ -151,8 +151,8 @@ export function useDashboard() {
   }, [isAdmin, dailySalesQuery.data, today])
 
   const lowStockItems = useMemo(
-    () => (isAdmin && lowStockQuery.data ? mapLowStockItems(lowStockQuery.data) : []),
-    [isAdmin, lowStockQuery.data],
+    () => (lowStockQuery.data ? mapLowStockItems(lowStockQuery.data) : []),
+    [lowStockQuery.data],
   )
 
   const recentSales = useMemo(
@@ -173,7 +173,7 @@ export function useDashboard() {
     !isAdmin &&
     (productsQuery.isLoading ||
       salesTotalQuery.isLoading ||
-      stockCountQuery.isLoading ||
+      lowStockQuery.isLoading ||
       activeCashQuery.isLoading ||
       recentSalesQuery.isLoading)
 
@@ -190,7 +190,7 @@ export function useDashboard() {
     !isAdmin &&
     (productsQuery.isError ||
       salesTotalQuery.isError ||
-      stockCountQuery.isError ||
+      lowStockQuery.isError ||
       activeCashQuery.isError ||
       recentSalesQuery.isError)
 
@@ -198,13 +198,12 @@ export function useDashboard() {
     if (isAdmin) {
       void salesTodayQuery.refetch()
       void dailySalesQuery.refetch()
-      void lowStockQuery.refetch()
       void movementsQuery.refetch()
     } else {
       void salesTotalQuery.refetch()
-      void stockCountQuery.refetch()
       void activeCashQuery.refetch()
     }
+    void lowStockQuery.refetch()
     void productsQuery.refetch()
     void recentSalesQuery.refetch()
   }
@@ -221,8 +220,8 @@ export function useDashboard() {
     isError: adminError || employeeError,
     chartLoading: isAdmin && dailySalesQuery.isLoading,
     chartError: isAdmin && dailySalesQuery.isError,
-    lowStockLoading: isAdmin && lowStockQuery.isLoading,
-    lowStockError: isAdmin && lowStockQuery.isError,
+    lowStockLoading: lowStockQuery.isLoading,
+    lowStockError: lowStockQuery.isError,
     recentLoading: recentSalesQuery.isLoading,
     recentError: recentSalesQuery.isError,
     refetchAll,

@@ -78,8 +78,19 @@ export function UserMenu() {
           </p>
           <Button
             type="button"
-            variant="secondary"
+            variant="outline"
             className="mt-4 w-full"
+            onClick={() => {
+              setOpen(false)
+              void navigate('/perfil')
+            }}
+          >
+            Mi perfil
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            className="mt-2 w-full"
             onClick={() => void handleLogout()}
             disabled={loggingOut}
           >

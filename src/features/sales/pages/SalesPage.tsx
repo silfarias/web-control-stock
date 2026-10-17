@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { Plus, Search, ShoppingBag } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
+import { ListPagination } from '@/components/common/ListPagination'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
@@ -16,9 +17,8 @@ import {
   saleStatusLabel,
 } from '@/features/sales/utils/sale-labels'
 import { getApiErrorMessage } from '@/lib/api/errors'
+import { DEFAULT_PAGE_SIZE } from '@/lib/api/pagination'
 import { cn } from '@/lib/utils/cn'
-
-const PAGE_SIZE = 10
 
 function parsePage(value: string | null) {
   const parsed = Number(value)
@@ -70,7 +70,7 @@ export function SalesPage() {
       estado: estadoFromUrl,
       metodoPago: metodoFromUrl,
       pageNumber: pageFromUrl,
-      pageSize: PAGE_SIZE,
+      pageSize: DEFAULT_PAGE_SIZE,
       orderBy: 'id',
       orderDirection: 'DESC' as const,
     }),
@@ -118,24 +118,20 @@ export function SalesPage() {
       </div>
 
       <Card className="p-4 sm:p-5">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
-          <div className="relative min-w-0 flex-1 lg:max-w-md">
-            <Search
-              className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted"
-              aria-hidden
-            />
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+          <div className="min-w-0 flex-1 lg:max-w-md">
             <Input
               type="search"
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
               placeholder="Buscar ventas"
-              className="pl-10"
+              leadingIcon={<Search className="size-4" aria-hidden />}
               aria-label="Buscar ventas"
             />
           </div>
 
-          <label className="flex w-full flex-col gap-1.5 text-sm lg:w-48">
-            <span className="font-medium text-foreground">Estado</span>
+          <label className="flex w-full items-center gap-2.5 text-sm lg:w-auto">
+            <span className="shrink-0 font-medium whitespace-nowrap text-foreground">Estado</span>
             <select
               value={estadoFromUrl ?? ''}
               onChange={(event) => {
@@ -146,8 +142,8 @@ export function SalesPage() {
                 })
               }}
               className={cn(
-                'h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors',
-                'hover:border-[#c5d0c8] focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
+                'h-11 w-full min-w-0 rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors lg:w-44',
+                'hover:border-border-strong focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
               )}
               aria-label="Filtrar por estado"
             >
@@ -160,8 +156,10 @@ export function SalesPage() {
             </select>
           </label>
 
-          <label className="flex w-full flex-col gap-1.5 text-sm lg:w-56">
-            <span className="font-medium text-foreground">Método de pago</span>
+          <label className="flex w-full items-center gap-2.5 text-sm lg:w-auto">
+            <span className="shrink-0 font-medium whitespace-nowrap text-foreground">
+              Método de pago
+            </span>
             <select
               value={metodoFromUrl ?? ''}
               onChange={(event) => {
@@ -172,8 +170,8 @@ export function SalesPage() {
                 })
               }}
               className={cn(
-                'h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors',
-                'hover:border-[#c5d0c8] focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
+                'h-11 w-full min-w-0 rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors lg:w-48',
+                'hover:border-border-strong focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
               )}
               aria-label="Filtrar por método de pago"
             >
@@ -243,35 +241,15 @@ export function SalesPage() {
         <div className="flex flex-col gap-4">
           <SalesTable sales={sales} />
 
-          {metadata && metadata.totalPages > 1 ? (
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-muted">
-                Mostrando página {metadata.pageNumber} de {metadata.totalPages} · {metadata.count}{' '}
-                {metadata.count === 1 ? 'venta' : 'ventas'}
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={pageFromUrl <= 1 || salesQuery.isFetching}
-                  onClick={() => setPage(pageFromUrl - 1)}
-                >
-                  Anterior
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={pageFromUrl >= metadata.totalPages || salesQuery.isFetching}
-                  onClick={() => setPage(pageFromUrl + 1)}
-                >
-                  Siguiente
-                </Button>
-              </div>
-            </div>
-          ) : metadata ? (
-            <p className="text-sm text-muted">
-              {metadata.count} {metadata.count === 1 ? 'venta' : 'ventas'}
-            </p>
+          {metadata ? (
+            <ListPagination
+              pageNumber={metadata.pageNumber}
+              totalPages={metadata.totalPages}
+              count={metadata.count}
+              itemLabel={{ singular: 'venta', plural: 'ventas' }}
+              disabled={salesQuery.isFetching}
+              onPageChange={setPage}
+            />
           ) : null}
         </div>
       ) : null}

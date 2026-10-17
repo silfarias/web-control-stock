@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { ArrowLeft, History, Search } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
+import { ListPagination } from '@/components/common/ListPagination'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
@@ -10,9 +11,8 @@ import { useStockMovements } from '@/features/inventory/hooks/use-stock-movement
 import type { TipoMovimientoStock } from '@/features/inventory/types'
 import { movementTypeLabel } from '@/features/inventory/utils/movement-labels'
 import { getApiErrorMessage } from '@/lib/api/errors'
+import { DEFAULT_PAGE_SIZE } from '@/lib/api/pagination'
 import { cn } from '@/lib/utils/cn'
-
-const PAGE_SIZE = 10
 
 const MOVEMENT_TYPES: TipoMovimientoStock[] = [
   'COMPRA',
@@ -66,7 +66,7 @@ export function MovementsPage() {
       q: qFromUrl || undefined,
       tipo: tipoFromUrl,
       pageNumber: pageFromUrl,
-      pageSize: PAGE_SIZE,
+      pageSize: DEFAULT_PAGE_SIZE,
       orderBy: 'id',
       orderDirection: 'DESC' as const,
     }),
@@ -121,29 +121,25 @@ export function MovementsPage() {
       </div>
 
       <Card className="p-4 sm:p-5">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
-          <div className="relative min-w-0 flex-1 lg:max-w-md">
-            <Search
-              className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted"
-              aria-hidden
-            />
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+          <div className="min-w-0 flex-1 lg:max-w-md">
             <Input
               type="search"
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
               placeholder="Buscar por producto, código o motivo"
-              className="pl-10"
+              leadingIcon={<Search className="size-4" aria-hidden />}
               aria-label="Buscar movimientos"
             />
           </div>
-          <label className="flex w-full flex-col gap-1.5 text-sm lg:w-56">
-            <span className="font-medium text-foreground">Tipo</span>
+          <label className="flex w-full items-center gap-2.5 text-sm lg:w-auto">
+            <span className="shrink-0 font-medium whitespace-nowrap text-foreground">Tipo</span>
             <select
               value={tipoFromUrl ?? ''}
               onChange={(event) => handleTipoChange(event.target.value)}
               className={cn(
-                'h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors',
-                'hover:border-[#c5d0c8] focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
+                'h-11 w-full min-w-0 rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors lg:w-52',
+                'hover:border-border-strong focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
               )}
               aria-label="Filtrar por tipo de movimiento"
             >
@@ -205,35 +201,15 @@ export function MovementsPage() {
         <div className="flex flex-col gap-4">
           <MovementsTable movements={movements} />
 
-          {metadata && metadata.totalPages > 1 ? (
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-muted">
-                Página {metadata.pageNumber} de {metadata.totalPages} · {metadata.count}{' '}
-                movimientos
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={pageFromUrl <= 1 || movementsQuery.isFetching}
-                  onClick={() => setPage(pageFromUrl - 1)}
-                >
-                  Anterior
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={pageFromUrl >= metadata.totalPages || movementsQuery.isFetching}
-                  onClick={() => setPage(pageFromUrl + 1)}
-                >
-                  Siguiente
-                </Button>
-              </div>
-            </div>
-          ) : metadata ? (
-            <p className="text-sm text-muted">
-              {metadata.count} {metadata.count === 1 ? 'movimiento' : 'movimientos'}
-            </p>
+          {metadata ? (
+            <ListPagination
+              pageNumber={metadata.pageNumber}
+              totalPages={metadata.totalPages}
+              count={metadata.count}
+              itemLabel={{ singular: 'movimiento', plural: 'movimientos' }}
+              disabled={movementsQuery.isFetching}
+              onPageChange={setPage}
+            />
           ) : null}
         </div>
       ) : null}

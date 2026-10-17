@@ -16,7 +16,8 @@ export type ItemCompra = {
   cantidad: number
   costoUnitario: number | string
   subtotal: number | string
-  producto: Producto
+  /** Null si el producto fue eliminado del catálogo. */
+  producto: Producto | null
   createdAt: string
   updatedAt: string
   deletedAt?: string | null

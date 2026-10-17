@@ -48,18 +48,30 @@ export function InventoryTable({ items, canAdjust = false, onAdjust }: Inventory
           <tbody>
             {items.map((item) => {
               const product = item.producto
-              const status = getStockStatus(item.cantidad, product.minimoStock)
+              const status = product
+                ? getStockStatus(item.cantidad, product.minimoStock)
+                : item.cantidad <= 0
+                  ? 'out'
+                  : 'unknown'
 
               return (
                 <tr key={item.id} className="border-b border-border last:border-b-0">
                   <td className="px-4 py-3.5 sm:px-5">
-                    <p className="font-medium">{product.nombre}</p>
+                    {product ? (
+                      <p className="font-medium">{product.nombre}</p>
+                    ) : (
+                      <p className="text-sm text-muted">Producto eliminado</p>
+                    )}
                   </td>
                   <td className="px-4 py-3.5 whitespace-nowrap sm:px-5">
-                    <span className="font-mono text-xs tracking-tight">{product.codigo}</span>
+                    {product ? (
+                      <span className="font-mono text-xs tracking-tight">{product.codigo}</span>
+                    ) : (
+                      <span className="text-muted">—</span>
+                    )}
                   </td>
                   <td className="px-4 py-3.5 text-muted sm:px-5">
-                    {product.categoria?.nombre ?? '—'}
+                    {product?.categoria?.nombre ?? '—'}
                   </td>
                   <td
                     className={cn(
@@ -71,36 +83,40 @@ export function InventoryTable({ items, canAdjust = false, onAdjust }: Inventory
                     {item.cantidad}
                   </td>
                   <td className="px-4 py-3.5 tabular-nums text-muted sm:px-5">
-                    {product.minimoStock}
+                    {product?.minimoStock ?? '—'}
                   </td>
                   <td className="px-4 py-3.5 sm:px-5">
                     <StockStatusBadge status={status} />
                   </td>
                   <td className="px-4 py-3.5 sm:px-5">
-                    <div className="flex items-center justify-end gap-1">
-                      <Link
-                        to={`/inventario/${product.id}`}
-                        className={cn(
-                          buttonVariants({ variant: 'ghost', size: 'icon' }),
-                          'size-9',
-                        )}
-                        aria-label={`Ver inventario de ${product.nombre}`}
-                      >
-                        <Eye className="size-4" />
-                      </Link>
-                      {canAdjust ? (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="size-9"
-                          onClick={() => onAdjust?.(item)}
-                          aria-label={`Ajustar stock de ${product.nombre}`}
+                    {product ? (
+                      <div className="flex items-center justify-end gap-1">
+                        <Link
+                          to={`/inventario/${product.id}`}
+                          className={cn(
+                            buttonVariants({ variant: 'ghost', size: 'icon' }),
+                            'size-9',
+                          )}
+                          aria-label={`Ver inventario de ${product.nombre}`}
                         >
-                          <SlidersHorizontal className="size-4" />
-                        </Button>
-                      ) : null}
-                    </div>
+                          <Eye className="size-4" />
+                        </Link>
+                        {canAdjust ? (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="size-9"
+                            onClick={() => onAdjust?.(item)}
+                            aria-label={`Ajustar stock de ${product.nombre}`}
+                          >
+                            <SlidersHorizontal className="size-4" />
+                          </Button>
+                        ) : null}
+                      </div>
+                    ) : (
+                      <span className="block text-right text-muted">—</span>
+                    )}
                   </td>
                 </tr>
               )

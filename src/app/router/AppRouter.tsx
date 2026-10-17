@@ -34,6 +34,7 @@ import { SaleCreatePage } from '@/features/sales/pages/SaleCreatePage'
 import { SaleDetailPage } from '@/features/sales/pages/SaleDetailPage'
 import { SalesPage } from '@/features/sales/pages/SalesPage'
 import { SuppliersPage } from '@/features/suppliers/pages/SuppliersPage'
+import { ProfilePage } from '@/features/users/pages/ProfilePage'
 import { UserDetailPage } from '@/features/users/pages/UserDetailPage'
 import { UsersPage } from '@/features/users/pages/UsersPage'
 
@@ -231,6 +232,14 @@ const router = createBrowserRouter([
             handle: {
               title: 'Detalle de venta',
               breadcrumb: ['Inicio', 'Ventas', 'Detalle'],
+            } satisfies RouteHandle,
+          },
+          {
+            path: 'perfil',
+            element: <ProfilePage />,
+            handle: {
+              title: 'Mi perfil',
+              breadcrumb: ['Inicio', 'Mi perfil'],
             } satisfies RouteHandle,
           },
           {

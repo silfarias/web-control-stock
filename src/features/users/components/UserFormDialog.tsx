@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { useForm, type FieldErrors, type UseFormRegister } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
 import { Input } from '@/components/ui/Input'
@@ -28,7 +30,7 @@ type UserFormDialogProps = {
 
 const selectClassName = cn(
   'h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors',
-  'hover:border-[#c5d0c8] focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
+  'hover:border-border-strong focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
   'disabled:cursor-not-allowed disabled:opacity-60',
 )
 
@@ -256,6 +258,11 @@ function UserFields({
   errors: FieldErrors<SharedFields>
   requiredPassword: boolean
 }) {
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const passwordField = register('password')
+  const confirmPasswordField = register('confirmPassword')
+
   return (
     <>
       <label className="block space-y-1.5">
@@ -304,13 +311,28 @@ function UserFields({
         <span className="text-sm font-medium">
           {requiredPassword ? 'Contraseña' : 'Nueva contraseña (opcional)'}
         </span>
-        <Input
-          type="password"
-          autoComplete="new-password"
-          aria-invalid={errors.password ? true : undefined}
-          className={cn(errors.password && 'border-error')}
-          {...register('password')}
-        />
+        <div className="relative">
+          <input
+            {...passwordField}
+            type={showPassword ? 'text' : 'password'}
+            autoComplete="new-password"
+            aria-invalid={errors.password ? true : undefined}
+            className={cn(
+              'h-11 w-full rounded-xl border border-border bg-surface py-0 pr-12 pl-3.5 text-sm text-foreground transition-colors placeholder:text-muted',
+              'hover:border-border-strong focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
+              errors.password &&
+                'border-error focus-visible:border-error focus-visible:ring-error/20',
+            )}
+          />
+          <button
+            type="button"
+            className="absolute top-1/2 right-2 grid size-9 -translate-y-1/2 place-items-center rounded-lg text-muted transition-colors hover:bg-surface-muted hover:text-foreground"
+            onClick={() => setShowPassword((current) => !current)}
+            aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+          >
+            {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+          </button>
+        </div>
         {errors.password?.message ? (
           <p className="text-xs text-error-ink">{errors.password.message}</p>
         ) : (
@@ -322,13 +344,32 @@ function UserFields({
         <span className="text-sm font-medium">
           {requiredPassword ? 'Confirmar contraseña' : 'Confirmar nueva contraseña'}
         </span>
-        <Input
-          type="password"
-          autoComplete="new-password"
-          aria-invalid={errors.confirmPassword ? true : undefined}
-          className={cn(errors.confirmPassword && 'border-error')}
-          {...register('confirmPassword')}
-        />
+        <div className="relative">
+          <input
+            {...confirmPasswordField}
+            type={showConfirmPassword ? 'text' : 'password'}
+            autoComplete="new-password"
+            aria-invalid={errors.confirmPassword ? true : undefined}
+            className={cn(
+              'h-11 w-full rounded-xl border border-border bg-surface py-0 pr-12 pl-3.5 text-sm text-foreground transition-colors placeholder:text-muted',
+              'hover:border-border-strong focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
+              errors.confirmPassword &&
+                'border-error focus-visible:border-error focus-visible:ring-error/20',
+            )}
+          />
+          <button
+            type="button"
+            className="absolute top-1/2 right-2 grid size-9 -translate-y-1/2 place-items-center rounded-lg text-muted transition-colors hover:bg-surface-muted hover:text-foreground"
+            onClick={() => setShowConfirmPassword((current) => !current)}
+            aria-label={
+              showConfirmPassword
+                ? 'Ocultar confirmación de contraseña'
+                : 'Mostrar confirmación de contraseña'
+            }
+          >
+            {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+          </button>
+        </div>
         {errors.confirmPassword?.message ? (
           <p className="text-xs text-error-ink">{errors.confirmPassword.message}</p>
         ) : null}

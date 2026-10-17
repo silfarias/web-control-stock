@@ -32,10 +32,16 @@ export function SaleItemsTable({ items }: SaleItemsTableProps) {
             {items.map((item) => (
               <tr key={item.id} className="border-b border-border last:border-b-0">
                 <td className="px-4 py-3.5 sm:px-5">
-                  <p className="font-medium">{item.producto?.nombre ?? '—'}</p>
-                  <p className="mt-0.5 font-mono text-xs text-muted">
-                    {item.producto?.codigo ?? '—'}
-                  </p>
+                  {item.producto ? (
+                    <>
+                      <p className="font-medium">{item.producto.nombre}</p>
+                      <p className="mt-0.5 font-mono text-xs text-muted">
+                        {item.producto.codigo}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-sm text-muted">Producto eliminado</p>
+                  )}
                 </td>
                 <td className="px-4 py-3.5 tabular-nums sm:px-5">{item.cantidad}</td>
                 <td className="px-4 py-3.5 whitespace-nowrap tabular-nums sm:px-5">

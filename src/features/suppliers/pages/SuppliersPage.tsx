@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Plus, Search, Truck } from 'lucide-react'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { EmptyState } from '@/components/common/EmptyState'
+import { ListPagination } from '@/components/common/ListPagination'
 import { useToast } from '@/components/common/use-toast'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -22,9 +23,8 @@ import {
 } from '@/features/suppliers/schemas/supplier-schema'
 import type { Proveedor } from '@/features/suppliers/types'
 import { getApiErrorMessage } from '@/lib/api/errors'
+import { DEFAULT_PAGE_SIZE } from '@/lib/api/pagination'
 import { cn } from '@/lib/utils/cn'
-
-const PAGE_SIZE = 10
 
 export function SuppliersPage() {
   const { user } = useAuth()
@@ -53,7 +53,7 @@ export function SuppliersPage() {
       activo:
         activoFilter === 'all' ? undefined : activoFilter === 'true' ? true : false,
       pageNumber,
-      pageSize: PAGE_SIZE,
+      pageSize: DEFAULT_PAGE_SIZE,
       orderBy: 'nombre',
       orderDirection: 'ASC' as const,
     }),
@@ -141,23 +141,19 @@ export function SuppliersPage() {
       </div>
 
       <Card className="p-4 sm:p-5">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
-          <div className="relative min-w-0 flex-1 lg:max-w-md">
-            <Search
-              className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted"
-              aria-hidden
-            />
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+          <div className="min-w-0 flex-1 lg:max-w-md">
             <Input
               type="search"
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
               placeholder="Buscar por nombre, CUIT, email o teléfono"
-              className="pl-10"
+              leadingIcon={<Search className="size-4" aria-hidden />}
               aria-label="Buscar proveedores"
             />
           </div>
-          <label className="flex w-full flex-col gap-1.5 text-sm lg:w-48">
-            <span className="font-medium text-foreground">Estado</span>
+          <label className="flex w-full items-center gap-2.5 text-sm lg:w-auto">
+            <span className="shrink-0 font-medium whitespace-nowrap text-foreground">Estado</span>
             <select
               value={activoFilter}
               onChange={(event) => {
@@ -165,8 +161,8 @@ export function SuppliersPage() {
                 setPageNumber(1)
               }}
               className={cn(
-                'h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors',
-                'hover:border-[#c5d0c8] focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
+                'h-11 w-full min-w-0 rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors lg:w-40',
+                'hover:border-border-strong focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
               )}
               aria-label="Filtrar por estado"
             >
@@ -245,35 +241,15 @@ export function SuppliersPage() {
             onDelete={setDeletingSupplier}
           />
 
-          {metadata && metadata.totalPages > 1 ? (
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-muted">
-                Mostrando página {metadata.pageNumber} de {metadata.totalPages} · {metadata.count}{' '}
-                {metadata.count === 1 ? 'proveedor' : 'proveedores'}
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={pageNumber <= 1 || suppliersQuery.isFetching}
-                  onClick={() => setPageNumber((current) => Math.max(1, current - 1))}
-                >
-                  Anterior
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={pageNumber >= metadata.totalPages || suppliersQuery.isFetching}
-                  onClick={() => setPageNumber((current) => current + 1)}
-                >
-                  Siguiente
-                </Button>
-              </div>
-            </div>
-          ) : metadata ? (
-            <p className="text-sm text-muted">
-              {metadata.count} {metadata.count === 1 ? 'proveedor' : 'proveedores'}
-            </p>
+          {metadata ? (
+            <ListPagination
+              pageNumber={metadata.pageNumber}
+              totalPages={metadata.totalPages}
+              count={metadata.count}
+              itemLabel={{ singular: 'proveedor', plural: 'proveedores' }}
+              disabled={suppliersQuery.isFetching}
+              onPageChange={setPageNumber}
+            />
           ) : null}
         </div>
       ) : null}

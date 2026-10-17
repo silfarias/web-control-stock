@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { ClipboardList, Plus, Search } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
+import { ListPagination } from '@/components/common/ListPagination'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
@@ -13,9 +14,8 @@ import type { EstadoCompra } from '@/features/purchases/types'
 import { purchaseStatusLabel } from '@/features/purchases/utils/purchase-status'
 import { useSupplierOptions } from '@/features/suppliers/hooks/use-supplier-options'
 import { getApiErrorMessage } from '@/lib/api/errors'
+import { DEFAULT_PAGE_SIZE } from '@/lib/api/pagination'
 import { cn } from '@/lib/utils/cn'
-
-const PAGE_SIZE = 10
 
 const ESTADOS: EstadoCompra[] = ['BORRADOR', 'CONFIRMADA', 'CANCELADA']
 
@@ -72,7 +72,7 @@ export function PurchasesPage() {
       proveedorId: proveedorIdFromUrl,
       estado: estadoFromUrl,
       pageNumber: pageFromUrl,
-      pageSize: PAGE_SIZE,
+      pageSize: DEFAULT_PAGE_SIZE,
       orderBy: 'id',
       orderDirection: 'DESC' as const,
     }),
@@ -127,24 +127,22 @@ export function PurchasesPage() {
       </div>
 
       <Card className="p-4 sm:p-5">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
-          <div className="relative min-w-0 flex-1 lg:max-w-md">
-            <Search
-              className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted"
-              aria-hidden
-            />
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+          <div className="min-w-0 flex-1 lg:max-w-md">
             <Input
               type="search"
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
               placeholder="Buscar por proveedor o producto"
-              className="pl-10"
+              leadingIcon={<Search className="size-4" aria-hidden />}
               aria-label="Buscar compras"
             />
           </div>
 
-          <label className="flex w-full flex-col gap-1.5 text-sm lg:w-56">
-            <span className="font-medium text-foreground">Proveedor</span>
+          <label className="flex w-full items-center gap-2.5 text-sm lg:w-auto">
+            <span className="shrink-0 font-medium whitespace-nowrap text-foreground">
+              Proveedor
+            </span>
             <select
               value={proveedorIdFromUrl ?? ''}
               onChange={(event) => {
@@ -156,8 +154,8 @@ export function PurchasesPage() {
               }}
               disabled={suppliersQuery.isLoading}
               className={cn(
-                'h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors',
-                'hover:border-[#c5d0c8] focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
+                'h-11 w-full min-w-0 rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors lg:w-52',
+                'hover:border-border-strong focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
                 'disabled:cursor-not-allowed disabled:opacity-60',
               )}
               aria-label="Filtrar por proveedor"
@@ -171,8 +169,8 @@ export function PurchasesPage() {
             </select>
           </label>
 
-          <label className="flex w-full flex-col gap-1.5 text-sm lg:w-48">
-            <span className="font-medium text-foreground">Estado</span>
+          <label className="flex w-full items-center gap-2.5 text-sm lg:w-auto">
+            <span className="shrink-0 font-medium whitespace-nowrap text-foreground">Estado</span>
             <select
               value={estadoFromUrl ?? ''}
               onChange={(event) => {
@@ -183,8 +181,8 @@ export function PurchasesPage() {
                 })
               }}
               className={cn(
-                'h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors',
-                'hover:border-[#c5d0c8] focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
+                'h-11 w-full min-w-0 rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors lg:w-44',
+                'hover:border-border-strong focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
               )}
               aria-label="Filtrar por estado"
             >
@@ -258,35 +256,15 @@ export function PurchasesPage() {
         <div className="flex flex-col gap-4">
           <PurchasesTable purchases={purchases} canManage={canManage} />
 
-          {metadata && metadata.totalPages > 1 ? (
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-muted">
-                Mostrando página {metadata.pageNumber} de {metadata.totalPages} · {metadata.count}{' '}
-                {metadata.count === 1 ? 'compra' : 'compras'}
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={pageFromUrl <= 1 || purchasesQuery.isFetching}
-                  onClick={() => setPage(pageFromUrl - 1)}
-                >
-                  Anterior
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={pageFromUrl >= metadata.totalPages || purchasesQuery.isFetching}
-                  onClick={() => setPage(pageFromUrl + 1)}
-                >
-                  Siguiente
-                </Button>
-              </div>
-            </div>
-          ) : metadata ? (
-            <p className="text-sm text-muted">
-              {metadata.count} {metadata.count === 1 ? 'compra' : 'compras'}
-            </p>
+          {metadata ? (
+            <ListPagination
+              pageNumber={metadata.pageNumber}
+              totalPages={metadata.totalPages}
+              count={metadata.count}
+              itemLabel={{ singular: 'compra', plural: 'compras' }}
+              disabled={purchasesQuery.isFetching}
+              onPageChange={setPage}
+            />
           ) : null}
         </div>
       ) : null}

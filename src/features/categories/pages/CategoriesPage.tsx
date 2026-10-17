@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Plus, Search, Tags } from 'lucide-react'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { EmptyState } from '@/components/common/EmptyState'
+import { ListPagination } from '@/components/common/ListPagination'
 import { useToast } from '@/components/common/use-toast'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -17,8 +18,7 @@ import {
 import type { Categoria } from '@/features/categories/types'
 import { useAuth } from '@/features/auth/hooks/use-auth'
 import { getApiErrorMessage } from '@/lib/api/errors'
-
-const PAGE_SIZE = 10
+import { DEFAULT_PAGE_SIZE } from '@/lib/api/pagination'
 
 export function CategoriesPage() {
   const { user } = useAuth()
@@ -44,7 +44,7 @@ export function CategoriesPage() {
     () => ({
       q: debouncedSearch || undefined,
       pageNumber,
-      pageSize: PAGE_SIZE,
+      pageSize: DEFAULT_PAGE_SIZE,
       orderBy: 'nombre',
       orderDirection: 'ASC' as const,
     }),
@@ -137,17 +137,13 @@ export function CategoriesPage() {
       </div>
 
       <Card className="p-4 sm:p-5">
-        <div className="relative max-w-md">
-          <Search
-            className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted"
-            aria-hidden
-          />
+        <div className="max-w-md">
           <Input
             type="search"
             value={searchInput}
             onChange={(event) => setSearchInput(event.target.value)}
             placeholder="Buscar por nombre o descripción"
-            className="pl-10"
+            leadingIcon={<Search className="size-4" aria-hidden />}
             aria-label="Buscar categorías"
           />
         </div>
@@ -218,37 +214,15 @@ export function CategoriesPage() {
             onDelete={setDeletingCategory}
           />
 
-          {metadata && metadata.totalPages > 1 ? (
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-muted">
-                Mostrando página {metadata.pageNumber} de {metadata.totalPages} · {metadata.count}{' '}
-                {metadata.count === 1 ? 'categoría' : 'categorías'}
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={pageNumber <= 1 || categoriesQuery.isFetching}
-                  onClick={() => setPageNumber((current) => Math.max(1, current - 1))}
-                >
-                  Anterior
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={
-                    pageNumber >= metadata.totalPages || categoriesQuery.isFetching
-                  }
-                  onClick={() => setPageNumber((current) => current + 1)}
-                >
-                  Siguiente
-                </Button>
-              </div>
-            </div>
-          ) : metadata ? (
-            <p className="text-sm text-muted">
-              {metadata.count} {metadata.count === 1 ? 'categoría' : 'categorías'}
-            </p>
+          {metadata ? (
+            <ListPagination
+              pageNumber={metadata.pageNumber}
+              totalPages={metadata.totalPages}
+              count={metadata.count}
+              itemLabel={{ singular: 'categoría', plural: 'categorías' }}
+              disabled={categoriesQuery.isFetching}
+              onPageChange={setPageNumber}
+            />
           ) : null}
         </div>
       ) : null}

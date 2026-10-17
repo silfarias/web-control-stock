@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { ArrowLeft, ArrowLeftRight, History, Lock, Wallet } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
+import { ListPagination } from '@/components/common/ListPagination'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { buttonVariants } from '@/components/ui/button-variants'
@@ -15,10 +16,9 @@ import {
   useCashRegister,
 } from '@/features/cash-register/hooks/use-cash-register'
 import { getApiErrorMessage } from '@/lib/api/errors'
+import { DEFAULT_PAGE_SIZE } from '@/lib/api/pagination'
 import { cn } from '@/lib/utils/cn'
 import { formatDateTime, formatMoney } from '@/lib/utils/format'
-
-const MOVEMENTS_PAGE_SIZE = 10
 
 function parseId(value: string | undefined) {
   if (!value) return null
@@ -42,7 +42,7 @@ export function CashRegisterDetailPage() {
   const movementsParams = useMemo(
     () => ({
       pageNumber: movementsPage,
-      pageSize: MOVEMENTS_PAGE_SIZE,
+      pageSize: DEFAULT_PAGE_SIZE,
       orderBy: 'id',
       orderDirection: 'DESC' as const,
     }),
@@ -260,33 +260,13 @@ export function CashRegisterDetailPage() {
             movements.length > 0 ? (
               <div className="flex flex-col gap-4">
                 <CashMovementsTable movements={movements} />
-                {movementsMeta && movementsMeta.totalPages > 1 ? (
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <p className="text-sm text-muted">
-                      Página {movementsMeta.pageNumber} de {movementsMeta.totalPages}
-                    </p>
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        disabled={movementsPage <= 1 || movementsQuery.isFetching}
-                        onClick={() => setMovementsPage((p) => Math.max(1, p - 1))}
-                      >
-                        Anterior
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        disabled={
-                          movementsPage >= movementsMeta.totalPages ||
-                          movementsQuery.isFetching
-                        }
-                        onClick={() => setMovementsPage((p) => p + 1)}
-                      >
-                        Siguiente
-                      </Button>
-                    </div>
-                  </div>
+                {movementsMeta ? (
+                  <ListPagination
+                    pageNumber={movementsMeta.pageNumber}
+                    totalPages={movementsMeta.totalPages}
+                    disabled={movementsQuery.isFetching}
+                    onPageChange={setMovementsPage}
+                  />
                 ) : null}
               </div>
             ) : null}

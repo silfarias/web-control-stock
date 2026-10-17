@@ -65,8 +65,16 @@ export function MovementsTable({ movements, hideProduct = false }: MovementsTabl
                   </td>
                   {!hideProduct ? (
                     <td className="px-4 py-3.5 sm:px-5">
-                      <p className="font-medium">{movement.producto.nombre}</p>
-                      <p className="font-mono text-xs text-muted">{movement.producto.codigo}</p>
+                      {movement.producto ? (
+                        <>
+                          <p className="font-medium">{movement.producto.nombre}</p>
+                          <p className="font-mono text-xs text-muted">
+                            {movement.producto.codigo}
+                          </p>
+                        </>
+                      ) : (
+                        <p className="text-sm text-muted">Producto eliminado</p>
+                      )}
                     </td>
                   ) : null}
                   <td className="px-4 py-3.5 sm:px-5">

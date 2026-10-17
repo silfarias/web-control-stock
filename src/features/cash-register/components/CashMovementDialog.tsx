@@ -27,7 +27,7 @@ type CashMovementDialogProps = {
 
 const selectClassName = cn(
   'h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors',
-  'hover:border-[#c5d0c8] focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
+  'hover:border-border-strong focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
   'disabled:cursor-not-allowed disabled:opacity-60',
 )
 

@@ -35,7 +35,7 @@ export function Textarea({
         rows={rows}
         className={cn(
           'w-full resize-y rounded-xl border border-border bg-surface px-3.5 py-2.5 text-sm text-foreground transition-colors placeholder:text-muted',
-          'hover:border-[#c5d0c8] focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
+          'hover:border-border-strong focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
           error && 'border-error focus-visible:border-error focus-visible:ring-error/20',
           className,
         )}

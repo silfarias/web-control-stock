@@ -1,6 +1,7 @@
 import type { RefObject } from 'react'
 import { Link, useLocation, useMatches } from 'react-router'
 import { ChevronRight, Menu } from 'lucide-react'
+import { HeaderClock } from '@/components/navigation/HeaderClock'
 import { UserMenu } from '@/components/navigation/UserMenu'
 import { getRouteHandle } from '@/app/router/route-handle'
 
@@ -45,7 +46,8 @@ export function Header({ onOpenMenu, menuButtonRef }: HeaderProps) {
           </h1>
         </div>
       </div>
-      <div className="shrink-0">
+      <div className="flex shrink-0 items-center gap-3">
+        <HeaderClock />
         <UserMenu key={location.pathname} />
       </div>
     </header>

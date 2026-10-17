@@ -1,23 +1,25 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Plus, Search } from 'lucide-react'
+import { PackagePlus, Plus, Search } from 'lucide-react'
+import { ListPagination } from '@/components/common/ListPagination'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { useProducts } from '@/features/products/hooks/use-products'
 import type { Producto } from '@/features/products/types'
+import { DEFAULT_PAGE_SIZE } from '@/lib/api/pagination'
 import { formatMoney } from '@/lib/utils/format'
-
-const PAGE_SIZE = 8
 
 type PurchaseProductPickerProps = {
   excludedProductIds: number[]
   disabled?: boolean
   onAdd: (product: Producto) => void
+  onCreateProduct: (initialNombre?: string) => void
 }
 
 export function PurchaseProductPicker({
   excludedProductIds,
   disabled = false,
   onAdd,
+  onCreateProduct,
 }: PurchaseProductPickerProps) {
   const [searchInput, setSearchInput] = useState('')
   const [debouncedQ, setDebouncedQ] = useState('')
@@ -35,7 +37,7 @@ export function PurchaseProductPicker({
     () => ({
       q: debouncedQ || undefined,
       pageNumber: page,
-      pageSize: PAGE_SIZE,
+      pageSize: DEFAULT_PAGE_SIZE,
       orderBy: 'nombre',
       orderDirection: 'ASC' as const,
     }),
@@ -49,24 +51,33 @@ export function PurchaseProductPicker({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative min-w-0">
-        <Search
-          className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted"
-          aria-hidden
-        />
-        <Input
-          type="search"
-          value={searchInput}
-          onChange={(event) => setSearchInput(event.target.value)}
-          placeholder="Buscar producto por nombre o código"
-          className="pl-10"
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="min-w-0 flex-1">
+          <Input
+            type="search"
+            value={searchInput}
+            onChange={(event) => setSearchInput(event.target.value)}
+            placeholder="Buscar por nombre o código"
+            leadingIcon={<Search className="size-4" aria-hidden />}
+            disabled={disabled}
+            aria-label="Buscar productos para agregar"
+          />
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="shrink-0 self-stretch sm:self-auto"
           disabled={disabled}
-          aria-label="Buscar productos para agregar"
-        />
+          onClick={() => onCreateProduct(debouncedQ || undefined)}
+        >
+          <PackagePlus className="size-4" aria-hidden />
+          Nuevo producto
+        </Button>
       </div>
 
       {productsQuery.isLoading ? (
-        <p className="px-1 text-sm text-muted">Buscando productos…</p>
+        <p className="px-1 text-sm text-muted">Cargando productos…</p>
       ) : null}
 
       {productsQuery.isError ? (
@@ -76,15 +87,31 @@ export function PurchaseProductPicker({
       ) : null}
 
       {!productsQuery.isLoading && !productsQuery.isError && products.length === 0 ? (
-        <p className="px-1 text-sm text-muted">
-          {debouncedQ
-            ? 'No hay productos que coincidan con la búsqueda.'
-            : 'Escribí para buscar productos del catálogo.'}
-        </p>
+        <div className="rounded-xl border border-dashed border-border px-4 py-6 text-center">
+          <p className="text-sm font-medium">
+            {debouncedQ ? 'No hay coincidencias' : 'No hay productos en el catálogo'}
+          </p>
+          <p className="mt-1 text-sm text-muted">
+            {debouncedQ
+              ? `No encontramos “${debouncedQ}”. Podés crearlo y sumarlo a la compra.`
+              : 'Creá el primero para empezar a armar la compra.'}
+          </p>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className="mt-4"
+            disabled={disabled}
+            onClick={() => onCreateProduct(debouncedQ || undefined)}
+          >
+            <PackagePlus className="size-4" aria-hidden />
+            Crear producto
+          </Button>
+        </div>
       ) : null}
 
       {!productsQuery.isLoading && !productsQuery.isError && products.length > 0 ? (
-        <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border">
+        <ul className="max-h-[28rem] divide-y divide-border overflow-y-auto overscroll-contain rounded-xl border border-border lg:max-h-[min(32rem,calc(100dvh-16rem))]">
           {products.map((product) => {
             const alreadyAdded = excluded.has(product.id)
             return (
@@ -97,12 +124,12 @@ export function PurchaseProductPicker({
                   <p className="mt-0.5 font-mono text-xs text-muted">
                     {product.codigo}
                     <span className="mx-1.5 text-border">·</span>
-                    Costo catálogo {formatMoney(product.precioCosto)}
+                    Costo {formatMoney(product.precioCosto)}
                   </p>
                 </div>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant={alreadyAdded ? 'secondary' : 'outline'}
                   size="sm"
                   disabled={disabled || alreadyAdded}
                   onClick={() => onAdd(product)}
@@ -118,33 +145,13 @@ export function PurchaseProductPicker({
       ) : null}
 
       {metadata && metadata.totalPages > 1 ? (
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-xs text-muted">
-            Página {metadata.pageNumber} de {metadata.totalPages}
-          </p>
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={page <= 1 || productsQuery.isFetching || disabled}
-              onClick={() => setPage((current) => Math.max(1, current - 1))}
-            >
-              Anterior
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={
-                page >= metadata.totalPages || productsQuery.isFetching || disabled
-              }
-              onClick={() => setPage((current) => current + 1)}
-            >
-              Siguiente
-            </Button>
-          </div>
-        </div>
+        <ListPagination
+          pageNumber={metadata.pageNumber}
+          totalPages={metadata.totalPages}
+          disabled={productsQuery.isFetching || disabled}
+          onPageChange={setPage}
+          className="gap-2"
+        />
       ) : null}
     </div>
   )

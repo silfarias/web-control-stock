@@ -68,7 +68,7 @@ export function QuickActions() {
                 'flex min-w-0 items-center gap-3 rounded-2xl px-3 py-3 transition-colors',
                 action.featured
                   ? 'bg-primary text-white hover:bg-primary-hover'
-                  : 'bg-surface-muted text-foreground hover:bg-[#dce6e0]',
+                  : 'bg-surface-muted text-foreground hover:bg-surface-muted-hover',
               )}
             >
               <span

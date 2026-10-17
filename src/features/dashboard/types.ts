@@ -11,7 +11,7 @@ export type DashboardSummary = {
   movementsDetail: string
 }
 
-/** Variante operativa para EMPLEADO (sin endpoints /reporte). */
+/** Variante operativa para EMPLEADO (sin reportes consolidados de ventas). */
 export type EmployeeDashboardSummary = {
   cashLabel: string
   cashDetail: string
@@ -19,8 +19,8 @@ export type EmployeeDashboardSummary = {
   productsDetail: string
   salesTotal: number
   salesDetail: string
-  stockRecords: number
-  stockDetail: string
+  lowStock: number
+  lowStockDetail: string
 }
 
 export type SalesPoint = {

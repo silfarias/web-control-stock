@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Plus, Search, Users } from 'lucide-react'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { EmptyState } from '@/components/common/EmptyState'
+import { ListPagination } from '@/components/common/ListPagination'
 import { useToast } from '@/components/common/use-toast'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -23,13 +24,12 @@ import {
 } from '@/features/users/schemas/user-schema'
 import type { Usuario, UsuarioRole } from '@/features/users/types'
 import { getApiErrorMessage } from '@/lib/api/errors'
+import { DEFAULT_PAGE_SIZE } from '@/lib/api/pagination'
 import { cn } from '@/lib/utils/cn'
-
-const PAGE_SIZE = 10
 
 const selectClassName = cn(
   'h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors',
-  'hover:border-[#c5d0c8] focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
+  'hover:border-border-strong focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
 )
 
 export function UsersPage() {
@@ -57,7 +57,7 @@ export function UsersPage() {
       q: debouncedSearch || undefined,
       role: roleFilter === 'all' ? undefined : roleFilter,
       pageNumber,
-      pageSize: PAGE_SIZE,
+      pageSize: DEFAULT_PAGE_SIZE,
       orderBy: 'nombre',
       orderDirection: 'ASC' as const,
     }),
@@ -159,29 +159,27 @@ export function UsersPage() {
       </div>
 
       <Card className="p-4 sm:p-5">
-        <div className="grid gap-3 sm:grid-cols-[1fr_12rem]">
-          <label className="relative block">
-            <span className="sr-only">Buscar usuarios</span>
-            <Search
-              className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted"
-              aria-hidden
-            />
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="min-w-0 flex-1 sm:max-w-md">
             <Input
-              className="pl-10"
+              type="search"
               placeholder="Buscar por nombre o email…"
               value={searchInput}
               onChange={(event) => setSearchInput(event.target.value)}
+              leadingIcon={<Search className="size-4" aria-hidden />}
+              aria-label="Buscar usuarios"
             />
-          </label>
-          <label className="block">
-            <span className="sr-only">Filtrar por rol</span>
+          </div>
+          <label className="flex w-full items-center gap-2.5 text-sm sm:w-auto">
+            <span className="shrink-0 font-medium whitespace-nowrap text-foreground">Rol</span>
             <select
-              className={selectClassName}
+              className={cn(selectClassName, 'min-w-0 sm:w-44')}
               value={roleFilter}
               onChange={(event) => {
                 setRoleFilter(event.target.value as 'all' | UsuarioRole)
                 setPageNumber(1)
               }}
+              aria-label="Filtrar por rol"
             >
               <option value="all">Todos los roles</option>
               <option value="ADMIN">Administrador</option>
@@ -260,33 +258,15 @@ export function UsersPage() {
             onEdit={openEdit}
             onDelete={setDeletingUser}
           />
-          {metadata && metadata.totalPages > 1 ? (
-            <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
-              <p className="text-muted">
-                Página {metadata.pageNumber} de {metadata.totalPages} · {metadata.count}{' '}
-                usuario{metadata.count === 1 ? '' : 's'}
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={pageNumber <= 1}
-                  onClick={() => setPageNumber((page) => Math.max(1, page - 1))}
-                >
-                  Anterior
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled={pageNumber >= metadata.totalPages}
-                  onClick={() => setPageNumber((page) => page + 1)}
-                >
-                  Siguiente
-                </Button>
-              </div>
-            </div>
+          {metadata ? (
+            <ListPagination
+              pageNumber={metadata.pageNumber}
+              totalPages={metadata.totalPages}
+              count={metadata.count}
+              itemLabel={{ singular: 'usuario', plural: 'usuarios' }}
+              disabled={usersQuery.isFetching}
+              onPageChange={setPageNumber}
+            />
           ) : null}
         </>
       ) : null}

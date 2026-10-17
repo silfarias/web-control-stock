@@ -12,7 +12,8 @@ export type TipoReferenciaMovimiento = 'AJUSTE' | 'COMPRA' | 'VENTA' | 'OTRO'
 export type Stock = {
   id: number
   cantidad: number
-  producto: Producto
+  /** Null si el producto fue eliminado del catálogo. */
+  producto: Producto | null
   createdAt: string
   updatedAt: string
   deletedAt?: string | null
@@ -40,7 +41,8 @@ export type MovimientoStock = {
   referenciaId?: number | null
   motivo: string
   descripcion?: string | null
-  producto: Producto
+  /** Null si el producto fue eliminado del catálogo. */
+  producto: Producto | null
   usuario: MovimientoUsuario
   createdAt: string
   updatedAt: string

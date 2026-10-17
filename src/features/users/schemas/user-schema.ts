@@ -137,3 +137,78 @@ export function toUpdateUsuarioRequest(values: EditUserFormValues): UpdateUsuari
 
   return payload
 }
+
+/** Perfil propio: nombre, email y password opcional. Nunca incluye role. */
+export const profileFormSchema = z
+  .object({
+    nombre: z
+      .string()
+      .trim()
+      .min(1, 'Ingresá el nombre.')
+      .max(120, 'El nombre no puede superar los 120 caracteres.'),
+    email: z
+      .string()
+      .trim()
+      .min(1, 'Ingresá el email.')
+      .max(180, 'El email no puede superar los 180 caracteres.')
+      .refine((value) => z.email().safeParse(value).success, 'Ingresá un email válido.'),
+    password: z.string().max(15, 'La contraseña no puede superar los 15 caracteres.'),
+    confirmPassword: z.string(),
+  })
+  .superRefine((data, ctx) => {
+    const password = data.password.trim()
+    if (!password) return
+
+    if (password.length < 8) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['password'],
+        message: 'La contraseña debe tener al menos 8 caracteres.',
+      })
+      return
+    }
+
+    if (!PASSWORD_REGEX.test(password)) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['password'],
+        message: PASSWORD_HINT,
+      })
+    }
+
+    if (password !== data.confirmPassword) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['confirmPassword'],
+        message: 'Las contraseñas no coinciden.',
+      })
+    }
+  })
+
+export type ProfileFormValues = z.infer<typeof profileFormSchema>
+
+export function userToProfileFormValues(user: {
+  nombre: string
+  email: string
+}): ProfileFormValues {
+  return {
+    nombre: user.nombre,
+    email: user.email,
+    password: '',
+    confirmPassword: '',
+  }
+}
+
+export function toUpdateProfileRequest(values: ProfileFormValues): UpdateUsuarioRequest {
+  const payload: UpdateUsuarioRequest = {
+    nombre: values.nombre.trim(),
+    email: values.email.trim().toLowerCase(),
+  }
+
+  const password = values.password.trim()
+  if (password) {
+    payload.password = password
+  }
+
+  return payload
+}

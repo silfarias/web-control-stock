@@ -5,7 +5,7 @@ export function BrandMark({ className }: { className?: string }) {
   return (
     <span
       className={cn(
-        'grid size-9 shrink-0 place-items-center rounded-xl bg-accent text-primary',
+        'grid size-9 shrink-0 place-items-center rounded-xl bg-accent text-white',
         className,
       )}
     >

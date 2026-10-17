@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Plus, Search } from 'lucide-react'
+import { ListPagination } from '@/components/common/ListPagination'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { useProductStocks } from '@/features/products/hooks/use-product-stocks'
 import { useProducts } from '@/features/products/hooks/use-products'
 import type { Producto } from '@/features/products/types'
+import { DEFAULT_PAGE_SIZE } from '@/lib/api/pagination'
 import { formatMoney } from '@/lib/utils/format'
-
-const PAGE_SIZE = 8
 
 type SaleProductPickerProps = {
   excludedProductIds: number[]
@@ -53,24 +53,18 @@ export function SaleProductPicker({
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative min-w-0">
-        <Search
-          className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted"
-          aria-hidden
-        />
-        <Input
-          type="search"
-          value={searchInput}
-          onChange={(event) => setSearchInput(event.target.value)}
-          placeholder="Buscar producto por nombre o código"
-          className="pl-10"
-          disabled={disabled}
-          aria-label="Buscar productos para vender"
-        />
-      </div>
+      <Input
+        type="search"
+        value={searchInput}
+        onChange={(event) => setSearchInput(event.target.value)}
+        placeholder="Buscar por nombre o código"
+        leadingIcon={<Search className="size-4" aria-hidden />}
+        disabled={disabled}
+        aria-label="Buscar productos para vender"
+      />
 
       {productsQuery.isLoading ? (
-        <p className="px-1 text-sm text-muted">Buscando productos…</p>
+        <p className="px-1 text-sm text-muted">Cargando productos…</p>
       ) : null}
 
       {productsQuery.isError ? (
@@ -80,15 +74,20 @@ export function SaleProductPicker({
       ) : null}
 
       {!productsQuery.isLoading && !productsQuery.isError && products.length === 0 ? (
-        <p className="px-1 text-sm text-muted">
-          {debouncedQ
-            ? 'No hay productos que coincidan con la búsqueda.'
-            : 'Escribí para buscar productos del catálogo.'}
-        </p>
+        <div className="rounded-xl border border-dashed border-border px-4 py-6 text-center">
+          <p className="text-sm font-medium">
+            {debouncedQ ? 'No hay coincidencias' : 'No hay productos en el catálogo'}
+          </p>
+          <p className="mt-1 text-sm text-muted">
+            {debouncedQ
+              ? `No encontramos “${debouncedQ}”. Probá con otro término.`
+              : 'Cuando haya productos con stock, van a aparecer acá.'}
+          </p>
+        </div>
       ) : null}
 
       {!productsQuery.isLoading && !productsQuery.isError && products.length > 0 ? (
-        <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border">
+        <ul className="max-h-[28rem] divide-y divide-border overflow-y-auto overscroll-contain rounded-xl border border-border lg:max-h-[min(32rem,calc(100dvh-16rem))]">
           {products.map((product) => {
             const alreadyAdded = excluded.has(product.id)
             const stock = stocks[product.id]
@@ -110,13 +109,13 @@ export function SaleProductPicker({
                     {stockLoading
                       ? 'Stock…'
                       : stock == null
-                        ? 'Sin stock registrado'
+                        ? 'Sin stock'
                         : `Stock ${stock}`}
                   </p>
                 </div>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant={alreadyAdded ? 'secondary' : 'outline'}
                   size="sm"
                   disabled={disabled || alreadyAdded || outOfStock}
                   onClick={() => onAdd(product, stock ?? null)}
@@ -132,31 +131,13 @@ export function SaleProductPicker({
       ) : null}
 
       {metadata && metadata.totalPages > 1 ? (
-        <div className="flex items-center justify-between gap-2">
-          <p className="text-xs text-muted">
-            Página {metadata.pageNumber} de {metadata.totalPages}
-          </p>
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={page <= 1 || productsQuery.isFetching || disabled}
-              onClick={() => setPage((current) => Math.max(1, current - 1))}
-            >
-              Anterior
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={page >= metadata.totalPages || productsQuery.isFetching || disabled}
-              onClick={() => setPage((current) => current + 1)}
-            >
-              Siguiente
-            </Button>
-          </div>
-        </div>
+        <ListPagination
+          pageNumber={metadata.pageNumber}
+          totalPages={metadata.totalPages}
+          disabled={productsQuery.isFetching || disabled}
+          onPageChange={setPage}
+          className="gap-2"
+        />
       ) : null}
     </div>
   )

@@ -1,32 +1,40 @@
 @import "tailwindcss";
 
 :root {
-  --primary: #24574f;
-  --primary-hover: #1b443d;
-  --background: #f7f8f5;
+  /* Interacción principal (índigo) */
+  --primary: #303f97;
+  --primary-hover: #211581;
+  /* Acento vibrante (uso puntual) */
+  --accent: #b628c2;
+  --accent-soft: #f0edf8;
+  --accent-ink: #211581;
+  /* Superficies */
+  --background: #f7f7fc;
   --surface: #ffffff;
-  --surface-muted: #e7eee9;
-  --accent: #b5a2d8;
-  --accent-soft: #f1edf8;
-  --accent-ink: #5c4d82;
-  --text-primary: #253330;
-  --text-secondary: #5e6d67;
-  --border: #e2e8e3;
-  --success: #34856a;
-  --success-soft: #e7f4ee;
-  --success-ink: #1f6a4e;
+  --surface-muted: #f0edf8;
+  --surface-muted-hover: #e4e1f0;
+  /* Texto y bordes */
+  --text-primary: #0c1621;
+  --text-secondary: #72718a;
+  --border: #e4e1f0;
+  --border-strong: #cbc6de;
+  /* Semánticos (armonía con la nueva identidad) */
+  --success: #2f8f6b;
+  --success-soft: #e8f5ef;
+  --success-ink: #1d6b4d;
   --warning: #d49a45;
   --warning-soft: #fbf4e8;
   --warning-ink: #7a5616;
-  --error: #cc6868;
-  --error-soft: #f8ecec;
-  --error-ink: #8d3d3d;
-  --info: #688ca8;
-  --info-soft: #eaf1f6;
-  --info-ink: #3a5d78;
-  --sidebar: #1b443d;
-  --sidebar-foreground: #f4f7f5;
-  --sidebar-muted: #c5d5ce;
+  --error: #c45b6a;
+  --error-soft: #f8ecef;
+  --error-ink: #8a3342;
+  --info: #4a5fa8;
+  --info-soft: #ebeef8;
+  --info-ink: #303f97;
+  /* Sidebar / superficies oscuras */
+  --sidebar: #250e4c;
+  --sidebar-foreground: #f7f7fc;
+  --sidebar-muted: #a89bc4;
   color-scheme: light;
 }
 
@@ -37,12 +45,14 @@
   --color-background: var(--background);
   --color-surface: var(--surface);
   --color-surface-muted: var(--surface-muted);
+  --color-surface-muted-hover: var(--surface-muted-hover);
   --color-accent: var(--accent);
   --color-accent-soft: var(--accent-soft);
   --color-accent-ink: var(--accent-ink);
   --color-foreground: var(--text-primary);
   --color-muted: var(--text-secondary);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-success: var(--success);
   --color-success-soft: var(--success-soft);
   --color-success-ink: var(--success-ink);
@@ -83,7 +93,7 @@
   }
 
   ::selection {
-    background: #e4dcf3;
+    background: var(--accent-soft);
     color: var(--text-primary);
   }
 

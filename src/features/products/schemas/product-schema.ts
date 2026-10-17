@@ -117,6 +117,95 @@ export function toCreateProductoRequest(values: ProductFormValues): CreateProduc
   return payload
 }
 
+/**
+ * Alta rápida desde compra: código/código de barras opcionales y sin stock inicial
+ * (el stock entra al confirmar la compra).
+ */
+export const purchaseProductQuickFormSchema = z.object({
+  nombre: z
+    .string()
+    .trim()
+    .min(1, 'Ingresá el nombre del producto.')
+    .max(120, 'El nombre no puede superar los 120 caracteres.'),
+  descripcion: z
+    .string()
+    .max(500, 'La descripción no puede superar los 500 caracteres.'),
+  codigo: z.string().trim().max(80, 'El código no puede superar los 80 caracteres.'),
+  codigoBarras: z
+    .string()
+    .trim()
+    .max(80, 'El código de barras no puede superar los 80 caracteres.'),
+  categoriaId: z
+    .string()
+    .trim()
+    .min(1, 'Seleccioná una categoría.')
+    .refine((value) => /^\d+$/.test(value) && Number(value) >= 1, {
+      message: 'Seleccioná una categoría válida.',
+    }),
+  precioCosto: z
+    .string()
+    .trim()
+    .min(1, 'Ingresá un importe.')
+    .refine((value) => moneyRegex.test(value), 'Usá un número con hasta 2 decimales.')
+    .refine((value) => parseMoney(value) >= 0, 'El importe no puede ser negativo.'),
+  precioVenta: z
+    .string()
+    .trim()
+    .min(1, 'Ingresá un importe.')
+    .refine((value) => moneyRegex.test(value), 'Usá un número con hasta 2 decimales.')
+    .refine((value) => parseMoney(value) >= 0, 'El importe no puede ser negativo.'),
+  minimoStock: z
+    .string()
+    .trim()
+    .min(1, 'Ingresá un valor.')
+    .refine((value) => /^\d+$/.test(value), 'Ingresá un número entero.')
+    .refine((value) => Number(value) >= 0, 'Debe ser un entero mayor o igual a 0.'),
+})
+
+export type PurchaseProductQuickFormValues = z.infer<typeof purchaseProductQuickFormSchema>
+
+export const emptyPurchaseProductQuickFormValues: PurchaseProductQuickFormValues = {
+  nombre: '',
+  descripcion: '',
+  codigo: '',
+  codigoBarras: '',
+  categoriaId: '',
+  precioCosto: '',
+  precioVenta: '',
+  minimoStock: '0',
+}
+
+/** Códigos únicos provisionales cuando aún no se conocen en la adquisición. */
+function provisionalProductCode(prefix: string) {
+  const stamp = Date.now().toString(36).toUpperCase()
+  const rand = Math.random().toString(36).slice(2, 6).toUpperCase()
+  return `${prefix}-${stamp}-${rand}`.slice(0, 80)
+}
+
+export function toCreateProductoFromPurchaseQuick(
+  values: PurchaseProductQuickFormValues,
+): CreateProductoRequest {
+  const descripcion = values.descripcion.trim()
+  const codigo = values.codigo.trim() || provisionalProductCode('TMP')
+  const codigoBarras = values.codigoBarras.trim() || provisionalProductCode('EAN')
+
+  const payload: CreateProductoRequest = {
+    nombre: values.nombre.trim(),
+    codigo,
+    codigoBarras,
+    categoriaId: Number(values.categoriaId),
+    precioCosto: parseMoney(values.precioCosto),
+    precioVenta: parseMoney(values.precioVenta),
+    minimoStock: Number(values.minimoStock),
+  }
+
+  if (descripcion) {
+    payload.descripcion = descripcion
+  }
+
+  return payload
+}
+
 export function toUpdateProductoRequest(values: ProductFormValues): UpdateProductoRequest {
   return {
     nombre: values.nombre.trim(),
