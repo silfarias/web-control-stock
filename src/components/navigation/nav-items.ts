@@ -13,12 +13,20 @@ import {
 } from 'lucide-react'
 import type { UsuarioRole } from '@/features/auth/types'
 
+export type NavChild = {
+  title: string
+  to: string
+  roles?: UsuarioRole[]
+}
+
 export type NavItem = {
   title: string
   to: string
   icon: LucideIcon
   available: boolean
   description?: string
+  /** Subítems. El `to` del padre es el destino al pulsarlo. */
+  children?: NavChild[]
   /**
    * Si se define, el ítem solo se muestra a esos roles.
    * Sin `roles` = visible para cualquier usuario autenticado.
@@ -69,6 +77,10 @@ export const navigation: NavSection[] = [
         to: '/inventario',
         icon: Warehouse,
         available: true,
+        children: [
+          { title: 'Inventario productos', to: '/inventario' },
+          { title: 'Movimientos', to: '/inventario/movimientos' },
+        ],
       },
       {
         title: 'Proveedores',
@@ -78,9 +90,13 @@ export const navigation: NavSection[] = [
       },
       {
         title: 'Compras',
-        to: '/compras',
+        to: '/compras/nueva',
         icon: ClipboardList,
         available: true,
+        children: [
+          { title: 'Nueva compra', to: '/compras/nueva', roles: ['ADMIN'] },
+          { title: 'Historial de compras', to: '/compras' },
+        ],
       },
       {
         title: 'Caja',
@@ -90,9 +106,13 @@ export const navigation: NavSection[] = [
       },
       {
         title: 'Ventas',
-        to: '/ventas',
+        to: '/ventas/nueva',
         icon: ShoppingBag,
         available: true,
+        children: [
+          { title: 'Nueva venta', to: '/ventas/nueva' },
+          { title: 'Historial de ventas', to: '/ventas' },
+        ],
       },
     ],
   },
@@ -116,10 +136,23 @@ export const navigation: NavSection[] = [
   },
 ]
 
-function isItemVisibleForRole(item: NavItem, role: UsuarioRole | null | undefined) {
-  if (!item.roles || item.roles.length === 0) return true
+function isVisibleForRole(
+  roles: UsuarioRole[] | undefined,
+  role: UsuarioRole | null | undefined,
+) {
+  if (!roles || roles.length === 0) return true
   if (!role) return false
-  return item.roles.includes(role)
+  return roles.includes(role)
+}
+
+function withVisibleChildren(item: NavItem, role: UsuarioRole | null | undefined): NavItem {
+  if (!item.children?.length) return item
+  const children = item.children.filter((child) => isVisibleForRole(child.roles, role))
+  if (children.length <= 1) {
+    return { ...item, to: children[0]?.to ?? item.to, children: undefined }
+  }
+  const to = children.some((child) => child.to === item.to) ? item.to : children[0].to
+  return { ...item, to, children }
 }
 
 /** Navegación filtrada por rol. Fuente única de permisos de menú. */
@@ -127,7 +160,9 @@ export function getNavigationForRole(role: UsuarioRole | null | undefined): NavS
   return navigation
     .map((section) => ({
       ...section,
-      items: section.items.filter((item) => isItemVisibleForRole(item, role)),
+      items: section.items
+        .filter((item) => isVisibleForRole(item.roles, role))
+        .map((item) => withVisibleChildren(item, role)),
     }))
     .filter((section) => section.items.length > 0)
 }

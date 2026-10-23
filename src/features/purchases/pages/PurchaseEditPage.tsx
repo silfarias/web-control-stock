@@ -86,17 +86,13 @@ export function PurchaseEditPage() {
           <ArrowLeft className="size-4" aria-hidden />
           Volver al detalle
         </Link>
-        <div className="mt-3 flex flex-wrap items-center gap-3">
-          <h2 className="text-[1.75rem] leading-9 font-semibold tracking-tight">
-            {purchaseQuery.isLoading
-              ? 'Cargando…'
-              : purchase
-                ? `Editar compra #${purchase.id}`
-                : 'Editar compra'}
-          </h2>
-          {purchase ? <PurchaseStatusBadge estado={purchase.estado} /> : null}
-        </div>
-        <p className="mt-2 text-sm leading-relaxed text-muted">
+        {purchase ? (
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <p className="text-sm font-medium">Compra #{purchase.id}</p>
+            <PurchaseStatusBadge estado={purchase.estado} />
+          </div>
+        ) : null}
+        <p className="mt-1 text-sm text-muted">
           Solo las compras en borrador se pueden modificar. Al guardar se actualizan proveedor e
           ítems.
         </p>

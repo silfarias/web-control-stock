@@ -132,13 +132,10 @@ export function ProductsPage() {
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="min-w-0 max-w-2xl">
-          <h2 className="text-[1.75rem] leading-9 font-semibold tracking-tight">Productos</h2>
-          <p className="mt-2 text-sm leading-relaxed text-muted">
-            Consultá el catálogo, filtrá por categoría y revisá precios y stock disponible.
-          </p>
-        </div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="min-w-0 max-w-2xl text-sm text-muted">
+          Consultá el catálogo, filtrá por categoría y revisá precios y stock disponible.
+        </p>
         {canManage ? (
           <Link
             to="/productos/nuevo"

@@ -14,13 +14,10 @@ export function SalesReportPage() {
 
   return (
     <div className="space-y-5">
-      <div>
-        <h2 className="text-lg font-semibold tracking-tight">Resumen de ventas</h2>
-        <p className="mt-1 text-sm text-muted">
-          Totales de ventas confirmadas y desglose por método de pago según los filtros
-          aplicados.
-        </p>
-      </div>
+      <p className="text-sm text-muted">
+        Totales de ventas confirmadas y desglose por método de pago según los filtros
+        aplicados.
+      </p>
 
       <Card className="p-4 sm:p-5">
         <ReportFiltersBar

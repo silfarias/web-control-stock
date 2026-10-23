@@ -14,12 +14,9 @@ export function LowStockReportPage() {
 
   return (
     <div className="space-y-5">
-      <div>
-        <h2 className="text-lg font-semibold tracking-tight">Stock bajo</h2>
-        <p className="mt-1 text-sm text-muted">
-          Productos con cantidad menor o igual al mínimo configurado.
-        </p>
-      </div>
+      <p className="text-sm text-muted">
+        Productos con cantidad menor o igual al mínimo configurado.
+      </p>
 
       <Card className="p-4 sm:p-5">
         <ReportFiltersBar values={values} onChange={setValues} onClear={clear} />

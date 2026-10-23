@@ -121,13 +121,10 @@ export function CategoriesPage() {
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="min-w-0 max-w-2xl">
-          <h2 className="text-[1.75rem] leading-9 font-semibold tracking-tight">Categorías</h2>
-          <p className="mt-2 text-sm leading-relaxed text-muted">
-            Organizá el catálogo en grupos claros para facilitar la búsqueda y la operación diaria.
-          </p>
-        </div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="min-w-0 max-w-2xl text-sm text-muted">
+          Organizá el catálogo en grupos claros para facilitar la búsqueda y la operación diaria.
+        </p>
         {canManage ? (
           <Button type="button" className="shrink-0" onClick={openCreate}>
             <Plus className="size-4" aria-hidden />

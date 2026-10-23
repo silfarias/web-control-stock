@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useRef } from 'react'
-import { Link, NavLink } from 'react-router'
-import { PanelLeftClose, PanelLeftOpen, X } from 'lucide-react'
+import { useEffect, useMemo, useState, useRef } from 'react'
+import { Link, NavLink, useLocation } from 'react-router'
+import { ChevronDown, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react'
 import { BrandMark } from '@/components/navigation/BrandMark'
-import { getNavigationForRole } from '@/components/navigation/nav-items'
+import { getNavigationForRole, type NavChild } from '@/components/navigation/nav-items'
 import { useAuth } from '@/features/auth/hooks/use-auth'
 import { cn } from '@/lib/utils/cn'
 
@@ -22,8 +22,10 @@ export function Sidebar({
   onToggleCollapsed,
 }: SidebarProps) {
   const { user } = useAuth()
+  const { pathname } = useLocation()
   const sections = useMemo(() => getNavigationForRole(user?.role), [user?.role])
   const closeRef = useRef<HTMLButtonElement>(null)
+  const [collapsedMenus, setCollapsedMenus] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     if (mobileOpen) closeRef.current?.focus()
@@ -82,24 +84,100 @@ export function Sidebar({
             </p>
             {section.items.map((item) => {
               const Icon = item.icon
+              const children = item.children ?? []
+              const routeOpen = children.some((child) => isChildActive(child, children, pathname))
+              const submenuVisible = mobileOpen || !collapsed
+              const sectionOpen = routeOpen && !collapsedMenus[item.to]
+
               return (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  end={item.to === '/'}
-                  title={item.title}
-                  onClick={onClose}
-                  className={({ isActive }) =>
-                    cn(
-                      'flex h-10 items-center gap-3 rounded-xl px-3 text-sm font-medium text-sidebar-foreground/90 transition-colors hover:bg-white/10 focus-visible:outline-offset-[-2px]',
-                      collapsed && 'lg:justify-center lg:px-0',
-                      isActive && 'bg-background text-sidebar hover:bg-background',
-                    )
-                  }
-                >
-                  <Icon className="size-[18px] shrink-0" strokeWidth={1.75} aria-hidden />
-                  <span className={cn('truncate', collapsed && 'lg:sr-only')}>{item.title}</span>
-                </NavLink>
+                <div key={item.to} className="flex flex-col gap-1">
+                  <NavLink
+                    to={item.to}
+                    end={item.to === '/'}
+                    title={item.title}
+                    aria-expanded={children.length > 0 ? sectionOpen : undefined}
+                    onClick={(event) => {
+                      if (children.length > 0 && routeOpen && submenuVisible) {
+                        event.preventDefault()
+                        setCollapsedMenus((current) => ({
+                          ...current,
+                          [item.to]: !current[item.to],
+                        }))
+                        return
+                      }
+                      if (children.length > 0) {
+                        setCollapsedMenus((current) => ({ ...current, [item.to]: false }))
+                      }
+                      onClose()
+                    }}
+                    className={({ isActive }) =>
+                      cn(
+                        'flex h-10 items-center gap-3 rounded-xl px-3 text-sm font-medium text-sidebar-foreground/90 transition-colors hover:bg-white/10 focus-visible:outline-offset-[-2px]',
+                        collapsed && 'lg:justify-center lg:px-0',
+                        isActive &&
+                          children.length === 0 &&
+                          'bg-background text-sidebar hover:bg-background',
+                        sectionOpen && 'bg-white/10 text-sidebar-foreground hover:bg-white/15',
+                        collapsed &&
+                          sectionOpen &&
+                          'lg:bg-background lg:text-sidebar lg:hover:bg-background',
+                      )
+                    }
+                  >
+                    <Icon className="size-[18px] shrink-0" strokeWidth={1.75} aria-hidden />
+                    <span className={cn('truncate', collapsed && 'lg:sr-only')}>{item.title}</span>
+                    {children.length > 0 ? (
+                      <ChevronDown
+                        className={cn(
+                          'ml-auto size-4 shrink-0 text-sidebar-muted transition-transform duration-200',
+                          sectionOpen && 'rotate-180',
+                          collapsed && 'lg:hidden',
+                        )}
+                        aria-hidden
+                      />
+                    ) : null}
+                  </NavLink>
+                  {children.length > 0 ? (
+                    <div
+                      className={cn(
+                        'grid transition-[grid-template-rows] duration-200 ease-out',
+                        sectionOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
+                        collapsed && 'lg:hidden',
+                      )}
+                    >
+                      <div className="overflow-hidden" inert={!sectionOpen}>
+                        <div
+                          className={cn(
+                            'flex flex-col gap-0.5 pt-1 pl-4 transition-opacity duration-200',
+                            sectionOpen ? 'opacity-100' : 'opacity-0',
+                          )}
+                        >
+                          {children.map((child) => (
+                            <NavLink
+                              key={child.to}
+                              to={child.to}
+                              end
+                              title={child.title}
+                              tabIndex={sectionOpen ? undefined : -1}
+                              onClick={onClose}
+                              className={() => {
+                                const active = isChildActive(child, children, pathname)
+                                return cn(
+                                  'flex h-9 items-center rounded-xl px-3 text-sm transition-colors focus-visible:outline-offset-[-2px]',
+                                  active
+                                    ? 'bg-background font-medium text-sidebar'
+                                    : 'text-sidebar-foreground/80 hover:bg-white/10 hover:text-sidebar-foreground',
+                                )
+                              }}
+                            >
+                              <span className="truncate">{child.title}</span>
+                            </NavLink>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
               )
             })}
           </div>
@@ -122,11 +200,23 @@ export function Sidebar({
           ) : (
             <PanelLeftClose className="size-[18px]" strokeWidth={1.75} />
           )}
-          <span className={cn(collapsed && 'sr-only')}>
+          {/* <span className={cn(collapsed && 'sr-only')}>
             {collapsed ? 'Expandir menú' : 'Contraer menú'}
-          </span>
+          </span> */}
         </button>
       </div>
     </aside>
   )
+}
+
+function isChildActive(child: NavChild, siblings: NavChild[], pathname: string) {
+  if (pathname === child.to) return true
+  if (!pathname.startsWith(`${child.to}/`)) return false
+  const coveredBySibling = siblings.some(
+    (other) =>
+      other.to !== child.to &&
+      other.to.length > child.to.length &&
+      (pathname === other.to || pathname.startsWith(`${other.to}/`)),
+  )
+  return !coveredBySibling
 }

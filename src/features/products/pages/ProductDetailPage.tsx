@@ -90,7 +90,7 @@ export function ProductDetailPage() {
             <ArrowLeft className="size-4" aria-hidden />
             Productos
           </Link>
-          <h2 className="mt-3 text-[1.75rem] leading-9 font-semibold tracking-tight">
+          <h2 className="mt-2 text-lg leading-snug font-semibold tracking-tight">
             {productQuery.isLoading ? 'Cargando…' : (product?.nombre ?? 'Detalle de producto')}
           </h2>
           {product ? (

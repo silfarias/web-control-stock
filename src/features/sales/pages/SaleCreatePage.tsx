@@ -1,5 +1,4 @@
-import { Link, useNavigate } from 'react-router'
-import { ArrowLeft } from 'lucide-react'
+import { useNavigate } from 'react-router'
 import { useToast } from '@/components/common/use-toast'
 import { SaleForm } from '@/features/sales/components/SaleForm'
 import { useCreateSale } from '@/features/sales/hooks/use-sale-mutations'
@@ -25,28 +24,10 @@ export function SaleCreatePage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl min-w-0 flex-col gap-6">
-      <div className="min-w-0">
-        <Link
-          to="/ventas"
-          className="inline-flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-foreground"
-        >
-          <ArrowLeft className="size-4" aria-hidden />
-          Ventas
-        </Link>
-        <h2 className="mt-3 text-[1.75rem] leading-9 font-semibold tracking-tight">
-          Nueva venta
-        </h2>
-        <p className="mt-2 text-sm leading-relaxed text-muted">
-          Agregá productos y elegí el método de pago. En efectivo se necesita caja abierta.
-        </p>
-      </div>
-
-      <SaleForm
-        submitting={createMutation.isPending}
-        onSubmit={handleSubmit}
-        onCancel={() => void navigate('/ventas')}
-      />
-    </div>
+    <SaleForm
+      submitting={createMutation.isPending}
+      onSubmit={handleSubmit}
+      onCancel={() => void navigate('/ventas')}
+    />
   )
 }

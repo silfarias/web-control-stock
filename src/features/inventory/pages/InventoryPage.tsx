@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useSearchParams } from 'react-router'
-import { History, Search, Warehouse } from 'lucide-react'
+import { useSearchParams } from 'react-router'
+import { Search, Warehouse } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ListPagination } from '@/components/common/ListPagination'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
-import { buttonVariants } from '@/components/ui/button-variants'
 import { useAuth } from '@/features/auth/hooks/use-auth'
 import { InventoryTable } from '@/features/inventory/components/InventoryTable'
 import { StockAdjustmentDialog } from '@/features/inventory/components/StockAdjustmentDialog'
@@ -14,7 +13,6 @@ import { useInventory } from '@/features/inventory/hooks/use-inventory'
 import type { Stock } from '@/features/inventory/types'
 import { getApiErrorMessage } from '@/lib/api/errors'
 import { DEFAULT_PAGE_SIZE } from '@/lib/api/pagination'
-import { cn } from '@/lib/utils/cn'
 
 function parsePage(value: string | null) {
   const parsed = Number(value)
@@ -79,22 +77,9 @@ export function InventoryPage() {
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="min-w-0 max-w-2xl">
-          <h2 className="text-[1.75rem] leading-9 font-semibold tracking-tight">Inventario</h2>
-          <p className="mt-2 text-sm leading-relaxed text-muted">
-            Consultá las existencias actuales, el historial de movimientos y registrá ajustes
-            manuales cuando sea necesario.
-          </p>
-        </div>
-        <Link
-          to="/inventario/movimientos"
-          className={cn(buttonVariants({ variant: 'outline' }), 'shrink-0')}
-        >
-          <History className="size-4" aria-hidden />
-          Movimientos recientes
-        </Link>
-      </div>
+      <p className="max-w-2xl text-sm text-muted">
+        Consultá las existencias actuales y registrá ajustes manuales cuando sea necesario.
+      </p>
 
       <Card className="p-4 sm:p-5">
         <div className="max-w-md">

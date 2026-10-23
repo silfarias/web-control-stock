@@ -62,7 +62,7 @@ export function PurchaseDetailPage() {
         <div className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-3">
-              <h2 className="text-[1.75rem] leading-9 font-semibold tracking-tight">
+              <h2 className="text-lg leading-snug font-semibold tracking-tight">
                 {purchaseQuery.isLoading ? 'Cargando…' : `Compra #${purchaseId}`}
               </h2>
               {purchase ? <PurchaseStatusBadge estado={purchase.estado} /> : null}

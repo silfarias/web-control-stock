@@ -1,7 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { UserRound } from 'lucide-react'
 import { useToast } from '@/components/common/use-toast'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -106,17 +105,9 @@ export function ProfilePage() {
 
   return (
     <div className="mx-auto w-full max-w-lg space-y-6">
-      <div className="flex items-start gap-3">
-        <span className="mt-0.5 grid size-10 place-items-center rounded-2xl bg-surface-muted text-primary">
-          <UserRound className="size-5" aria-hidden />
-        </span>
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Mi perfil</h1>
-          <p className="mt-1 text-sm text-muted">
-            Actualizá tu nombre, email o contraseña. El rol solo lo gestiona un administrador.
-          </p>
-        </div>
-      </div>
+      <p className="text-sm text-muted">
+        Actualizá tu nombre, email o contraseña. El rol solo lo gestiona un administrador.
+      </p>
 
       <Card className="p-5 sm:p-6">
         <dl className="mb-5 grid gap-1 border-b border-border pb-5 text-sm">

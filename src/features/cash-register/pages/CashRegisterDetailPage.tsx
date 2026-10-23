@@ -86,7 +86,7 @@ export function CashRegisterDetailPage() {
         <div className="mt-3 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-3">
-              <h2 className="text-[1.75rem] leading-9 font-semibold tracking-tight">
+              <h2 className="text-lg leading-snug font-semibold tracking-tight">
                 {cajaQuery.isLoading ? 'Cargando…' : `Caja #${cajaId}`}
               </h2>
               {caja ? <CashStatusBadge estado={caja.estado} /> : null}

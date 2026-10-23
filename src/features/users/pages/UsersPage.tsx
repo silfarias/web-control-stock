@@ -145,13 +145,10 @@ export function UsersPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">Usuarios</h1>
-          <p className="mt-1 text-sm text-muted">
-            Alta y administración de cuentas con roles Administrador y Empleado.
-          </p>
-        </div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="min-w-0 max-w-2xl text-sm text-muted">
+          Alta y administración de cuentas con roles Administrador y Empleado.
+        </p>
         <Button type="button" className="shrink-0 self-start" onClick={openCreate}>
           <Plus className="size-4" aria-hidden />
           Nuevo usuario

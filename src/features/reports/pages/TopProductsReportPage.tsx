@@ -14,12 +14,9 @@ export function TopProductsReportPage() {
 
   return (
     <div className="space-y-5">
-      <div>
-        <h2 className="text-lg font-semibold tracking-tight">Productos más vendidos</h2>
-        <p className="mt-1 text-sm text-muted">
-          Ranking por unidades vendidas. Podés limitar cuántos productos ver (máx. 100).
-        </p>
-      </div>
+      <p className="text-sm text-muted">
+        Ranking por unidades vendidas. Podés limitar cuántos productos ver (máx. 100).
+      </p>
 
       <Card className="p-4 sm:p-5">
         <ReportFiltersBar

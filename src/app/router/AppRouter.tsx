@@ -45,8 +45,10 @@ const implementedPaths = new Set([
   '/inventario',
   '/proveedores',
   '/compras',
+  '/compras/nueva',
   '/caja',
   '/ventas',
+  '/ventas/nueva',
   '/reportes',
   '/usuarios',
 ])
@@ -150,7 +152,7 @@ const router = createBrowserRouter([
             path: 'inventario',
             element: <InventoryPage />,
             handle: {
-              title: 'Inventario',
+              title: 'Inventario productos',
               breadcrumb: ['Inicio', 'Inventario'],
             } satisfies RouteHandle,
           },
@@ -158,8 +160,8 @@ const router = createBrowserRouter([
             path: 'inventario/movimientos',
             element: <MovementsPage />,
             handle: {
-              title: 'Movimientos de stock',
-              breadcrumb: ['Inicio', 'Inventario', 'Movimientos'],
+              title: 'Movimientos',
+              breadcrumb: ['Inicio', 'Inventario'],
             } satisfies RouteHandle,
           },
           {
@@ -182,7 +184,7 @@ const router = createBrowserRouter([
             path: 'compras',
             element: <PurchasesPage />,
             handle: {
-              title: 'Compras',
+              title: 'Historial de compras',
               breadcrumb: ['Inicio', 'Compras'],
             } satisfies RouteHandle,
           },
@@ -214,7 +216,7 @@ const router = createBrowserRouter([
             path: 'ventas',
             element: <SalesPage />,
             handle: {
-              title: 'Ventas',
+              title: 'Historial de ventas',
               breadcrumb: ['Inicio', 'Ventas'],
             } satisfies RouteHandle,
           },
@@ -223,7 +225,7 @@ const router = createBrowserRouter([
             element: <SaleCreatePage />,
             handle: {
               title: 'Nueva venta',
-              breadcrumb: ['Inicio', 'Ventas', 'Nueva'],
+              breadcrumb: ['Inicio', 'Ventas'],
             } satisfies RouteHandle,
           },
           {

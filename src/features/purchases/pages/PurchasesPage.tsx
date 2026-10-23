@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useSearchParams } from 'react-router'
-import { ClipboardList, Plus, Search } from 'lucide-react'
+import { useSearchParams } from 'react-router'
+import { ClipboardList, Search } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ListPagination } from '@/components/common/ListPagination'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
-import { buttonVariants } from '@/components/ui/button-variants'
 import { useAuth } from '@/features/auth/hooks/use-auth'
 import { PurchasesTable } from '@/features/purchases/components/PurchasesTable'
 import { usePurchases } from '@/features/purchases/hooks/use-purchases'
@@ -107,24 +106,10 @@ export function PurchasesPage() {
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="min-w-0 max-w-2xl">
-          <h2 className="text-[1.75rem] leading-9 font-semibold tracking-tight">Compras</h2>
-          <p className="mt-2 text-sm leading-relaxed text-muted">
-            Consultá el historial, armá borradores y confirmá el ingreso de mercadería desde el
-            detalle de cada compra.
-          </p>
-        </div>
-        {canManage ? (
-          <Link
-            to="/compras/nueva"
-            className={cn(buttonVariants({ variant: 'primary' }), 'shrink-0 self-start sm:self-auto')}
-          >
-            <Plus className="size-4" aria-hidden />
-            Nueva compra
-          </Link>
-        ) : null}
-      </div>
+      <p className="max-w-2xl text-sm text-muted">
+        Consultá el historial, armá borradores y confirmá el ingreso de mercadería desde el
+        detalle de cada compra.
+      </p>
 
       <Card className="p-4 sm:p-5">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
@@ -227,17 +212,6 @@ export function PurchasesPage() {
             icon={ClipboardList}
             title="Todavía no hay compras"
             description="Cuando se registren compras, van a aparecer en este listado."
-            action={
-              canManage ? (
-                <Link
-                  to="/compras/nueva"
-                  className={cn(buttonVariants({ variant: 'primary' }), 'inline-flex')}
-                >
-                  <Plus className="size-4" aria-hidden />
-                  Nueva compra
-                </Link>
-              ) : undefined
-            }
           />
         </Card>
       ) : null}

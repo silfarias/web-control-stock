@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useSearchParams } from 'react-router'
-import { Plus, Search, ShoppingBag } from 'lucide-react'
+import { useSearchParams } from 'react-router'
+import { Search, ShoppingBag } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ListPagination } from '@/components/common/ListPagination'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
-import { buttonVariants } from '@/components/ui/button-variants'
 import { SalesTable } from '@/features/sales/components/SalesTable'
 import { useSales } from '@/features/sales/hooks/use-sales'
 import type { EstadoVenta, MetodoPago } from '@/features/sales/types'
@@ -101,21 +100,9 @@ export function SalesPage() {
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="min-w-0 max-w-2xl">
-          <h2 className="text-[1.75rem] leading-9 font-semibold tracking-tight">Ventas</h2>
-          <p className="mt-2 text-sm leading-relaxed text-muted">
-            Consultá el historial y registrá ventas. En efectivo se requiere una caja abierta.
-          </p>
-        </div>
-        <Link
-          to="/ventas/nueva"
-          className={cn(buttonVariants({ variant: 'primary' }), 'shrink-0 self-start sm:self-auto')}
-        >
-          <Plus className="size-4" aria-hidden />
-          Nueva venta
-        </Link>
-      </div>
+      <p className="max-w-2xl text-sm text-muted">
+        Consultá el historial y registrá ventas. En efectivo se requiere una caja abierta.
+      </p>
 
       <Card className="p-4 sm:p-5">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
@@ -214,15 +201,6 @@ export function SalesPage() {
             icon={ShoppingBag}
             title="Todavía no hay ventas"
             description="Cuando registres ventas, van a aparecer en este listado."
-            action={
-              <Link
-                to="/ventas/nueva"
-                className={cn(buttonVariants({ variant: 'primary' }), 'inline-flex')}
-              >
-                <Plus className="size-4" aria-hidden />
-                Nueva venta
-              </Link>
-            }
           />
         </Card>
       ) : null}

@@ -81,14 +81,10 @@ export function ProductEditPage() {
           <ArrowLeft className="size-4" aria-hidden />
           Volver al detalle
         </Link>
-        <h2 className="mt-3 text-[1.75rem] leading-9 font-semibold tracking-tight">
-          {productQuery.isLoading
-            ? 'Cargando…'
-            : productQuery.data
-              ? `Editar ${productQuery.data.nombre}`
-              : 'Editar producto'}
-        </h2>
-        <p className="mt-2 text-sm leading-relaxed text-muted">
+        {productQuery.data ? (
+          <p className="mt-2 text-sm font-medium">{productQuery.data.nombre}</p>
+        ) : null}
+        <p className="mt-1 text-sm text-muted">
           Actualizá los datos del catálogo. El stock disponible se gestiona en inventario.
         </p>
       </div>

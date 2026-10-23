@@ -19,8 +19,7 @@ export function PlaceholderPage() {
         <div className="mx-auto grid size-12 place-items-center rounded-2xl bg-accent-soft text-accent-ink">
           <Icon className="size-5" strokeWidth={1.75} aria-hidden />
         </div>
-        <h2 className="mt-4 text-xl font-semibold tracking-tight">{item.title}</h2>
-        <p className="mt-2 text-sm leading-relaxed text-muted">
+        <p className="mt-4 text-sm leading-relaxed text-muted">
           {item.description ?? 'Este módulo se va a incorporar en una próxima etapa.'}
         </p>
         <Badge tone="accent" className="mt-4">

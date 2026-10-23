@@ -125,13 +125,10 @@ export function SuppliersPage() {
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-        <div className="min-w-0 max-w-2xl">
-          <h2 className="text-[1.75rem] leading-9 font-semibold tracking-tight">Proveedores</h2>
-          <p className="mt-2 text-sm leading-relaxed text-muted">
-            Administrá el registro de proveedores para las próximas operaciones de compra.
-          </p>
-        </div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="min-w-0 max-w-2xl text-sm text-muted">
+          Administrá el registro de proveedores para las próximas operaciones de compra.
+        </p>
         {canManage ? (
           <Button type="button" className="shrink-0" onClick={openCreate}>
             <Plus className="size-4" aria-hidden />

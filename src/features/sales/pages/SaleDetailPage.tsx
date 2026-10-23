@@ -56,7 +56,7 @@ export function SaleDetailPage() {
           Ventas
         </Link>
         <div className="mt-3 flex flex-wrap items-center gap-3">
-          <h2 className="text-[1.75rem] leading-9 font-semibold tracking-tight">
+          <h2 className="text-lg leading-snug font-semibold tracking-tight">
             {saleQuery.isLoading ? 'Cargando…' : `Venta #${saleId}`}
           </h2>
           {sale ? <SaleStatusBadge estado={sale.estado} /> : null}

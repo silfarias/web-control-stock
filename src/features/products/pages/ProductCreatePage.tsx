@@ -33,10 +33,7 @@ export function ProductCreatePage() {
           <ArrowLeft className="size-4" aria-hidden />
           Productos
         </Link>
-        <h2 className="mt-3 text-[1.75rem] leading-9 font-semibold tracking-tight">
-          Nuevo producto
-        </h2>
-        <p className="mt-2 text-sm leading-relaxed text-muted">
+        <p className="mt-2 text-sm text-muted">
           Completá los datos del catálogo. El stock inicial es opcional y solo se define al crear.
         </p>
       </div>

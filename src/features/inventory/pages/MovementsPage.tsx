@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useSearchParams } from 'react-router'
-import { ArrowLeft, History, Search } from 'lucide-react'
+import { useSearchParams } from 'react-router'
+import { History, Search } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ListPagination } from '@/components/common/ListPagination'
 import { Button } from '@/components/ui/Button'
@@ -104,21 +104,7 @@ export function MovementsPage() {
 
   return (
     <div className="flex min-w-0 flex-col gap-6">
-      <div className="min-w-0">
-        <Link
-          to="/inventario"
-          className="inline-flex items-center gap-1.5 text-sm text-muted transition-colors hover:text-foreground"
-        >
-          <ArrowLeft className="size-4" aria-hidden />
-          Inventario
-        </Link>
-        <h2 className="mt-3 text-[1.75rem] leading-9 font-semibold tracking-tight">
-          Movimientos de stock
-        </h2>
-        <p className="mt-2 text-sm leading-relaxed text-muted">
-          Historial global de entradas y salidas. Solo lectura en esta etapa.
-        </p>
-      </div>
+      <p className="text-sm text-muted">Historial de entradas y salidas de stock.</p>
 
       <Card className="p-4 sm:p-5">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center">

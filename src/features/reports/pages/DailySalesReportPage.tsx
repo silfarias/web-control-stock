@@ -14,12 +14,7 @@ export function DailySalesReportPage() {
 
   return (
     <div className="space-y-5">
-      <div>
-        <h2 className="text-lg font-semibold tracking-tight">Ventas diarias</h2>
-        <p className="mt-1 text-sm text-muted">
-          Cantidad e ingresos agrupados por día.
-        </p>
-      </div>
+      <p className="text-sm text-muted">Cantidad e ingresos agrupados por día.</p>
 
       <Card className="p-4 sm:p-5">
         <ReportFiltersBar

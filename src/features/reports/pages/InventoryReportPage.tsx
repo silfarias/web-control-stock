@@ -17,12 +17,7 @@ export function InventoryReportPage() {
 
   return (
     <div className="space-y-5">
-      <div>
-        <h2 className="text-lg font-semibold tracking-tight">Inventario valorizado</h2>
-        <p className="mt-1 text-sm text-muted">
-          Stock actual valorizado a costo y a precio de venta.
-        </p>
-      </div>
+      <p className="text-sm text-muted">Stock actual valorizado a costo y a precio de venta.</p>
 
       <Card className="p-4 sm:p-5">
         <ReportFiltersBar values={values} onChange={setValues} onClear={clear} />
