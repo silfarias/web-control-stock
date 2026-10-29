@@ -15,7 +15,9 @@ export function DailySalesReportPage() {
 
   return (
     <div className="space-y-5">
-      <p className="text-sm text-muted">Cantidad e ingresos agrupados por día.</p>
+      <p className="text-sm text-muted">
+        Ingresos de cada día. Si falta alguno en el medio, se muestra en cero.
+      </p>
 
       <Card className="p-4 sm:p-5">
         <ReportFiltersBar

@@ -1,6 +1,7 @@
 import { Card } from '@/components/ui/Card'
 import { ReportFiltersBar } from '@/features/reports/components/ReportFiltersBar'
 import { ReportQueryState } from '@/features/reports/components/ReportQueryState'
+import { TopProductsChart } from '@/features/reports/components/TopProductsChart'
 import { TopProductsTable } from '@/features/reports/components/TopProductsTable'
 import { useReportFilterParams } from '@/features/reports/hooks/use-report-filter-params'
 import { useTopProductsReport } from '@/features/reports/hooks/use-reports'
@@ -16,7 +17,7 @@ export function TopProductsReportPage() {
   return (
     <div className="space-y-5">
       <p className="text-sm text-muted">
-        Ranking por unidades vendidas. Podés limitar cuántos productos ver (máx. 100).
+        Ranking por unidades. El gráfico muestra cuáles de esos productos aportan más ingresos.
       </p>
 
       <Card className="p-4 sm:p-5">
@@ -44,9 +45,12 @@ export function TopProductsReportPage() {
           }
           onRetry={() => void query.refetch()}
         >
-          <Card className="overflow-hidden">
-            <TopProductsTable items={items} />
-          </Card>
+          <div className="space-y-5">
+            <TopProductsChart items={items} />
+            <Card className="overflow-hidden">
+              <TopProductsTable items={items} />
+            </Card>
+          </div>
         </ReportQueryState>
       )}
     </div>
