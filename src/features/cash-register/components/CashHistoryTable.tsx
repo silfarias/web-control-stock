@@ -5,7 +5,7 @@ import { buttonVariants } from '@/components/ui/button-variants'
 import { CashStatusBadge } from '@/features/cash-register/components/CashStatusBadge'
 import type { Caja } from '@/features/cash-register/types'
 import { cn } from '@/lib/utils/cn'
-import { formatDateTime, formatMoney } from '@/lib/utils/format'
+import { formatComprobante, formatDateTime, formatMoney } from '@/lib/utils/format'
 
 type CashHistoryTableProps = {
   cajas: Caja[]
@@ -43,7 +43,7 @@ export function CashHistoryTable({ cajas }: CashHistoryTableProps) {
             {cajas.map((caja) => (
               <tr key={caja.id} className="border-b border-border last:border-b-0">
                 <td className="px-4 py-3.5 sm:px-5">
-                  <p className="font-medium tabular-nums">#{caja.id}</p>
+                  <p className="font-medium tabular-nums">{formatComprobante(caja.numero)}</p>
                 </td>
                 <td className="px-4 py-3.5 sm:px-5">
                   <p className="font-medium">{caja.usuario?.nombre ?? '—'}</p>
@@ -72,7 +72,7 @@ export function CashHistoryTable({ cajas }: CashHistoryTableProps) {
                     <Link
                       to={`/caja/${caja.id}`}
                       className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), 'size-9')}
-                      aria-label={`Ver detalle de caja #${caja.id}`}
+                      aria-label={`Ver detalle de caja ${formatComprobante(caja.numero)}`}
                     >
                       <Eye className="size-4" />
                     </Link>

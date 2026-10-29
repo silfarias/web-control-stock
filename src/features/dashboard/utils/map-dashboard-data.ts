@@ -3,7 +3,7 @@ import type { ReporteStockBajoItem } from '@/features/reports/types'
 import type { Venta } from '@/features/sales/types'
 import type { LowStockItem, RecentSale, SalesPoint } from '@/features/dashboard/types'
 import { lastNLocalDates } from '@/features/dashboard/utils/dashboard-dates'
-import { formatShortDate } from '@/lib/utils/format'
+import { formatComprobante, formatShortDate } from '@/lib/utils/format'
 
 function capitalize(value: string) {
   return value.charAt(0).toUpperCase() + value.slice(1)
@@ -47,7 +47,7 @@ export function mapRecentSales(sales: Venta[]): RecentSale[] {
 
     return {
       id: sale.id,
-      displayId: `V-${sale.id}`,
+      displayId: formatComprobante(sale.numero),
       time,
       payment: sale.metodoPago,
       items: sale.items?.reduce((sum, item) => sum + Number(item.cantidad || 0), 0) ?? 0,

@@ -18,6 +18,7 @@ import {
   getUncertainMutationHint,
 } from '@/lib/api/errors'
 import { cn } from '@/lib/utils/cn'
+import { formatComprobante } from '@/lib/utils/format'
 
 type CashMovementDialogProps = {
   open: boolean
@@ -70,7 +71,7 @@ function CashMovementDialogContent({
       pushToast({
         tone: 'success',
         title: values.tipo === 'INGRESO' ? 'Ingreso registrado' : 'Egreso registrado',
-        description: `Movimiento #${movement.id} en la caja #${caja.id}.`,
+        description: `Movimiento #${movement.id} en la caja ${formatComprobante(caja.numero)}.`,
       })
       onOpenChange(false)
     } catch (error) {
@@ -89,7 +90,7 @@ function CashMovementDialogContent({
         if (!busy) onOpenChange(next)
       }}
       title="Movimiento manual"
-      description={`Registrá un ingreso o egreso en la caja #${caja.id}. No modifica saldos de forma arbitraria: queda como movimiento en el historial.`}
+      description={`Registrá un ingreso o egreso en la caja ${formatComprobante(caja.numero)}. No modifica saldos de forma arbitraria: queda como movimiento en el historial.`}
       footer={
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button

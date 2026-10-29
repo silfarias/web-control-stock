@@ -54,3 +54,35 @@ export function useCreateSale() {
     },
   })
 }
+
+export function useCancelSale() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: number) => salesApi.cancel(id),
+    retry: false,
+    onSuccess: async (sale) => {
+      queryClient.setQueryData(saleKeys.detail(sale.id), sale)
+
+      const tasks = [
+        queryClient.invalidateQueries({ queryKey: saleKeys.lists() }),
+        queryClient.invalidateQueries({ queryKey: inventoryKeys.all }),
+        queryClient.invalidateQueries({ queryKey: reportKeys.ventasRoot() }),
+        queryClient.invalidateQueries({ queryKey: reportKeys.ventasDiarioRoot() }),
+        queryClient.invalidateQueries({ queryKey: reportKeys.productosTopRoot() }),
+        queryClient.invalidateQueries({ queryKey: reportKeys.stockBajoRoot() }),
+        queryClient.invalidateQueries({ queryKey: reportKeys.inventarioRoot() }),
+      ]
+
+      if (sale.metodoPago === 'EFECTIVO') {
+        tasks.push(
+          queryClient.invalidateQueries({ queryKey: cashRegisterKeys.active() }),
+          queryClient.invalidateQueries({ queryKey: cashRegisterKeys.movements() }),
+          queryClient.invalidateQueries({ queryKey: cashRegisterKeys.lists() }),
+        )
+      }
+
+      await Promise.all(tasks)
+    },
+  })
+}

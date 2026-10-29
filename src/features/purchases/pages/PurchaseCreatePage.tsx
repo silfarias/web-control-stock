@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router'
 import { useToast } from '@/components/common/use-toast'
+import { formatComprobante } from '@/lib/utils/format'
 import { PurchaseForm } from '@/features/purchases/components/PurchaseForm'
 import { useCreatePurchase } from '@/features/purchases/hooks/use-purchase-mutations'
 import {
@@ -17,7 +18,7 @@ export function PurchaseCreatePage() {
     pushToast({
       tone: 'success',
       title: 'Borrador guardado',
-      description: `La compra #${purchase.id} quedó registrada como borrador.`,
+      description: `La compra ${formatComprobante(purchase.numero)} quedó registrada como borrador.`,
     })
     void navigate(`/compras/${purchase.id}`)
   }

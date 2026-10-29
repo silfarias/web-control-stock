@@ -18,7 +18,7 @@ import {
 } from '@/features/purchases/utils/purchase-actions'
 import { getApiErrorMessage } from '@/lib/api/errors'
 import { cn } from '@/lib/utils/cn'
-import { formatMoney } from '@/lib/utils/format'
+import { formatComprobante, formatMoney } from '@/lib/utils/format'
 
 type PurchaseDetailActionsProps = {
   purchase: Compra
@@ -60,7 +60,7 @@ export function PurchaseDetailActions({
       pushToast({
         tone: 'success',
         title: 'Compra confirmada',
-        description: `La compra #${updated.id} ingresó mercadería al inventario.`,
+        description: `La compra ${formatComprobante(updated.numero)} ingresó mercadería al inventario.`,
       })
       setDialog(null)
     } catch (error) {
@@ -79,7 +79,7 @@ export function PurchaseDetailActions({
       pushToast({
         tone: 'success',
         title: 'Compra cancelada',
-        description: `La compra #${updated.id} quedó en estado cancelada. No se movió stock.`,
+        description: `La compra ${formatComprobante(updated.numero)} quedó en estado cancelada. No se movió stock.`,
       })
       setDialog(null)
     } catch (error) {
@@ -98,7 +98,7 @@ export function PurchaseDetailActions({
       pushToast({
         tone: 'success',
         title: 'Borrador eliminado',
-        description: `La compra #${purchase.id} ya no aparece en los listados.`,
+        description: `La compra ${formatComprobante(purchase.numero)} ya no aparece en los listados.`,
       })
       setDialog(null)
       onDeleted()
@@ -191,7 +191,7 @@ export function PurchaseDetailActions({
         onOpenChange={(open) => {
           if (!confirmMutation.isPending) setDialog(open ? 'confirm' : null)
         }}
-        title={`Confirmar compra #${purchase.id}`}
+        title={`Confirmar compra ${formatComprobante(purchase.numero)}`}
         description="La compra pasará a confirmada, se registrará la entrada de mercadería y aumentará el stock. Después ya no podrá editarse."
         confirmLabel="Confirmar compra"
         cancelLabel="Volver"
@@ -221,7 +221,7 @@ export function PurchaseDetailActions({
         onOpenChange={(open) => {
           if (!cancelMutation.isPending) setDialog(open ? 'cancel' : null)
         }}
-        title={`Cancelar compra #${purchase.id}`}
+        title={`Cancelar compra ${formatComprobante(purchase.numero)}`}
         description="La compra quedará cancelada y ya no podrá editarse. No se generarán movimientos de inventario ni cambios de stock."
         confirmLabel="Cancelar compra"
         cancelLabel="Volver"
@@ -241,7 +241,7 @@ export function PurchaseDetailActions({
         onOpenChange={(open) => {
           if (!deleteMutation.isPending) setDialog(open ? 'delete' : null)
         }}
-        title={`Eliminar borrador #${purchase.id}`}
+        title={`Eliminar borrador ${formatComprobante(purchase.numero)}`}
         description="Se dará de baja el borrador y dejará de aparecer en los listados. Esto no es lo mismo que cancelar: cancelar conserva el registro con estado cancelada."
         confirmLabel="Eliminar borrador"
         cancelLabel="Volver"

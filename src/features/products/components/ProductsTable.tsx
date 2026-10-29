@@ -27,7 +27,7 @@ export function ProductsTable({
   return (
     <Card className="min-w-0 overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[52rem] border-collapse text-left text-sm">
+        <table className="w-full min-w-[64rem] border-collapse text-left text-sm">
           <caption className="sr-only">Listado de productos</caption>
           <thead>
             <tr className="border-b border-border text-xs tracking-wide text-muted uppercase">
@@ -36,6 +36,9 @@ export function ProductsTable({
               </th>
               <th scope="col" className="px-4 py-3 font-medium sm:px-5">
                 Código
+              </th>
+              <th scope="col" className="px-4 py-3 font-medium sm:px-5">
+                Código de barras
               </th>
               <th scope="col" className="px-4 py-3 font-medium sm:px-5">
                 Categoría
@@ -64,6 +67,11 @@ export function ProductsTable({
                 </td>
                 <td className="px-4 py-3.5 whitespace-nowrap sm:px-5">
                   <span className="font-mono text-xs tracking-tight">{product.codigo}</span>
+                </td>
+                <td className="px-4 py-3.5 whitespace-nowrap sm:px-5">
+                  <span className="font-mono text-xs tracking-tight">
+                    {product.codigoBarras?.trim() || '—'}
+                  </span>
                 </td>
                 <td className="px-4 py-3.5 text-muted sm:px-5">
                   {product.categoria?.nombre ?? '—'}

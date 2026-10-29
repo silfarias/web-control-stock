@@ -31,6 +31,8 @@ export type ItemVenta = {
 
 export type Venta = {
   id: number
+  /** Comprobante visible. El detalle y las acciones siguen usando `id`. */
+  numero: number
   total: number | string
   metodoPago: MetodoPago
   estado: EstadoVenta

@@ -6,21 +6,29 @@ import {
   toCreateVentaRequest,
   type SaleFormValues,
 } from '@/features/sales/schemas/sale-schema'
-import { formatMoney } from '@/lib/utils/format'
+import type { SaleTicketNavigationState } from '@/features/sales/ticket/ticket-settings'
+import { formatComprobante, formatMoney } from '@/lib/utils/format'
 
 export function SaleCreatePage() {
   const navigate = useNavigate()
   const { pushToast } = useToast()
   const createMutation = useCreateSale()
 
-  async function handleSubmit(values: SaleFormValues) {
+  async function handleSubmit(
+    values: SaleFormValues,
+    checkout?: { cashReceived?: number },
+  ) {
     const sale = await createMutation.mutateAsync(toCreateVentaRequest(values))
     pushToast({
       tone: 'success',
       title: 'Venta registrada',
-      description: `La venta #${sale.id} se confirmó por ${formatMoney(sale.total)}.`,
+      description: `La venta ${formatComprobante(sale.numero)} se confirmó por ${formatMoney(sale.total)}.`,
     })
-    void navigate(`/ventas/${sale.id}`)
+    const state: SaleTicketNavigationState = {
+      printTicket: true,
+      cashReceived: checkout?.cashReceived,
+    }
+    void navigate(`/ventas/${sale.id}`, { state })
   }
 
   return (

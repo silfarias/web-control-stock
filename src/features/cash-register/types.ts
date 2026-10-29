@@ -13,6 +13,8 @@ export type CajaUsuario = {
 
 export type Caja = {
   id: number
+  /** Identificador visible de la jornada. Abrir, cerrar y el detalle siguen usando `id`. */
+  numero: number
   montoApertura: number | string
   montoCierre?: number | string | null
   montoEsperado?: number | string | null

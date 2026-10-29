@@ -93,3 +93,10 @@ export function formatDateTime(value: string | Date) {
   if (Number.isNaN(date.getTime())) return '—'
   return dateTimeFormatter.format(date)
 }
+
+/** Comprobante visible de venta, compra o caja: 000007. */
+export function formatComprobante(numero: number | string | null | undefined) {
+  const value = typeof numero === 'string' ? Number(numero) : numero
+  if (value == null || !Number.isFinite(value)) return '—'
+  return String(Math.trunc(value)).padStart(6, '0')
+}

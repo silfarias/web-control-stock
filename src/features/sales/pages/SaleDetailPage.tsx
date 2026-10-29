@@ -1,16 +1,24 @@
-import { Link, useParams } from 'react-router'
+import { useEffect, useState } from 'react'
+import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import { ArrowLeft, ShoppingBag } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { buttonVariants } from '@/components/ui/button-variants'
+import { CancelSaleButton } from '@/features/sales/components/CancelSaleButton'
 import { SaleItemsTable } from '@/features/sales/components/SaleItemsTable'
 import { SaleStatusBadge } from '@/features/sales/components/SaleStatusBadge'
 import { useSale } from '@/features/sales/hooks/use-sales'
 import { paymentMethodLabel } from '@/features/sales/utils/sale-labels'
 import { getApiErrorMessage } from '@/lib/api/errors'
 import { cn } from '@/lib/utils/cn'
-import { formatDateTime, formatMoney } from '@/lib/utils/format'
+import { TicketDialog } from '@/features/sales/ticket/TicketDialog'
+import {
+  readTicketCash,
+  rememberTicketCash,
+  type SaleTicketNavigationState,
+} from '@/features/sales/ticket/ticket-settings'
+import { formatComprobante, formatDateTime, formatMoney } from '@/lib/utils/format'
 
 function parseId(value: string | undefined) {
   if (!value) return null
@@ -20,9 +28,28 @@ function parseId(value: string | undefined) {
 
 export function SaleDetailPage() {
   const { id: idParam } = useParams()
+  const location = useLocation()
+  const navigate = useNavigate()
   const saleId = parseId(idParam)
   const saleQuery = useSale(saleId)
   const sale = saleQuery.data
+  const [ticketOpen, setTicketOpen] = useState(false)
+  const [autoPrint, setAutoPrint] = useState(false)
+  const [ticketCash, setTicketCash] = useState<number | undefined>()
+
+  useEffect(() => {
+    if (!sale) return
+    const state = location.state as SaleTicketNavigationState | null
+    if (state?.printTicket) {
+      if (state.cashReceived != null) rememberTicketCash(sale.id, state.cashReceived)
+      setTicketCash(state.cashReceived ?? readTicketCash(sale.id))
+      setAutoPrint(true)
+      setTicketOpen(true)
+      void navigate(location.pathname, { replace: true, state: null })
+      return
+    }
+    setTicketCash(readTicketCash(sale.id))
+  }, [sale, location.state, location.pathname, navigate])
 
   if (saleId == null) {
     return (
@@ -57,9 +84,21 @@ export function SaleDetailPage() {
         </Link>
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <h2 className="text-lg leading-snug font-semibold tracking-tight">
-            {saleQuery.isLoading ? 'Cargando…' : `Venta #${saleId}`}
+            {saleQuery.isLoading
+              ? 'Cargando…'
+              : sale
+                ? `Venta ${formatComprobante(sale.numero)}`
+                : 'Venta'}
           </h2>
           {sale ? <SaleStatusBadge estado={sale.estado} /> : null}
+          {sale?.estado === 'CONFIRMADA' ? (
+            <>
+              <Button type="button" variant="outline" onClick={() => setTicketOpen(true)}>
+                Imprimir ticket
+              </Button>
+              <CancelSaleButton sale={sale} />
+            </>
+          ) : null}
         </div>
         {sale ? (
           <p className="mt-2 text-sm text-muted">
@@ -166,6 +205,19 @@ export function SaleDetailPage() {
             )}
           </div>
         </>
+      ) : null}
+
+      {sale ? (
+        <TicketDialog
+          open={ticketOpen}
+          onOpenChange={(open) => {
+            setTicketOpen(open)
+            if (!open) setAutoPrint(false)
+          }}
+          sale={sale}
+          cashReceived={ticketCash}
+          autoPrint={autoPrint}
+        />
       ) : null}
     </div>
   )

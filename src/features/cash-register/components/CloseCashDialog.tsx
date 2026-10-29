@@ -14,7 +14,7 @@ import {
 } from '@/features/cash-register/schemas/cash-register-schema'
 import type { Caja, CierreCajaResponse } from '@/features/cash-register/types'
 import { getApiErrorMessage } from '@/lib/api/errors'
-import { formatMoney } from '@/lib/utils/format'
+import { formatComprobante, formatMoney } from '@/lib/utils/format'
 
 type CloseCashDialogProps = {
   open: boolean
@@ -83,7 +83,7 @@ function CloseCashDialogContent({ caja, onOpenChange, onClosed }: ContentProps) 
       pushToast({
         tone: 'success',
         title: 'Caja cerrada',
-        description: `La caja #${cierre.caja.id} se cerró correctamente.`,
+        description: `La caja ${formatComprobante(cierre.caja.numero)} se cerró correctamente.`,
       })
       onClosed?.(cierre)
     } catch (error) {
@@ -96,7 +96,7 @@ function CloseCashDialogContent({ caja, onOpenChange, onClosed }: ContentProps) 
       <Dialog
         open
         onOpenChange={onOpenChange}
-        title={`Cierre de caja #${result.caja.id}`}
+        title={`Cierre de caja ${formatComprobante(result.caja.numero)}`}
         description="Resumen del cierre de caja."
         footer={
           <div className="flex justify-end">
@@ -133,7 +133,7 @@ function CloseCashDialogContent({ caja, onOpenChange, onClosed }: ContentProps) 
       onOpenChange={(next) => {
         if (!busy) onOpenChange(next)
       }}
-      title={`Cerrar caja #${caja.id}`}
+      title={`Cerrar caja ${formatComprobante(caja.numero)}`}
       description="Indicá el efectivo contado. Al cerrar se mostrará el monto esperado y la diferencia."
       footer={
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

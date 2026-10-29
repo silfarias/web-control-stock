@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { formatComprobante } from '@/lib/utils/format'
 import { useActiveCashRegister } from '@/features/cash-register/hooks/use-cash-register'
 import {
   addLocalDays,
@@ -123,7 +124,7 @@ export function useDashboard() {
     return {
       cashLabel: cashOpen ? 'Caja abierta' : 'Sin caja abierta',
       cashDetail: cashOpen
-        ? `Sesión #${caja.id}`
+        ? `Sesión ${formatComprobante(caja.numero)}`
         : 'Podés consultar el módulo de caja',
       products: productsQuery.data?.metadata.count ?? 0,
       productsDetail: 'Productos registrados',

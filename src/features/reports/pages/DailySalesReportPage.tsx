@@ -7,8 +7,9 @@ import { useDailySalesReport } from '@/features/reports/hooks/use-reports'
 import { hasActiveFilters } from '@/features/reports/utils/report-filters'
 
 export function DailySalesReportPage() {
-  const { filtro, values, setValues, clear } = useReportFilterParams('ventas')
-  const query = useDailySalesReport(filtro)
+  const { filtro, values, setValues, clear, productHint, reportEnabled, productPending, productBlocked } =
+    useReportFilterParams('ventas')
+  const query = useDailySalesReport(filtro, { enabled: reportEnabled })
   const items = query.data ?? []
   const filtered = hasActiveFilters(filtro)
 
@@ -22,26 +23,29 @@ export function DailySalesReportPage() {
           onChange={setValues}
           onClear={clear}
           showDates
+          productHint={productHint}
         />
       </Card>
 
-      <ReportQueryState
-        isLoading={query.isLoading}
-        isError={query.isError}
-        error={query.error}
-        isEmpty={items.length === 0}
-        emptyTitle={filtered ? 'Sin ventas en el filtro' : 'Sin ventas diarias'}
-        emptyDescription={
-          filtered
-            ? 'Probá ampliar el rango de fechas o quitar filtros.'
-            : 'Cuando haya ventas confirmadas, aparecerán agrupadas por día.'
-        }
-        onRetry={() => void query.refetch()}
-      >
-        <Card className="p-4 sm:p-5">
-          <DailySalesChart items={items} />
-        </Card>
-      </ReportQueryState>
+      {productBlocked ? null : (
+        <ReportQueryState
+          isLoading={productPending || query.isLoading}
+          isError={query.isError}
+          error={query.error}
+          isEmpty={items.length === 0}
+          emptyTitle={filtered ? 'Sin ventas en el filtro' : 'Sin ventas diarias'}
+          emptyDescription={
+            filtered
+              ? 'Probá ampliar el rango de fechas o quitar filtros.'
+              : 'Cuando haya ventas confirmadas, aparecerán agrupadas por día.'
+          }
+          onRetry={() => void query.refetch()}
+        >
+          <Card className="p-4 sm:p-5">
+            <DailySalesChart items={items} />
+          </Card>
+        </ReportQueryState>
+      )}
     </div>
   )
 }

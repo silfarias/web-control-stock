@@ -31,6 +31,7 @@ import { ReportsLayout } from '@/features/reports/pages/ReportsLayout'
 import { SalesReportPage } from '@/features/reports/pages/SalesReportPage'
 import { TopProductsReportPage } from '@/features/reports/pages/TopProductsReportPage'
 import { SaleCreatePage } from '@/features/sales/pages/SaleCreatePage'
+import { TicketSettingsPage } from '@/features/sales/pages/TicketSettingsPage'
 import { SaleDetailPage } from '@/features/sales/pages/SaleDetailPage'
 import { SalesPage } from '@/features/sales/pages/SalesPage'
 import { SuppliersPage } from '@/features/suppliers/pages/SuppliersPage'
@@ -50,6 +51,7 @@ const implementedPaths = new Set([
   '/ventas',
   '/ventas/nueva',
   '/reportes',
+  '/configurar-ticket',
   '/usuarios',
 ])
 
@@ -297,6 +299,14 @@ const router = createBrowserRouter([
                 } satisfies RouteHandle,
               },
             ],
+          },
+          {
+            path: 'configurar-ticket',
+            element: <TicketSettingsPage />,
+            handle: {
+              title: 'Configurar ticket',
+              breadcrumb: ['Inicio', 'Configurar ticket'],
+            } satisfies RouteHandle,
           },
           {
             element: <RequireAdmin />,

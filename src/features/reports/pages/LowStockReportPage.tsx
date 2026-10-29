@@ -7,8 +7,9 @@ import { useLowStockReport } from '@/features/reports/hooks/use-reports'
 import { hasActiveFilters } from '@/features/reports/utils/report-filters'
 
 export function LowStockReportPage() {
-  const { filtro, values, setValues, clear } = useReportFilterParams('catalogo')
-  const query = useLowStockReport(filtro)
+  const { filtro, values, setValues, clear, productHint, reportEnabled, productPending, productBlocked } =
+    useReportFilterParams('catalogo')
+  const query = useLowStockReport(filtro, { enabled: reportEnabled })
   const items = query.data ?? []
   const filtered = hasActiveFilters(filtro, { ignoreLimite: true })
 
@@ -19,26 +20,33 @@ export function LowStockReportPage() {
       </p>
 
       <Card className="p-4 sm:p-5">
-        <ReportFiltersBar values={values} onChange={setValues} onClear={clear} />
+        <ReportFiltersBar
+          values={values}
+          onChange={setValues}
+          onClear={clear}
+          productHint={productHint}
+        />
       </Card>
 
-      <ReportQueryState
-        isLoading={query.isLoading}
-        isError={query.isError}
-        error={query.error}
-        isEmpty={items.length === 0}
-        emptyTitle={filtered ? 'Sin productos con ese filtro' : 'Ningún producto con stock bajo'}
-        emptyDescription={
-          filtered
-            ? 'Probá otra categoría o producto.'
-            : 'Todos los productos están por encima de su mínimo configurado.'
-        }
-        onRetry={() => void query.refetch()}
-      >
-        <Card className="overflow-hidden">
-          <LowStockTable items={items} />
-        </Card>
-      </ReportQueryState>
+      {productBlocked ? null : (
+        <ReportQueryState
+          isLoading={productPending || query.isLoading}
+          isError={query.isError}
+          error={query.error}
+          isEmpty={items.length === 0}
+          emptyTitle={filtered ? 'Sin productos con ese filtro' : 'Ningún producto con stock bajo'}
+          emptyDescription={
+            filtered
+              ? 'Probá otra categoría o código.'
+              : 'Todos los productos están por encima de su mínimo configurado.'
+          }
+          onRetry={() => void query.refetch()}
+        >
+          <Card className="overflow-hidden">
+            <LowStockTable items={items} />
+          </Card>
+        </ReportQueryState>
+      )}
     </div>
   )
 }

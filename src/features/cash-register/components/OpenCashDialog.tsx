@@ -12,6 +12,7 @@ import {
   type OpenCashFormValues,
 } from '@/features/cash-register/schemas/cash-register-schema'
 import { getApiErrorMessage } from '@/lib/api/errors'
+import { formatComprobante } from '@/lib/utils/format'
 
 type OpenCashDialogProps = {
   open: boolean
@@ -49,7 +50,7 @@ function OpenCashDialogContent({
       pushToast({
         tone: 'success',
         title: 'Caja abierta',
-        description: `La caja #${caja.id} quedó abierta con el monto inicial indicado.`,
+        description: `La caja ${formatComprobante(caja.numero)} quedó abierta con el monto inicial indicado.`,
       })
       onOpenChange(false)
     } catch (error) {

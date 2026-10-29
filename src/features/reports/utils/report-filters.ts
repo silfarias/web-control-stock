@@ -20,13 +20,13 @@ export function parseLimite(value: string | null): number | undefined {
   return Math.min(parsed, 100)
 }
 
-/** Filtros de ventas (fechas + categoría + producto). */
+/** Filtros de ventas (fechas + categoría). El producto se resuelve por código. */
 export function filtroVentasFromSearch(params: URLSearchParams): FiltroReporte {
   return {
+    fecha: parseIsoDate(params.get('fecha')),
     desde: parseIsoDate(params.get('desde')),
     hasta: parseIsoDate(params.get('hasta')),
     categoriaId: parsePositiveInt(params.get('categoriaId')),
-    productoId: parsePositiveInt(params.get('productoId')),
   }
 }
 
@@ -42,12 +42,11 @@ export function filtroTopFromSearch(params: URLSearchParams): FiltroReporte {
 export function filtroCatalogoFromSearch(params: URLSearchParams): FiltroReporte {
   return {
     categoriaId: parsePositiveInt(params.get('categoriaId')),
-    productoId: parsePositiveInt(params.get('productoId')),
   }
 }
 
 export function hasActiveFilters(filtro: FiltroReporte, options?: { ignoreLimite?: boolean }) {
-  if (filtro.desde || filtro.hasta) return true
+  if (filtro.fecha || filtro.desde || filtro.hasta) return true
   if (filtro.categoriaId != null || filtro.productoId != null) return true
   if (filtro.usuarioId != null) return true
   if (!options?.ignoreLimite && filtro.limite != null && filtro.limite !== 10) return true

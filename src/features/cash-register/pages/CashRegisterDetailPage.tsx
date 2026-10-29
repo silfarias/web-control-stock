@@ -18,7 +18,7 @@ import {
 import { getApiErrorMessage } from '@/lib/api/errors'
 import { DEFAULT_PAGE_SIZE } from '@/lib/api/pagination'
 import { cn } from '@/lib/utils/cn'
-import { formatDateTime, formatMoney } from '@/lib/utils/format'
+import { formatComprobante, formatDateTime, formatMoney } from '@/lib/utils/format'
 
 function parseId(value: string | undefined) {
   if (!value) return null
@@ -87,7 +87,11 @@ export function CashRegisterDetailPage() {
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-3">
               <h2 className="text-lg leading-snug font-semibold tracking-tight">
-                {cajaQuery.isLoading ? 'Cargando…' : `Caja #${cajaId}`}
+                {cajaQuery.isLoading
+                  ? 'Cargando…'
+                  : caja
+                    ? `Caja ${formatComprobante(caja.numero)}`
+                    : 'Caja'}
               </h2>
               {caja ? <CashStatusBadge estado={caja.estado} /> : null}
             </div>

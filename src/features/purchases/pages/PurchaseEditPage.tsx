@@ -17,6 +17,7 @@ import {
 } from '@/features/purchases/schemas/purchase-schema'
 import { getPurchaseDraftActions } from '@/features/purchases/utils/purchase-actions'
 import { getApiErrorMessage } from '@/lib/api/errors'
+import { formatComprobante } from '@/lib/utils/format'
 import { cn } from '@/lib/utils/cn'
 
 function parseId(value: string | undefined) {
@@ -71,7 +72,7 @@ export function PurchaseEditPage() {
     pushToast({
       tone: 'success',
       title: 'Borrador actualizado',
-      description: `La compra #${updated.id} se guardó correctamente.`,
+      description: `La compra ${formatComprobante(updated.numero)} se guardó correctamente.`,
     })
     void navigate(`/compras/${updated.id}`)
   }
@@ -88,7 +89,7 @@ export function PurchaseEditPage() {
         </Link>
         {purchase ? (
           <div className="mt-2 flex flex-wrap items-center gap-2">
-            <p className="text-sm font-medium">Compra #{purchase.id}</p>
+            <p className="text-sm font-medium">Compra {formatComprobante(purchase.numero)}</p>
             <PurchaseStatusBadge estado={purchase.estado} />
           </div>
         ) : null}

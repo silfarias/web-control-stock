@@ -116,6 +116,10 @@ export function getApiErrorMessage(error: unknown): string {
     return apiError.message || 'La venta debe tener al menos un ítem.'
   }
 
+  if (apiError.code === 'VE03') {
+    return 'Esta venta ya está anulada.'
+  }
+
   if (apiError.code === 'CJ01') {
     return apiError.message || 'Ya existe una caja abierta.'
   }
@@ -126,6 +130,10 @@ export function getApiErrorMessage(error: unknown): string {
 
   if (apiError.code === 'CJ03') {
     return apiError.message || 'La caja ya está cerrada.'
+  }
+
+  if (apiError.code === 'TK01') {
+    return apiError.message || 'El ancho de papel debe ser 48, 58, 80 o 90 mm.'
   }
 
   if (apiError.status === 404) {

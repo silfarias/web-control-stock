@@ -34,4 +34,8 @@ export const salesApi = {
   create(payload: CreateVentaRequest) {
     return apiClient.post<Venta>('/venta', payload).then((response) => response.data)
   },
+
+  cancel(id: number) {
+    return apiClient.post<Venta>(`/venta/${id}/cancelar`).then((response) => response.data)
+  },
 }

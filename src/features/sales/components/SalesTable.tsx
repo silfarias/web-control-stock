@@ -2,11 +2,12 @@ import { Link } from 'react-router'
 import { Eye } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { buttonVariants } from '@/components/ui/button-variants'
+import { CancelSaleButton } from '@/features/sales/components/CancelSaleButton'
 import { SaleStatusBadge } from '@/features/sales/components/SaleStatusBadge'
 import type { Venta } from '@/features/sales/types'
 import { paymentMethodLabel } from '@/features/sales/utils/sale-labels'
 import { cn } from '@/lib/utils/cn'
-import { formatDateTime, formatMoney } from '@/lib/utils/format'
+import { formatComprobante, formatDateTime, formatMoney } from '@/lib/utils/format'
 
 type SalesTableProps = {
   sales: Venta[]
@@ -36,7 +37,7 @@ export function SalesTable({ sales }: SalesTableProps) {
                 Total
               </th>
               <th scope="col" className="px-4 py-3 text-right font-medium sm:px-5">
-                Detalle
+                Acciones
               </th>
             </tr>
           </thead>
@@ -44,7 +45,7 @@ export function SalesTable({ sales }: SalesTableProps) {
             {sales.map((sale) => (
               <tr key={sale.id} className="border-b border-border last:border-b-0">
                 <td className="px-4 py-3.5 sm:px-5">
-                  <p className="font-medium tabular-nums">#{sale.id}</p>
+                  <p className="font-medium tabular-nums">{formatComprobante(sale.numero)}</p>
                   <p className="mt-0.5 text-xs text-muted">
                     {sale.usuario?.nombre ?? '—'} · {sale.items?.length ?? 0}{' '}
                     {(sale.items?.length ?? 0) === 1 ? 'ítem' : 'ítems'}
@@ -61,11 +62,14 @@ export function SalesTable({ sales }: SalesTableProps) {
                   {formatMoney(sale.total)}
                 </td>
                 <td className="px-4 py-3.5 sm:px-5">
-                  <div className="flex justify-end">
+                  <div className="flex items-center justify-end gap-1">
+                    {sale.estado === 'CONFIRMADA' ? (
+                      <CancelSaleButton sale={sale} className="h-9 px-3" />
+                    ) : null}
                     <Link
                       to={`/ventas/${sale.id}`}
                       className={cn(buttonVariants({ variant: 'ghost', size: 'icon' }), 'size-9')}
-                      aria-label={`Ver detalle de venta #${sale.id}`}
+                      aria-label={`Ver detalle de venta ${formatComprobante(sale.numero)}`}
                     >
                       <Eye className="size-4" />
                     </Link>

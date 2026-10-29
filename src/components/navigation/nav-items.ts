@@ -1,6 +1,7 @@
 import {
   ChartColumn,
   ClipboardList,
+  Receipt,
   LayoutDashboard,
   Package,
   ShoppingBag,
@@ -123,6 +124,12 @@ export const navigation: NavSection[] = [
         title: 'Reportes',
         to: '/reportes',
         icon: ChartColumn,
+        available: true,
+      },
+      {
+        title: 'Configurar ticket',
+        to: '/configurar-ticket',
+        icon: Receipt,
         available: true,
       },
       {

@@ -8,8 +8,9 @@ import { useSalesReport } from '@/features/reports/hooks/use-reports'
 import { formatMoney } from '@/lib/utils/format'
 
 export function SalesReportPage() {
-  const { filtro, values, setValues, clear } = useReportFilterParams('ventas')
-  const query = useSalesReport(filtro)
+  const { filtro, values, setValues, clear, productHint, reportEnabled, productPending, productBlocked } =
+    useReportFilterParams('ventas')
+  const query = useSalesReport(filtro, { enabled: reportEnabled })
   const data = query.data
 
   return (
@@ -25,17 +26,19 @@ export function SalesReportPage() {
           onChange={setValues}
           onClear={clear}
           showDates
+          productHint={productHint}
         />
       </Card>
 
-      <ReportQueryState
-        isLoading={query.isLoading}
-        isError={query.isError}
-        error={query.error}
-        isEmpty={false}
-        emptyTitle=""
-        onRetry={() => void query.refetch()}
-      >
+      {productBlocked ? null : (
+        <ReportQueryState
+          isLoading={productPending || query.isLoading}
+          isError={query.isError}
+          error={query.error}
+          isEmpty={false}
+          emptyTitle=""
+          onRetry={() => void query.refetch()}
+        >
         {data ? (
           <div className="space-y-5">
             <ReportStatGrid
@@ -71,7 +74,8 @@ export function SalesReportPage() {
             </Card>
           </div>
         ) : null}
-      </ReportQueryState>
+        </ReportQueryState>
+      )}
     </div>
   )
 }

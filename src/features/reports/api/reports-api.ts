@@ -10,8 +10,12 @@ import type {
 
 function toQuery(filtro: FiltroReporte) {
   const query: Record<string, string | number> = {}
-  if (filtro.desde) query.desde = filtro.desde
-  if (filtro.hasta) query.hasta = filtro.hasta
+  if (filtro.fecha) {
+    query.fecha = filtro.fecha
+  } else {
+    if (filtro.desde) query.desde = filtro.desde
+    if (filtro.hasta) query.hasta = filtro.hasta
+  }
   if (filtro.categoriaId != null) query.categoriaId = filtro.categoriaId
   if (filtro.productoId != null) query.productoId = filtro.productoId
   if (filtro.usuarioId != null) query.usuarioId = filtro.usuarioId

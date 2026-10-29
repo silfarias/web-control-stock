@@ -11,7 +11,7 @@ import { PurchaseStatusBadge } from '@/features/purchases/components/PurchaseSta
 import { usePurchase } from '@/features/purchases/hooks/use-purchases'
 import { getApiErrorMessage } from '@/lib/api/errors'
 import { cn } from '@/lib/utils/cn'
-import { formatDateTime, formatMoney } from '@/lib/utils/format'
+import { formatComprobante, formatDateTime, formatMoney } from '@/lib/utils/format'
 
 function parseId(value: string | undefined) {
   if (!value) return null
@@ -63,7 +63,11 @@ export function PurchaseDetailPage() {
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-3">
               <h2 className="text-lg leading-snug font-semibold tracking-tight">
-                {purchaseQuery.isLoading ? 'Cargando…' : `Compra #${purchaseId}`}
+                {purchaseQuery.isLoading
+                  ? 'Cargando…'
+                  : purchase
+                    ? `Compra ${formatComprobante(purchase.numero)}`
+                    : 'Compra'}
               </h2>
               {purchase ? <PurchaseStatusBadge estado={purchase.estado} /> : null}
             </div>

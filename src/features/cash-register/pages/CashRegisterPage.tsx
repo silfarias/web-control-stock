@@ -21,7 +21,7 @@ import {
 import { getApiErrorMessage } from '@/lib/api/errors'
 import { DEFAULT_PAGE_SIZE } from '@/lib/api/pagination'
 import { cn } from '@/lib/utils/cn'
-import { formatDateTime, formatMoney } from '@/lib/utils/format'
+import { formatComprobante, formatDateTime, formatMoney } from '@/lib/utils/format'
 
 export function CashRegisterPage() {
   const { user } = useAuth()
@@ -143,7 +143,7 @@ export function CashRegisterPage() {
             <Card className="p-5 lg:col-span-2">
               <div className="flex flex-wrap items-center gap-3">
                 <h3 className="text-sm font-semibold tracking-tight">
-                  Caja #{activeCaja.id}
+                  Caja {formatComprobante(activeCaja.numero)}
                 </h3>
                 <CashStatusBadge estado={activeCaja.estado} />
               </div>

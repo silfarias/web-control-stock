@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
-import { Package, Plus, Search } from 'lucide-react'
+import { Barcode, Package, Plus, Search } from 'lucide-react'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ListPagination } from '@/components/common/ListPagination'
@@ -40,15 +40,23 @@ export function ProductsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const qFromUrl = searchParams.get('q') ?? ''
+  const barcodeFromUrl = searchParams.get('codigoBarras') ?? ''
   const pageFromUrl = parsePage(searchParams.get('page'))
   const categoriaIdFromUrl = parseCategoriaId(searchParams.get('categoriaId'))
 
   const [searchInput, setSearchInput] = useState(qFromUrl)
   const [urlQ, setUrlQ] = useState(qFromUrl)
+  const [barcodeInput, setBarcodeInput] = useState(barcodeFromUrl)
+  const [urlBarcode, setUrlBarcode] = useState(barcodeFromUrl)
 
   if (qFromUrl !== urlQ) {
     setUrlQ(qFromUrl)
     setSearchInput(qFromUrl)
+  }
+
+  if (barcodeFromUrl !== urlBarcode) {
+    setUrlBarcode(barcodeFromUrl)
+    setBarcodeInput(barcodeFromUrl)
   }
 
   useEffect(() => {
@@ -65,16 +73,31 @@ export function ProductsPage() {
     return () => window.clearTimeout(timeoutId)
   }, [searchInput, qFromUrl, searchParams, setSearchParams])
 
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      const next = barcodeInput.trim()
+      if (next === barcodeFromUrl) return
+
+      const params = new URLSearchParams(searchParams)
+      if (next) params.set('codigoBarras', next)
+      else params.delete('codigoBarras')
+      params.delete('page')
+      setSearchParams(params, { replace: true })
+    }, 300)
+    return () => window.clearTimeout(timeoutId)
+  }, [barcodeInput, barcodeFromUrl, searchParams, setSearchParams])
+
   const params = useMemo(
     () => ({
       q: qFromUrl || undefined,
+      codigoBarras: barcodeFromUrl || undefined,
       categoriaId: categoriaIdFromUrl,
       pageNumber: pageFromUrl,
       pageSize: DEFAULT_PAGE_SIZE,
       orderBy: 'nombre',
       orderDirection: 'ASC' as const,
     }),
-    [qFromUrl, categoriaIdFromUrl, pageFromUrl],
+    [qFromUrl, barcodeFromUrl, categoriaIdFromUrl, pageFromUrl],
   )
 
   const productsQuery = useProducts(params)
@@ -86,9 +109,10 @@ export function ProductsPage() {
   const categoriesQuery = useCategoryOptions()
   const categories = categoriesQuery.data ?? []
 
-  const hasFilters = Boolean(qFromUrl) || categoriaIdFromUrl != null
-  const isEmpty = !productsQuery.isLoading && products.length === 0 && !hasFilters
-  const isFilteredEmpty = !productsQuery.isLoading && products.length === 0 && hasFilters
+  const hasFilters = Boolean(qFromUrl) || Boolean(barcodeFromUrl) || categoriaIdFromUrl != null
+  const resultsSettled = productsQuery.isSuccess && !productsQuery.isPlaceholderData
+  const isEmpty = resultsSettled && products.length === 0 && !hasFilters
+  const isFilteredEmpty = resultsSettled && products.length === 0 && hasFilters
 
   function updateParams(updater: (next: URLSearchParams) => void) {
     const next = new URLSearchParams(searchParams)
@@ -148,19 +172,26 @@ export function ProductsPage() {
       </div>
 
       <Card className="p-4 sm:p-5">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-          <div className="min-w-0 flex-1 lg:max-w-md">
-            <Input
-              type="search"
-              value={searchInput}
-              onChange={(event) => setSearchInput(event.target.value)}
-              placeholder="Buscar por nombre, código o descripción"
-              leadingIcon={<Search className="size-4" aria-hidden />}
-              aria-label="Buscar productos"
-            />
-          </div>
+        <div className="grid items-center gap-3 lg:grid-cols-[minmax(0,1.4fr)_minmax(18rem,1fr)_auto]">
+          <Input
+            type="search"
+            value={searchInput}
+            onChange={(event) => setSearchInput(event.target.value)}
+            placeholder="Buscar por nombre, código, código de barras o descripción"
+            leadingIcon={<Search className="size-4" aria-hidden />}
+            aria-label="Buscar productos"
+          />
 
-          <label className="flex w-full items-center gap-2.5 text-sm lg:w-auto">
+          <Input
+            type="search"
+            value={barcodeInput}
+            onChange={(event) => setBarcodeInput(event.target.value)}
+            placeholder="Buscar por código de barras"
+            leadingIcon={<Barcode className="size-4" aria-hidden />}
+            aria-label="Buscar por código de barras"
+          />
+
+          <label className="flex w-full items-center gap-2.5 text-sm lg:w-72">
             <span className="shrink-0 font-medium whitespace-nowrap text-foreground">
               Categoría
             </span>
@@ -169,7 +200,7 @@ export function ProductsPage() {
               onChange={(event) => handleCategoriaChange(event.target.value)}
               disabled={categoriesQuery.isLoading}
               className={cn(
-                'h-11 w-full min-w-0 rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors lg:w-56',
+                'h-11 w-full min-w-0 flex-1 rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors',
                 'hover:border-border-strong focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
                 'disabled:cursor-not-allowed disabled:opacity-60',
               )}
@@ -186,7 +217,7 @@ export function ProductsPage() {
         </div>
       </Card>
 
-      {productsQuery.isLoading ? (
+      {productsQuery.isPending && products.length === 0 ? (
         <Card className="px-6 py-16 text-center">
           <p className="text-sm font-medium">Cargando productos…</p>
           <p className="mt-1 text-sm text-muted">Un momento, por favor.</p>
@@ -210,7 +241,7 @@ export function ProductsPage() {
         </Card>
       ) : null}
 
-      {!productsQuery.isLoading && !productsQuery.isError && isEmpty ? (
+      {!productsQuery.isError && isEmpty ? (
         <Card>
           <EmptyState
             icon={Package}
@@ -232,7 +263,7 @@ export function ProductsPage() {
         </Card>
       ) : null}
 
-      {!productsQuery.isLoading && !productsQuery.isError && isFilteredEmpty ? (
+      {!productsQuery.isError && isFilteredEmpty ? (
         <Card>
           <EmptyState
             icon={Search}
@@ -242,7 +273,7 @@ export function ProductsPage() {
         </Card>
       ) : null}
 
-      {!productsQuery.isLoading && !productsQuery.isError && products.length > 0 ? (
+      {!productsQuery.isError && products.length > 0 ? (
         <div className="flex flex-col gap-4">
           <ProductsTable
             products={products}

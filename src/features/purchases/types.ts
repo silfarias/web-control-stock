@@ -25,6 +25,8 @@ export type ItemCompra = {
 
 export type Compra = {
   id: number
+  /** Comprobante visible. El detalle, editar, confirmar y cancelar siguen usando `id`. */
+  numero: number
   total: number | string
   estado: EstadoCompra
   proveedor: Proveedor

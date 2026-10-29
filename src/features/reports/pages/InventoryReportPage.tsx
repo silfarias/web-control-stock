@@ -9,8 +9,9 @@ import { hasActiveFilters } from '@/features/reports/utils/report-filters'
 import { formatMoney } from '@/lib/utils/format'
 
 export function InventoryReportPage() {
-  const { filtro, values, setValues, clear } = useReportFilterParams('catalogo')
-  const query = useInventoryReport(filtro)
+  const { filtro, values, setValues, clear, productHint, reportEnabled, productPending, productBlocked } =
+    useReportFilterParams('catalogo')
+  const query = useInventoryReport(filtro, { enabled: reportEnabled })
   const data = query.data
   const items = data?.items ?? []
   const filtered = hasActiveFilters(filtro, { ignoreLimite: true })
@@ -20,22 +21,28 @@ export function InventoryReportPage() {
       <p className="text-sm text-muted">Stock actual valorizado a costo y a precio de venta.</p>
 
       <Card className="p-4 sm:p-5">
-        <ReportFiltersBar values={values} onChange={setValues} onClear={clear} />
+        <ReportFiltersBar
+          values={values}
+          onChange={setValues}
+          onClear={clear}
+          productHint={productHint}
+        />
       </Card>
 
-      <ReportQueryState
-        isLoading={query.isLoading}
-        isError={query.isError}
-        error={query.error}
-        isEmpty={items.length === 0}
-        emptyTitle={filtered ? 'Sin inventario para el filtro' : 'Sin stock registrado'}
-        emptyDescription={
-          filtered
-            ? 'Probá otra categoría o producto.'
-            : 'Cuando haya productos con stock, verás la valorización aquí.'
-        }
-        onRetry={() => void query.refetch()}
-      >
+      {productBlocked ? null : (
+        <ReportQueryState
+          isLoading={productPending || query.isLoading}
+          isError={query.isError}
+          error={query.error}
+          isEmpty={items.length === 0}
+          emptyTitle={filtered ? 'Sin inventario para el filtro' : 'Sin stock registrado'}
+          emptyDescription={
+            filtered
+              ? 'Probá otra categoría o código.'
+              : 'Cuando haya productos con stock, verás la valorización aquí.'
+          }
+          onRetry={() => void query.refetch()}
+        >
         {data ? (
           <div className="space-y-5">
             <ReportStatGrid
@@ -63,7 +70,8 @@ export function InventoryReportPage() {
             </Card>
           </div>
         ) : null}
-      </ReportQueryState>
+        </ReportQueryState>
+      )}
     </div>
   )
 }

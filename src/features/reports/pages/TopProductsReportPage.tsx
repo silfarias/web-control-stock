@@ -7,8 +7,9 @@ import { useTopProductsReport } from '@/features/reports/hooks/use-reports'
 import { hasActiveFilters } from '@/features/reports/utils/report-filters'
 
 export function TopProductsReportPage() {
-  const { filtro, values, setValues, clear } = useReportFilterParams('top')
-  const query = useTopProductsReport(filtro)
+  const { filtro, values, setValues, clear, productHint, reportEnabled, productPending, productBlocked } =
+    useReportFilterParams('top')
+  const query = useTopProductsReport(filtro, { enabled: reportEnabled })
   const items = query.data ?? []
   const filtered = hasActiveFilters(filtro)
 
@@ -25,26 +26,29 @@ export function TopProductsReportPage() {
           onClear={clear}
           showDates
           showLimite
+          productHint={productHint}
         />
       </Card>
 
-      <ReportQueryState
-        isLoading={query.isLoading}
-        isError={query.isError}
-        error={query.error}
-        isEmpty={items.length === 0}
-        emptyTitle={filtered ? 'Sin resultados para el filtro' : 'Sin productos vendidos'}
-        emptyDescription={
-          filtered
-            ? 'Ajustá fechas, categoría o límite e intentá de nuevo.'
-            : 'Todavía no hay ítems de ventas confirmadas para armar el ranking.'
-        }
-        onRetry={() => void query.refetch()}
-      >
-        <Card className="overflow-hidden">
-          <TopProductsTable items={items} />
-        </Card>
-      </ReportQueryState>
+      {productBlocked ? null : (
+        <ReportQueryState
+          isLoading={productPending || query.isLoading}
+          isError={query.isError}
+          error={query.error}
+          isEmpty={items.length === 0}
+          emptyTitle={filtered ? 'Sin resultados para el filtro' : 'Sin productos vendidos'}
+          emptyDescription={
+            filtered
+              ? 'Ajustá fechas, categoría o límite e intentá de nuevo.'
+              : 'Todavía no hay ítems de ventas confirmadas para armar el ranking.'
+          }
+          onRetry={() => void query.refetch()}
+        >
+          <Card className="overflow-hidden">
+            <TopProductsTable items={items} />
+          </Card>
+        </ReportQueryState>
+      )}
     </div>
   )
 }

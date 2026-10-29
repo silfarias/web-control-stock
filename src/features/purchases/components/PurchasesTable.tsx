@@ -6,7 +6,7 @@ import { PurchaseStatusBadge } from '@/features/purchases/components/PurchaseSta
 import type { Compra } from '@/features/purchases/types'
 import { getPurchaseDraftActions } from '@/features/purchases/utils/purchase-actions'
 import { cn } from '@/lib/utils/cn'
-import { formatDateTime, formatMoney } from '@/lib/utils/format'
+import { formatComprobante, formatDateTime, formatMoney } from '@/lib/utils/format'
 
 type PurchasesTableProps = {
   purchases: Compra[]
@@ -47,7 +47,7 @@ export function PurchasesTable({ purchases, canManage = false }: PurchasesTableP
               return (
                 <tr key={purchase.id} className="border-b border-border last:border-b-0">
                   <td className="px-4 py-3.5 sm:px-5">
-                    <p className="font-medium tabular-nums">#{purchase.id}</p>
+                    <p className="font-medium tabular-nums">{formatComprobante(purchase.numero)}</p>
                     <p className="mt-0.5 text-xs text-muted">
                       {purchase.items?.length ?? 0}{' '}
                       {(purchase.items?.length ?? 0) === 1 ? 'ítem' : 'ítems'}
@@ -73,7 +73,7 @@ export function PurchasesTable({ purchases, canManage = false }: PurchasesTableP
                           buttonVariants({ variant: 'ghost', size: 'icon' }),
                           'size-9',
                         )}
-                        aria-label={`Ver detalle de compra #${purchase.id}`}
+                        aria-label={`Ver detalle de compra ${formatComprobante(purchase.numero)}`}
                       >
                         <Eye className="size-4" />
                       </Link>
@@ -84,7 +84,7 @@ export function PurchasesTable({ purchases, canManage = false }: PurchasesTableP
                             buttonVariants({ variant: 'ghost', size: 'icon' }),
                             'size-9',
                           )}
-                          aria-label={`Editar borrador de compra #${purchase.id}`}
+                          aria-label={`Editar borrador de compra ${formatComprobante(purchase.numero)}`}
                         >
                           <Pencil className="size-4" />
                         </Link>

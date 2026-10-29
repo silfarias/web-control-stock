@@ -1,6 +1,8 @@
 import type { MetodoPago } from '@/features/sales/types'
 
 export type FiltroReporte = {
+  /** Día exacto. Si viene, el backend ignora `desde` y `hasta`. */
+  fecha?: string
   desde?: string
   hasta?: string
   categoriaId?: number

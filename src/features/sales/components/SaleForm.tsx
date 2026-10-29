@@ -8,6 +8,7 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
+import { MoneyInput } from '@/components/ui/MoneyInput'
 import { useActiveCashRegister } from '@/features/cash-register/hooks/use-cash-register'
 import { inventoryApi } from '@/features/inventory/api/inventory-api'
 import { productsApi } from '@/features/products/api/products-api'
@@ -22,11 +23,16 @@ import {
 import { PAYMENT_METHODS, paymentMethodLabel } from '@/features/sales/utils/sale-labels'
 import { getApiErrorMessage, getUncertainMutationHint, normalizeApiError } from '@/lib/api/errors'
 import { cn } from '@/lib/utils/cn'
-import { formatMoney } from '@/lib/utils/format'
+import { formatComprobante, formatMoney } from '@/lib/utils/format'
+import { isValidMoneyInput, parseMoneyInput } from '@/lib/utils/money-input'
+
+export type SaleCheckout = {
+  cashReceived?: number
+}
 
 type SaleFormProps = {
   submitting?: boolean
-  onSubmit: (values: SaleFormValues) => Promise<void>
+  onSubmit: (values: SaleFormValues, checkout?: SaleCheckout) => Promise<void>
   onCancel: () => void
 }
 
@@ -48,6 +54,7 @@ export function SaleForm({
   const [scanQty, setScanQty] = useState('1')
   const [lookupError, setLookupError] = useState<string | null>(null)
   const [lookingUp, setLookingUp] = useState(false)
+  const [cashReceived, setCashReceived] = useState('')
 
   const {
     control,
@@ -78,6 +85,12 @@ export function SaleForm({
 
   const needsCash = metodoPago === 'EFECTIVO'
   const cashBlocked = needsCash && !activeCashQuery.isLoading && !hasOpenCash
+  const receivedAmount =
+    needsCash && isValidMoneyInput(cashReceived) ? parseMoneyInput(cashReceived) : null
+  const canQuoteChange = receivedAmount != null && items.length > 0 && estimate.complete
+  const changeAmount = canQuoteChange
+    ? Number((receivedAmount - estimate.total).toFixed(2))
+    : null
   const busy = submitting || isSubmitting || lookingUp
   const totalLabel =
     estimate.complete && items.length > 0 ? formatMoney(estimate.total) : formatMoney(0)
@@ -160,7 +173,14 @@ export function SaleForm({
       return
     }
     try {
-      await onSubmit(values)
+      const received =
+        values.metodoPago === 'EFECTIVO' && isValidMoneyInput(cashReceived)
+          ? parseMoneyInput(cashReceived)
+          : undefined
+      await onSubmit(
+        values,
+        received != null && Number.isFinite(received) ? { cashReceived: received } : undefined,
+      )
     } catch (error) {
       const message = getApiErrorMessage(error)
       const hint = getUncertainMutationHint(error)
@@ -375,13 +395,42 @@ export function SaleForm({
             ) : null}
           </label>
 
+          {needsCash ? (
+            <div className="flex flex-col gap-3">
+              <MoneyInput
+                label="Dinero recibido"
+                prefix="$"
+                value={cashReceived}
+                disabled={busy}
+                placeholder="0,00"
+                onValueChange={(values) => setCashReceived(values.value)}
+              />
+              {changeAmount == null ? (
+                <p className="text-xs text-muted">
+                  Ingresá lo que entrega el cliente para calcular el vuelto.
+                </p>
+              ) : changeAmount < 0 ? (
+                <p className="text-sm text-warning-ink" role="status">
+                  Falta {formatMoney(Math.abs(changeAmount))} para cubrir el total.
+                </p>
+              ) : (
+                <div className="rounded-xl border border-border bg-surface-muted px-4 py-3" role="status">
+                  <p className="text-xs font-medium tracking-wide text-muted uppercase">Vuelto</p>
+                  <p className="mt-1 text-2xl font-semibold tracking-tight tabular-nums">
+                    {formatMoney(changeAmount)}
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : null}
+
           <div className="rounded-xl bg-surface-muted px-4 py-3 text-sm">
             <p className="font-medium text-foreground">Estado de caja</p>
             {activeCashQuery.isLoading ? (
               <p className="mt-1 text-muted">Consultando…</p>
             ) : hasOpenCash ? (
               <p className="mt-1 text-muted">
-                Caja #{activeCashQuery.data?.id} abierta
+                Caja {formatComprobante(activeCashQuery.data?.numero)} abierta
                 {activeCashQuery.data?.usuario?.nombre
                   ? ` · ${activeCashQuery.data.usuario.nombre}`
                   : ''}
