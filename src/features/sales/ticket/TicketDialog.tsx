@@ -26,15 +26,12 @@ export function TicketDialog({
 }: TicketDialogProps) {
   const ticketQuery = useTicketConfig(open)
   const printed = useRef(false)
-  const openedAt = useRef(0)
   const settings = ticketQuery.data ? toTicketSettings(ticketQuery.data) : null
 
   useEffect(() => {
     if (!open) {
       printed.current = false
-      return
     }
-    openedAt.current = Date.now()
   }, [open])
 
   const html = useMemo(
@@ -45,9 +42,9 @@ export function TicketDialog({
   const configReady =
     open &&
     settings != null &&
+    ticketQuery.isFetched &&
     !ticketQuery.isLoading &&
-    !ticketQuery.isFetching &&
-    (ticketQuery.dataUpdatedAt >= openedAt.current || ticketQuery.failureCount > 0)
+    !ticketQuery.isFetching
 
   useEffect(() => {
     if (!configReady || !autoPrint || !html) return

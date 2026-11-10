@@ -1,5 +1,16 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios'
 import { notifyAuthSessionInvalid } from '@/lib/api/auth-events'
+import {
+  broadcastRefreshing,
+  broadcastSessionCleared,
+  broadcastTokens,
+  isRefreshLockBusy,
+  onPeerSessionCleared,
+  onPeerTokens,
+  releaseRefreshLock,
+  tryAcquireRefreshLock,
+  waitForPeerTokens,
+} from '@/lib/api/auth-sync'
 import { normalizeApiError } from '@/lib/api/errors'
 import { tokenStore } from '@/lib/api/token-store'
 import type { LoginResponse } from '@/features/auth/types'
@@ -32,13 +43,23 @@ export const apiClient = axios.create({
 })
 
 let refreshPromise: Promise<string> | null = null
+let peerSyncInitialized = false
 
-async function refreshAccessToken(): Promise<string> {
-  const refreshToken = tokenStore.getRefreshToken()
-  if (!refreshToken) {
-    throw normalizeApiError(new Error('No hay sesión activa.'))
-  }
+function ensurePeerSync() {
+  if (peerSyncInitialized || typeof window === 'undefined') return
+  peerSyncInitialized = true
 
+  onPeerTokens((tokens) => {
+    tokenStore.setTokens(tokens)
+  })
+
+  onPeerSessionCleared(() => {
+    tokenStore.clear()
+    notifyAuthSessionInvalid()
+  })
+}
+
+async function performRefreshRequest(refreshToken: string): Promise<LoginResponse> {
   const { data } = await axios.post<LoginResponse>(
     `${getBaseUrl()}/auth/refresh`,
     { refresh_token: refreshToken },
@@ -47,16 +68,79 @@ async function refreshAccessToken(): Promise<string> {
       timeout: 20_000,
     },
   )
+  return data
+}
 
-  tokenStore.setTokens({
-    accessToken: data.access_token,
-    refreshToken: data.refresh_token,
+/**
+ * Renueva access + refresh de forma única por pestaña y coordinada entre pestañas.
+ * Cada refresh token del backend es de un solo uso.
+ */
+export async function refreshSession(): Promise<string> {
+  ensurePeerSync()
+
+  if (refreshPromise) {
+    return refreshPromise
+  }
+
+  refreshPromise = (async () => {
+    let ownsLock = tryAcquireRefreshLock()
+
+    if (!ownsLock) {
+      try {
+        const peerTokens = await waitForPeerTokens()
+        tokenStore.setTokens(peerTokens)
+        return peerTokens.accessToken
+      } catch {
+        // Si el peer ya sincronizó tokens vía listener global (carrera de suscripción),
+        // reutilizarlos: NO volver a refrescar (invalidaría el refresh rotativo del peer).
+        const syncedAccess = tokenStore.getAccessToken()
+        if (syncedAccess && !isRefreshLockBusy()) {
+          return syncedAccess
+        }
+
+        ownsLock = tryAcquireRefreshLock()
+        if (!ownsLock) {
+          // Último recurso: si hay access (aunque el lock siga ocupado), usarlo.
+          if (syncedAccess) return syncedAccess
+          throw normalizeApiError(new Error('No se pudo renovar la sesión.'))
+        }
+      }
+    }
+
+    const refreshToken = tokenStore.getRefreshToken()
+    if (!refreshToken) {
+      releaseRefreshLock()
+      throw normalizeApiError(new Error('No hay sesión activa.'))
+    }
+
+    broadcastRefreshing()
+
+    try {
+      const data = await performRefreshRequest(refreshToken)
+      const tokens = {
+        accessToken: data.access_token,
+        refreshToken: data.refresh_token,
+      }
+      tokenStore.setTokens(tokens)
+      broadcastTokens(tokens)
+      return tokens.accessToken
+    } catch (error) {
+      tokenStore.clear()
+      broadcastSessionCleared()
+      throw normalizeApiError(error)
+    } finally {
+      releaseRefreshLock()
+    }
+  })().finally(() => {
+    refreshPromise = null
   })
 
-  return data.access_token
+  return refreshPromise
 }
 
 apiClient.interceptors.request.use((config) => {
+  ensurePeerSync()
+
   if (isPublicAuthRequest(config.url)) {
     return config
   }
@@ -75,6 +159,7 @@ apiClient.interceptors.response.use(
     const config = error.config as RetriableConfig | undefined
     const status = error.response?.status
 
+    // Solo 401 dispara renovación. 403 = sin permiso, no renovar.
     if (!config || status !== 401 || config._retry || isPublicAuthRequest(config.url)) {
       throw normalizeApiError(error)
     }
@@ -82,13 +167,7 @@ apiClient.interceptors.response.use(
     config._retry = true
 
     try {
-      if (!refreshPromise) {
-        refreshPromise = refreshAccessToken().finally(() => {
-          refreshPromise = null
-        })
-      }
-
-      const accessToken = await refreshPromise
+      const accessToken = await refreshSession()
       config.headers.Authorization = `Bearer ${accessToken}`
       return apiClient(config)
     } catch (refreshError) {

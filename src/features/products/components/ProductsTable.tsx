@@ -14,23 +14,18 @@ import {
 } from '@/components/ui/Table'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/Tooltip'
 import { ProductStockCell } from '@/features/products/components/ProductStockCell'
-import type { ProductStockMap } from '@/features/products/hooks/use-product-stocks'
 import type { Producto } from '@/features/products/types'
 import { cn } from '@/lib/utils/cn'
 import { formatMoney } from '@/lib/utils/format'
 
 type ProductsTableProps = {
   products: Producto[]
-  stocks: ProductStockMap
-  stocksLoading: boolean
   canManage?: boolean
   onDelete?: (product: Producto) => void
 }
 
 export function ProductsTable({
   products,
-  stocks,
-  stocksLoading,
   canManage = false,
   onDelete,
 }: ProductsTableProps) {
@@ -74,9 +69,8 @@ export function ProductsTable({
               </TableCell>
               <TableCell>
                 <ProductStockCell
-                  cantidad={stocks[product.id]}
+                  cantidad={product.stockCantidad}
                   minimoStock={product.minimoStock}
-                  loading={stocksLoading && stocks[product.id] === undefined}
                 />
               </TableCell>
               <TableCell>

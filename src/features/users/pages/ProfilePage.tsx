@@ -1,6 +1,7 @@
-import { useEffect, useMemo } from 'react'
-import { useForm } from 'react-hook-form'
+import { useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useNavigate } from 'react-router'
 import { useToast } from '@/components/common/use-toast'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
@@ -18,73 +19,74 @@ import {
 import { getApiErrorMessage } from '@/lib/api/errors'
 import { cn } from '@/lib/utils/cn'
 
+type ProfileBaseline = { userId: number; nombre: string; email: string }
+
+function hasProfileChanges(values: ProfileFormValues, baseline: ProfileBaseline | null) {
+  if (!baseline) return false
+  return (
+    values.nombre.trim() !== baseline.nombre.trim() ||
+    values.email.trim().toLowerCase() !== baseline.email.trim().toLowerCase() ||
+    values.password.length > 0 ||
+    values.confirmPassword.length > 0
+  )
+}
+
 export function ProfilePage() {
-  const { user, refreshUser } = useAuth()
+  const navigate = useNavigate()
+  const { user, refreshUser, endSessionLocally } = useAuth()
   const { pushToast } = useToast()
   const updateMutation = useUpdateUser()
+  const [baseline, setBaseline] = useState<ProfileBaseline | null>(null)
+  const [dirty, setDirty] = useState(false)
 
   const {
-    register,
+    control,
     handleSubmit,
     reset,
-    watch,
+    getValues,
     setError,
     formState: { errors, isSubmitting },
   } = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
-    defaultValues: user
-      ? userToProfileFormValues(user)
-      : { nombre: '', email: '', password: '', confirmPassword: '' },
+    defaultValues: { nombre: '', email: '', password: '', confirmPassword: '' },
   })
 
-  const userId = user?.id
-  const userNombre = user?.nombre ?? ''
-  const userEmail = user?.email ?? ''
-
-  // Solo resetear cuando cambian los datos persistidos (no en cada nueva referencia de `user`).
-  useEffect(() => {
-    if (userId == null) return
-    reset(
-      userToProfileFormValues({
-        nombre: userNombre,
-        email: userEmail,
-      }),
-    )
-  }, [userId, userNombre, userEmail, reset])
-
-  const values = watch()
-
-  const hasChanges = useMemo(() => {
-    if (userId == null) return false
-    return (
-      values.nombre.trim() !== userNombre.trim() ||
-      values.email.trim().toLowerCase() !== userEmail.trim().toLowerCase() ||
-      values.password.length > 0 ||
-      values.confirmPassword.length > 0
-    )
-  }, [
-    userId,
-    userNombre,
-    userEmail,
-    values.nombre,
-    values.email,
-    values.password,
-    values.confirmPassword,
-  ])
+  // Sincronizar baseline al cargar el usuario (sin effect, para evitar resets en cada render).
+  if (user && baseline?.userId !== user.id) {
+    setBaseline({ userId: user.id, nombre: user.nombre, email: user.email })
+    reset(userToProfileFormValues(user))
+    setDirty(false)
+  }
 
   const busy = isSubmitting || updateMutation.isPending
-  const canSave = hasChanges && !busy
+  const canSave = dirty && !busy
 
-  const onSubmit = handleSubmit(async (formValues) => {
+  async function submitProfile(formValues: ProfileFormValues) {
     if (!user) return
+
+    const passwordChanged = formValues.password.trim().length > 0
 
     try {
       await updateMutation.mutateAsync({
         id: user.id,
         payload: toUpdateProfileRequest(formValues),
       })
+
+      if (passwordChanged) {
+        pushToast({
+          title: 'Contraseña actualizada',
+          description: 'Por seguridad, volvé a iniciar sesión.',
+          tone: 'success',
+        })
+        await endSessionLocally()
+        void navigate('/login', { replace: true })
+        return
+      }
+
       const nextUser = await refreshUser()
+      setBaseline({ userId: nextUser.id, nombre: nextUser.nombre, email: nextUser.email })
       reset(userToProfileFormValues(nextUser))
+      setDirty(false)
       pushToast({
         title: 'Perfil actualizado',
         description: 'Tus datos se guardaron correctamente.',
@@ -93,7 +95,12 @@ export function ProfilePage() {
     } catch (error) {
       setError('root', { message: getApiErrorMessage(error) })
     }
-  })
+  }
+
+  function onFieldChange(patch: Partial<ProfileFormValues>) {
+    const nextValues = { ...getValues(), ...patch } as ProfileFormValues
+    setDirty(hasProfileChanges(nextValues, baseline))
+  }
 
   if (!user) {
     return (
@@ -117,67 +124,125 @@ export function ProfilePage() {
           </div>
         </dl>
 
-        <form className="space-y-4" onSubmit={onSubmit} noValidate>
-          <div className="space-y-1.5">
-            <span className="text-sm font-medium">Nombre</span>
-            <Input
-              autoComplete="name"
-              aria-invalid={errors.nombre ? true : undefined}
-              className={cn(errors.nombre && 'border-error')}
-              disabled={busy}
-              {...register('nombre')}
-            />
-            {errors.nombre?.message ? (
-              <p className="text-xs text-error-ink">{errors.nombre.message}</p>
-            ) : null}
-          </div>
-
-          <div className="space-y-1.5">
-            <span className="text-sm font-medium">Email</span>
-            <Input
-              type="email"
-              autoComplete="email"
-              aria-invalid={errors.email ? true : undefined}
-              className={cn(errors.email && 'border-error')}
-              disabled={busy}
-              {...register('email')}
-            />
-            {errors.email?.message ? (
-              <p className="text-xs text-error-ink">{errors.email.message}</p>
-            ) : null}
-          </div>
-
-          <div className="space-y-1.5">
-            <span className="text-sm font-medium">Nueva contraseña (opcional)</span>
-            <Input
-              type="password"
-              autoComplete="new-password"
-              aria-invalid={errors.password ? true : undefined}
-              className={cn(errors.password && 'border-error')}
-              disabled={busy}
-              {...register('password')}
-            />
-            {errors.password?.message ? (
-              <p className="text-xs text-error-ink">{errors.password.message}</p>
-            ) : (
-              <p className="text-xs text-muted">{PASSWORD_HINT}</p>
+        <form
+          className="space-y-4"
+          onSubmit={(event) => {
+            void handleSubmit(submitProfile)(event)
+          }}
+          noValidate
+        >
+          <Controller
+            name="nombre"
+            control={control}
+            render={({ field }) => (
+              <div className="space-y-1.5">
+                <span className="text-sm font-medium">Nombre</span>
+                <Input
+                  autoComplete="name"
+                  aria-invalid={errors.nombre ? true : undefined}
+                  className={cn(errors.nombre && 'border-error')}
+                  disabled={busy}
+                  name={field.name}
+                  value={field.value}
+                  onBlur={field.onBlur}
+                  ref={field.ref}
+                  onChange={(event) => {
+                    field.onChange(event)
+                    onFieldChange({ nombre: event.target.value })
+                  }}
+                />
+                {errors.nombre?.message ? (
+                  <p className="text-xs text-error-ink">{errors.nombre.message}</p>
+                ) : null}
+              </div>
             )}
-          </div>
+          />
 
-          <div className="space-y-1.5">
-            <span className="text-sm font-medium">Confirmar nueva contraseña</span>
-            <Input
-              type="password"
-              autoComplete="new-password"
-              aria-invalid={errors.confirmPassword ? true : undefined}
-              className={cn(errors.confirmPassword && 'border-error')}
-              disabled={busy}
-              {...register('confirmPassword')}
-            />
-            {errors.confirmPassword?.message ? (
-              <p className="text-xs text-error-ink">{errors.confirmPassword.message}</p>
-            ) : null}
-          </div>
+          <Controller
+            name="email"
+            control={control}
+            render={({ field }) => (
+              <div className="space-y-1.5">
+                <span className="text-sm font-medium">Email</span>
+                <Input
+                  type="email"
+                  autoComplete="email"
+                  aria-invalid={errors.email ? true : undefined}
+                  className={cn(errors.email && 'border-error')}
+                  disabled={busy}
+                  name={field.name}
+                  value={field.value}
+                  onBlur={field.onBlur}
+                  ref={field.ref}
+                  onChange={(event) => {
+                    field.onChange(event)
+                    onFieldChange({ email: event.target.value })
+                  }}
+                />
+                {errors.email?.message ? (
+                  <p className="text-xs text-error-ink">{errors.email.message}</p>
+                ) : null}
+              </div>
+            )}
+          />
+
+          <Controller
+            name="password"
+            control={control}
+            render={({ field }) => (
+              <div className="space-y-1.5">
+                <span className="text-sm font-medium">Nueva contraseña (opcional)</span>
+                <Input
+                  type="password"
+                  autoComplete="new-password"
+                  aria-invalid={errors.password ? true : undefined}
+                  className={cn(errors.password && 'border-error')}
+                  disabled={busy}
+                  name={field.name}
+                  value={field.value}
+                  onBlur={field.onBlur}
+                  ref={field.ref}
+                  onChange={(event) => {
+                    field.onChange(event)
+                    onFieldChange({ password: event.target.value })
+                  }}
+                />
+                {errors.password?.message ? (
+                  <p className="text-xs text-error-ink">{errors.password.message}</p>
+                ) : (
+                  <p className="text-xs text-muted">{PASSWORD_HINT}</p>
+                )}
+              </div>
+            )}
+          />
+
+          <Controller
+            name="confirmPassword"
+            control={control}
+            render={({ field }) => (
+              <div className="space-y-1.5">
+                <span className="text-sm font-medium">Confirmar nueva contraseña</span>
+                <Input
+                  type="password"
+                  autoComplete="new-password"
+                  aria-invalid={errors.confirmPassword ? true : undefined}
+                  className={cn(errors.confirmPassword && 'border-error')}
+                  disabled={busy}
+                  name={field.name}
+                  value={field.value}
+                  onBlur={field.onBlur}
+                  ref={field.ref}
+                  onChange={(event) => {
+                    field.onChange(event)
+                    onFieldChange({ confirmPassword: event.target.value })
+                  }}
+                />
+                {errors.confirmPassword?.message ? (
+                  <p className="text-xs text-error-ink">{errors.confirmPassword.message}</p>
+                ) : null}
+              </div>
+            )}
+          />
 
           {errors.root?.message ? (
             <p className="rounded-xl bg-error-soft px-3 py-2 text-sm text-error-ink" role="alert">
@@ -190,7 +255,16 @@ export function ProfilePage() {
               type="button"
               variant="outline"
               disabled={!canSave}
-              onClick={() => reset(userToProfileFormValues(user))}
+              onClick={() => {
+                if (!baseline) return
+                reset(
+                  userToProfileFormValues({
+                    nombre: baseline.nombre,
+                    email: baseline.email,
+                  }),
+                )
+                setDirty(false)
+              }}
             >
               Descartar
             </Button>

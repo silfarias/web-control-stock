@@ -12,7 +12,6 @@ import { useAuth } from '@/features/auth/hooks/use-auth'
 import { ProductStockCell } from '@/features/products/components/ProductStockCell'
 import { useProduct } from '@/features/products/hooks/use-product'
 import { useDeleteProduct } from '@/features/products/hooks/use-product-mutations'
-import { useProductStock } from '@/features/products/hooks/use-product-stocks'
 import { getApiErrorMessage } from '@/lib/api/errors'
 import { cn } from '@/lib/utils/cn'
 import { formatMoney, formatShortDate } from '@/lib/utils/format'
@@ -33,7 +32,6 @@ export function ProductDetailPage() {
   const [confirmOpen, setConfirmOpen] = useState(false)
 
   const productQuery = useProduct(productId)
-  const stockQuery = useProductStock(productId)
   const deleteMutation = useDeleteProduct()
 
   const product = productQuery.data
@@ -211,17 +209,13 @@ export function ProductDetailPage() {
               </div>
               <div className="mt-4">
                 <ProductStockCell
-                  cantidad={stockQuery.data}
+                  cantidad={product.stockCantidad}
                   minimoStock={product.minimoStock}
-                  loading={stockQuery.isLoading}
                 />
               </div>
               <p className="mt-3 text-xs text-muted">
                 Mínimo configurado: <span className="tabular-nums">{product.minimoStock}</span>
               </p>
-              {stockQuery.isError ? (
-                <p className="mt-2 text-xs text-warning-ink">{getApiErrorMessage(stockQuery.error)}</p>
-              ) : null}
               <Link
                 to={`/inventario/${product.id}`}
                 className={cn(

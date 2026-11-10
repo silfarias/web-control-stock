@@ -7,11 +7,22 @@ import type {
   RefreshTokenRequest,
 } from '@/features/auth/types'
 
+export type ChangePasswordRequest = {
+  password: string
+  confirmarPassword: string
+}
+
+export type ChangePasswordResponse = {
+  message: string
+  usuario: AuthUsuario
+}
+
 export const authApi = {
   login(payload: LoginRequest) {
     return apiClient.post<LoginResponse>('/auth/login', payload).then((response) => response.data)
   },
 
+  /** Preferir `refreshSession()` del cliente HTTP para evitar refresh concurrentes. */
   refresh(payload: RefreshTokenRequest) {
     return apiClient
       .post<LoginResponse>('/auth/refresh', payload)
@@ -24,5 +35,11 @@ export const authApi = {
 
   logout() {
     return apiClient.post<LogoutResponse>('/auth/logout').then((response) => response.data)
+  },
+
+  changePassword(payload: ChangePasswordRequest) {
+    return apiClient
+      .patch<ChangePasswordResponse>('/auth/change-password', payload)
+      .then((response) => response.data)
   },
 }

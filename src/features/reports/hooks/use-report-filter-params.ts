@@ -105,7 +105,7 @@ export function useReportFilterParams(mode: FilterMode) {
     const next: FiltroReporte = { ...baseFiltro }
     if (productStatus === 'ready' && match?.id != null) next.productoId = match.id
     return next
-  }, [baseFiltro, match?.id, productStatus])
+  }, [baseFiltro, match, productStatus])
 
   const values = useMemo(() => valuesFromFiltro(baseFiltro, codigo), [baseFiltro, codigo])
 

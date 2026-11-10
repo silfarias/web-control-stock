@@ -10,6 +10,8 @@ export type Producto = {
   precioCosto: number | string
   precioVenta: number | string
   minimoStock: number
+  /** Cantidad actual en inventario (viene en search, get, create y update). */
+  stockCantidad: number
   categoria: Categoria
   createdAt: string
   updatedAt: string

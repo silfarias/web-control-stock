@@ -175,8 +175,11 @@ export function SaleForm({
 
   const itemsRef = useRef(items)
   const busyRef = useRef(busy)
-  itemsRef.current = items
-  busyRef.current = busy
+
+  useEffect(() => {
+    itemsRef.current = items
+    busyRef.current = busy
+  }, [items, busy])
 
   useEffect(() => {
     function onKeyDown(event: globalThis.KeyboardEvent) {

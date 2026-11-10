@@ -21,7 +21,6 @@ import { useAuth } from '@/features/auth/hooks/use-auth'
 import { useCategoryOptions } from '@/features/categories/hooks/use-category-options'
 import { ProductsTable } from '@/features/products/components/ProductsTable'
 import { useDeleteProduct } from '@/features/products/hooks/use-product-mutations'
-import { useProductStocks } from '@/features/products/hooks/use-product-stocks'
 import { useProducts } from '@/features/products/hooks/use-products'
 import type { Producto } from '@/features/products/types'
 import { getApiErrorMessage } from '@/lib/api/errors'
@@ -59,11 +58,13 @@ export function ProductsPage() {
   const [barcodeInput, setBarcodeInput] = useState(barcodeFromUrl)
   const [urlBarcode, setUrlBarcode] = useState(barcodeFromUrl)
 
-  dialogOpenRef.current = Boolean(deletingProduct)
-
   function focusBarcode() {
     barcodeRef.current?.focus({ preventScroll: true })
   }
+
+  useEffect(() => {
+    dialogOpenRef.current = Boolean(deletingProduct)
+  }, [deletingProduct])
 
   useEffect(() => {
     focusBarcode()
@@ -127,8 +128,6 @@ export function ProductsPage() {
   const productsQuery = useProducts(params)
   const products = productsQuery.data?.data ?? []
   const metadata = productsQuery.data?.metadata
-  const productIds = products.map((product) => product.id)
-  const stocksQuery = useProductStocks(productIds)
 
   const categoriesQuery = useCategoryOptions()
   const categories = categoriesQuery.data ?? []
@@ -314,18 +313,9 @@ export function ProductsPage() {
         <div className="flex flex-col gap-4" data-products-keep-focus>
           <ProductsTable
             products={products}
-            stocks={stocksQuery.data ?? {}}
-            stocksLoading={stocksQuery.isLoading || stocksQuery.isFetching}
             canManage={canManage}
             onDelete={setDeletingProduct}
           />
-
-          {stocksQuery.isError ? (
-            <p className="text-sm text-warning-ink">
-              No se pudo cargar el stock de algunos productos. Los precios y datos del catálogo sí
-              están disponibles.
-            </p>
-          ) : null}
 
           {metadata ? (
             <div data-products-keep-focus>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
 import { Input } from '@/components/ui/Input'
@@ -32,13 +32,13 @@ export function TicketSettingsDialog({ open, onOpenChange, settings }: TicketSet
   const updateTicket = useUpdateTicket()
   const { pushToast } = useToast()
   const [draft, setDraft] = useState(settings)
-  const settingsRef = useRef(settings)
-  settingsRef.current = settings
+  const [wasOpen, setWasOpen] = useState(open)
 
-  useEffect(() => {
-    if (!open) return
-    setDraft(settingsRef.current)
-  }, [open])
+  // Al abrir el diálogo, sincronizar el borrador con la config actual (sin effect).
+  if (open !== wasOpen) {
+    setWasOpen(open)
+    if (open) setDraft(settings)
+  }
 
   const html = useMemo(
     () =>

@@ -33,23 +33,30 @@ export function SaleDetailPage() {
   const saleId = parseId(idParam)
   const saleQuery = useSale(saleId)
   const sale = saleQuery.data
-  const [ticketOpen, setTicketOpen] = useState(false)
-  const [autoPrint, setAutoPrint] = useState(false)
-  const [ticketCash, setTicketCash] = useState<number | undefined>()
+  const navState = (location.state as SaleTicketNavigationState | null) ?? null
+  const pendingAutoPrint = Boolean(sale && navState?.printTicket)
+
+  const [manualTicketOpen, setManualTicketOpen] = useState(false)
+  const ticketOpen = pendingAutoPrint || manualTicketOpen
+  const ticketCash = pendingAutoPrint
+    ? (navState?.cashReceived ?? (sale ? readTicketCash(sale.id) : undefined))
+    : sale
+      ? readTicketCash(sale.id)
+      : undefined
 
   useEffect(() => {
-    if (!sale) return
-    const state = location.state as SaleTicketNavigationState | null
-    if (state?.printTicket) {
-      if (state.cashReceived != null) rememberTicketCash(sale.id, state.cashReceived)
-      setTicketCash(state.cashReceived ?? readTicketCash(sale.id))
-      setAutoPrint(true)
-      setTicketOpen(true)
-      void navigate(location.pathname, { replace: true, state: null })
-      return
+    if (!sale || !navState?.printTicket) return
+    if (navState.cashReceived != null) {
+      rememberTicketCash(sale.id, navState.cashReceived)
     }
-    setTicketCash(readTicketCash(sale.id))
-  }, [sale, location.state, location.pathname, navigate])
+  }, [sale, navState])
+
+  function handleTicketOpenChange(open: boolean) {
+    setManualTicketOpen(open)
+    if (!open && pendingAutoPrint) {
+      void navigate(location.pathname, { replace: true, state: null })
+    }
+  }
 
   if (saleId == null) {
     return (
@@ -93,7 +100,7 @@ export function SaleDetailPage() {
           {sale ? <SaleStatusBadge estado={sale.estado} /> : null}
           {sale?.estado === 'CONFIRMADA' ? (
             <>
-              <Button type="button" variant="outline" onClick={() => setTicketOpen(true)}>
+              <Button type="button" variant="outline" onClick={() => setManualTicketOpen(true)}>
                 Imprimir ticket
               </Button>
               <CancelSaleButton sale={sale} />
@@ -210,13 +217,10 @@ export function SaleDetailPage() {
       {sale ? (
         <TicketDialog
           open={ticketOpen}
-          onOpenChange={(open) => {
-            setTicketOpen(open)
-            if (!open) setAutoPrint(false)
-          }}
+          onOpenChange={handleTicketOpenChange}
           sale={sale}
           cashReceived={ticketCash}
-          autoPrint={autoPrint}
+          autoPrint={pendingAutoPrint}
         />
       ) : null}
     </div>

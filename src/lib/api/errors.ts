@@ -104,6 +104,10 @@ export function getApiErrorMessage(error: unknown): string {
     return 'No tenés permiso para realizar esta acción.'
   }
 
+  if (apiError.status === 429) {
+    return 'Demasiados intentos. Esperá un momento e intentá de nuevo.'
+  }
+
   if (apiError.code === 'IN01') {
     return apiError.message || 'Stock insuficiente para realizar el movimiento.'
   }

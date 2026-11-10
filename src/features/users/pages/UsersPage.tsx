@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router'
 import { Plus, Search, Users } from 'lucide-react'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { EmptyState } from '@/components/common/EmptyState'
@@ -35,7 +36,8 @@ import { getApiErrorMessage } from '@/lib/api/errors'
 import { DEFAULT_PAGE_SIZE } from '@/lib/api/pagination'
 
 export function UsersPage() {
-  const { user: authUser, refreshUser, logout } = useAuth()
+  const navigate = useNavigate()
+  const { user: authUser, refreshUser, logout, endSessionLocally } = useAuth()
   const { pushToast } = useToast()
 
   const [searchInput, setSearchInput] = useState('')
@@ -99,10 +101,22 @@ export function UsersPage() {
 
   async function handleEdit(values: EditUserFormValues) {
     if (!editingUser) return
+    const passwordChanged = values.password.trim().length > 0
     const updated = await updateMutation.mutateAsync({
       id: editingUser.id,
       payload: toUpdateUsuarioRequest(values),
     })
+
+    if (authUser?.id === updated.id && passwordChanged) {
+      pushToast({
+        title: 'Contraseña actualizada',
+        description: 'Por seguridad, volvé a iniciar sesión.',
+        tone: 'success',
+      })
+      await endSessionLocally()
+      void navigate('/login', { replace: true })
+      return
+    }
 
     if (authUser?.id === updated.id) {
       // GET /auth/me refleja rol/perfil actuales; limpia sesión si la cuenta ya no es válida.

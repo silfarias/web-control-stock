@@ -27,7 +27,7 @@ export function UserDetailPage() {
   const { id: idParam } = useParams()
   const id = Number(idParam)
   const navigate = useNavigate()
-  const { user: authUser, refreshUser, logout } = useAuth()
+  const { user: authUser, refreshUser, logout, endSessionLocally } = useAuth()
   const { pushToast } = useToast()
 
   const userQuery = useUser(Number.isFinite(id) && id > 0 ? id : undefined)
@@ -42,10 +42,22 @@ export function UserDetailPage() {
 
   async function handleEdit(values: EditUserFormValues) {
     if (!user) return
+    const passwordChanged = values.password.trim().length > 0
     const updated = await updateMutation.mutateAsync({
       id: user.id,
       payload: toUpdateUsuarioRequest(values),
     })
+
+    if (authUser?.id === updated.id && passwordChanged) {
+      pushToast({
+        title: 'Contraseña actualizada',
+        description: 'Por seguridad, volvé a iniciar sesión.',
+        tone: 'success',
+      })
+      await endSessionLocally()
+      void navigate('/login', { replace: true })
+      return
+    }
 
     if (authUser?.id === updated.id) {
       try {

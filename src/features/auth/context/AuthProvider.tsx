@@ -7,6 +7,8 @@ import {
 } from '@/features/auth/context/auth-context'
 import type { AuthStatus, AuthUsuario, LoginRequest, LoginResponse } from '@/features/auth/types'
 import { onAuthSessionInvalid } from '@/lib/api/auth-events'
+import { broadcastSessionCleared } from '@/lib/api/auth-sync'
+import { refreshSession } from '@/lib/api/client'
 import { tokenStore } from '@/lib/api/token-store'
 
 function applySession(data: LoginResponse) {
@@ -34,12 +36,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<AuthStatus>('bootstrapping')
   const [user, setUser] = useState<AuthUsuario | null>(null)
 
-  const clearSession = useCallback(() => {
-    tokenStore.clear()
-    setUser(null)
-    setStatus('anonymous')
-    queryClient.clear()
-  }, [queryClient])
+  const clearSession = useCallback(
+    (options?: { broadcast?: boolean }) => {
+      tokenStore.clear()
+      setUser(null)
+      setStatus('anonymous')
+      queryClient.clear()
+      if (options?.broadcast !== false) {
+        broadcastSessionCleared()
+      }
+    },
+    [queryClient],
+  )
 
   const loadCurrentUser = useCallback(async (): Promise<AuthUsuario> => {
     const me = await authApi.me()
@@ -61,11 +69,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       try {
-        const data = await authApi.refresh({ refresh_token: refreshToken })
+        // Un solo camino de refresh (mutex + coordinación entre pestañas).
+        await refreshSession()
         if (cancelled) return
-        applySession(data)
 
-        // Confirmar estado real en DB (rol, baja, etc.) con el access token renovado.
         try {
           const me = await authApi.me()
           if (cancelled) return
@@ -73,17 +80,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setStatus('authenticated')
         } catch {
           if (cancelled) return
-          // Token válido pero usuario inexistente / inaccesible.
-          tokenStore.clear()
-          setUser(null)
-          setStatus('anonymous')
-          queryClient.clear()
+          clearSession({ broadcast: true })
         }
       } catch {
         if (cancelled) return
-        tokenStore.clear()
-        setUser(null)
-        setStatus('anonymous')
+        clearSession({ broadcast: false })
       }
     }
 
@@ -92,11 +93,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true
     }
-  }, [queryClient])
+  }, [clearSession])
 
   useEffect(() => {
     return onAuthSessionInvalid(() => {
-      clearSession()
+      clearSession({ broadcast: false })
     })
   }, [clearSession])
 
@@ -111,7 +112,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setStatus('authenticated')
       return nextUser
     } catch {
-      // Fallback al payload de login si /me falla de forma transitoria.
       const nextUser = toAuthUsuario(data.usuario)
       setUser(nextUser)
       setStatus('authenticated')
@@ -121,14 +121,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
+      // Logout del backend exige JWT válido; si el access venció, renovamos una vez.
+      if (!tokenStore.getAccessToken() && tokenStore.getRefreshToken()) {
+        try {
+          await refreshSession()
+        } catch {
+          // Seguir con limpieza local.
+        }
+      }
+
       if (tokenStore.getAccessToken()) {
         await authApi.logout()
       }
     } catch {
-      // La API no revoca tokens; la limpieza local es el cierre efectivo de sesión.
+      // Aunque falle la revocación remota, la limpieza local cierra la sesión en este cliente.
     } finally {
-      clearSession()
+      clearSession({ broadcast: true })
     }
+  }, [clearSession])
+
+  /** Cierra sesión local sin llamar al backend (p. ej. tras revoke por cambio de contraseña). */
+  const endSessionLocally = useCallback(async () => {
+    clearSession({ broadcast: true })
   }, [clearSession])
 
   const syncUser = useCallback((next: AuthUsuario) => {
@@ -137,13 +151,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refreshUser = useCallback(async () => {
     if (!tokenStore.getAccessToken() && !tokenStore.getRefreshToken()) {
-      clearSession()
+      clearSession({ broadcast: true })
       throw new Error('No hay sesión activa.')
     }
     try {
       return await loadCurrentUser()
     } catch (error) {
-      clearSession()
+      clearSession({ broadcast: true })
       throw error
     }
   }, [clearSession, loadCurrentUser])
@@ -156,10 +170,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isBootstrapping: status === 'bootstrapping',
       login,
       logout,
+      endSessionLocally,
       syncUser,
       refreshUser,
     }),
-    [status, user, login, logout, syncUser, refreshUser],
+    [status, user, login, logout, endSessionLocally, syncUser, refreshUser],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
