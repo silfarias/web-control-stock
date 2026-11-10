@@ -1,6 +1,15 @@
 import { Link } from 'react-router'
 import { Badge, type BadgeTone } from '@/components/ui/Badge'
 import { Card } from '@/components/ui/Card'
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/Table'
 import type { RecentSale } from '@/features/dashboard/types'
 import type { MetodoPago } from '@/features/sales/types'
 import { paymentMethodLabel } from '@/features/sales/utils/sale-labels'
@@ -70,57 +79,44 @@ export function RecentSales({
       ) : null}
 
       {!loading && !error && sales.length > 0 ? (
-        <div className="mt-4 -mx-1 overflow-x-auto px-1">
-          <table className="w-full min-w-[32rem] border-collapse text-left text-sm">
-            <caption className="sr-only">Ventas recientes</caption>
-            <thead>
-              <tr className="text-xs tracking-wide text-muted uppercase">
-                <th scope="col" className="border-b border-border pb-3 pr-3 font-medium">
-                  Comprobante
-                </th>
-                <th scope="col" className="border-b border-border pb-3 pr-3 font-medium">
-                  Hora
-                </th>
-                <th scope="col" className="border-b border-border pb-3 pr-3 font-medium">
-                  Pago
-                </th>
-                <th scope="col" className="border-b border-border pb-3 pr-3 font-medium">
-                  Artículos
-                </th>
-                <th scope="col" className="border-b border-border pb-3 text-right font-medium">
-                  Total
-                </th>
-              </tr>
-            </thead>
-            <tbody>
+        <div className="mt-4 -mx-1 px-1">
+          <Table className="min-w-[32rem]">
+            <TableCaption className="sr-only">Ventas recientes</TableCaption>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="px-0 pr-3 sm:px-0 sm:pr-3">Comprobante</TableHead>
+                <TableHead className="px-0 pr-3 sm:px-0 sm:pr-3">Hora</TableHead>
+                <TableHead className="px-0 pr-3 sm:px-0 sm:pr-3">Pago</TableHead>
+                <TableHead className="px-0 pr-3 sm:px-0 sm:pr-3">Artículos</TableHead>
+                <TableHead className="px-0 text-right sm:px-0">Total</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {sales.map((sale) => (
-                <tr key={sale.id} className="last:[&>td]:border-b-0">
-                  <td className="border-b border-border py-3.5 pr-3 font-medium">
-                    <Link
-                      to={`/ventas/${sale.id}`}
-                      className="text-primary hover:underline"
-                    >
+                <TableRow key={sale.id}>
+                  <TableCell className="px-0 pr-3 font-medium sm:px-0 sm:pr-3">
+                    <Link to={`/ventas/${sale.id}`} className="text-primary hover:underline">
                       {sale.displayId}
                     </Link>
-                  </td>
-                  <td className="border-b border-border py-3.5 pr-3 text-muted tabular-nums">
+                  </TableCell>
+                  <TableCell className="px-0 pr-3 text-muted tabular-nums sm:px-0 sm:pr-3">
                     {sale.time}
-                  </td>
-                  <td className="border-b border-border py-3.5 pr-3">
+                  </TableCell>
+                  <TableCell className="px-0 pr-3 sm:px-0 sm:pr-3">
                     <Badge tone={paymentTones[sale.payment]}>
                       {paymentMethodLabel(sale.payment)}
                     </Badge>
-                  </td>
-                  <td className="border-b border-border py-3.5 pr-3 text-muted tabular-nums">
+                  </TableCell>
+                  <TableCell className="px-0 pr-3 text-muted tabular-nums sm:px-0 sm:pr-3">
                     {sale.items}
-                  </td>
-                  <td className="border-b border-border py-3.5 text-right font-medium tabular-nums">
+                  </TableCell>
+                  <TableCell className="px-0 text-right font-medium tabular-nums sm:px-0">
                     {formatMoney(sale.total)}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       ) : null}
     </Card>

@@ -48,19 +48,6 @@ export function AppLayout() {
   }, [location.pathname])
 
   useEffect(() => {
-    if (!drawerOpen) return
-
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') setMenuPath(null)
-    }
-
-    document.addEventListener('keydown', onKeyDown)
-    return () => {
-      document.removeEventListener('keydown', onKeyDown)
-    }
-  }, [drawerOpen])
-
-  useEffect(() => {
     if (wasMobileOpen.current && !drawerOpen && !isDesktop) {
       menuButtonRef.current?.focus()
     }
@@ -75,25 +62,13 @@ export function AppLayout() {
       >
         Saltar al contenido
       </a>
-      {drawerOpen ? (
-        <button
-          type="button"
-          className="fixed inset-0 z-40 bg-foreground/40"
-          aria-label="Cerrar menú"
-          onClick={() => setMenuPath(null)}
-        />
-      ) : null}
       <Sidebar
         collapsed={collapsed}
         mobileOpen={drawerOpen}
-        inert={!drawerOpen && !isDesktop}
         onClose={() => setMenuPath(null)}
         onToggleCollapsed={() => setCollapsed((current) => !current)}
       />
-      <div
-        className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden"
-        inert={drawerOpen ? true : undefined}
-      >
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <Header
           onOpenMenu={() => setMenuPath(location.pathname)}
           menuButtonRef={menuButtonRef}

@@ -1,13 +1,21 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { Barcode, Package, Plus, Search } from 'lucide-react'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ListPagination } from '@/components/common/ListPagination'
+import { TableSkeleton } from '@/components/common/TableSkeleton'
 import { useToast } from '@/components/common/use-toast'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/Select'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { useAuth } from '@/features/auth/hooks/use-auth'
 import { useCategoryOptions } from '@/features/categories/hooks/use-category-options'
@@ -44,10 +52,26 @@ export function ProductsPage() {
   const pageFromUrl = parsePage(searchParams.get('page'))
   const categoriaIdFromUrl = parseCategoriaId(searchParams.get('categoriaId'))
 
+  const barcodeRef = useRef<HTMLInputElement>(null)
+  const dialogOpenRef = useRef(false)
   const [searchInput, setSearchInput] = useState(qFromUrl)
   const [urlQ, setUrlQ] = useState(qFromUrl)
   const [barcodeInput, setBarcodeInput] = useState(barcodeFromUrl)
   const [urlBarcode, setUrlBarcode] = useState(barcodeFromUrl)
+
+  dialogOpenRef.current = Boolean(deletingProduct)
+
+  function focusBarcode() {
+    barcodeRef.current?.focus({ preventScroll: true })
+  }
+
+  useEffect(() => {
+    focusBarcode()
+  }, [])
+
+  useEffect(() => {
+    if (!deletingProduct) focusBarcode()
+  }, [deletingProduct])
 
   if (qFromUrl !== urlQ) {
     setUrlQ(qFromUrl)
@@ -163,6 +187,7 @@ export function ProductsPage() {
         {canManage ? (
           <Link
             to="/productos/nuevo"
+            data-products-keep-focus
             className={cn(buttonVariants({ variant: 'primary' }), 'shrink-0')}
           >
             <Plus className="size-4" aria-hidden />
@@ -173,56 +198,68 @@ export function ProductsPage() {
 
       <Card className="p-4 sm:p-5">
         <div className="grid items-center gap-3 lg:grid-cols-[minmax(0,1.4fr)_minmax(18rem,1fr)_auto]">
-          <Input
-            type="search"
-            value={searchInput}
-            onChange={(event) => setSearchInput(event.target.value)}
-            placeholder="Buscar por nombre, código, código de barras o descripción"
-            leadingIcon={<Search className="size-4" aria-hidden />}
-            aria-label="Buscar productos"
-          />
+          <div data-products-keep-focus>
+            <Input
+              type="search"
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
+              placeholder="Buscar por nombre, código, código de barras o descripción"
+              leadingIcon={<Search className="size-4" aria-hidden />}
+              aria-label="Buscar productos"
+            />
+          </div>
 
           <Input
+            ref={barcodeRef}
             type="search"
             value={barcodeInput}
             onChange={(event) => setBarcodeInput(event.target.value)}
+            onBlur={() => {
+              window.setTimeout(() => {
+                if (dialogOpenRef.current) return
+                const active = document.activeElement
+                if (active instanceof HTMLElement && active.closest('[data-products-keep-focus]')) {
+                  return
+                }
+                if (active instanceof HTMLElement && active.closest('[role="dialog"]')) return
+                focusBarcode()
+              }, 0)
+            }}
             placeholder="Buscar por código de barras"
             leadingIcon={<Barcode className="size-4" aria-hidden />}
             aria-label="Buscar por código de barras"
+            autoComplete="off"
           />
 
-          <label className="flex w-full items-center gap-2.5 text-sm lg:w-72">
+          <div
+            data-products-keep-focus
+            className="flex w-full items-center gap-2.5 text-sm lg:w-72"
+          >
             <span className="shrink-0 font-medium whitespace-nowrap text-foreground">
               Categoría
             </span>
-            <select
-              value={categoriaIdFromUrl ?? ''}
-              onChange={(event) => handleCategoriaChange(event.target.value)}
+            <Select
+              value={categoriaIdFromUrl != null ? String(categoriaIdFromUrl) : 'all'}
+              onValueChange={(value) => handleCategoriaChange(value === 'all' ? '' : value)}
               disabled={categoriesQuery.isLoading}
-              className={cn(
-                'h-11 w-full min-w-0 flex-1 rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors',
-                'hover:border-border-strong focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
-                'disabled:cursor-not-allowed disabled:opacity-60',
-              )}
-              aria-label="Filtrar por categoría"
             >
-              <option value="">Todas las categorías</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.nombre}
-                </option>
-              ))}
-            </select>
-          </label>
+              <SelectTrigger className="min-w-0 flex-1" aria-label="Filtrar por categoría">
+                <SelectValue placeholder="Todas las categorías" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las categorías</SelectItem>
+                {categories.map((category) => (
+                  <SelectItem key={category.id} value={String(category.id)}>
+                    {category.nombre}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </Card>
 
-      {productsQuery.isPending && products.length === 0 ? (
-        <Card className="px-6 py-16 text-center">
-          <p className="text-sm font-medium">Cargando productos…</p>
-          <p className="mt-1 text-sm text-muted">Un momento, por favor.</p>
-        </Card>
-      ) : null}
+      {productsQuery.isPending && products.length === 0 ? <TableSkeleton columns={7} /> : null}
 
       {productsQuery.isError ? (
         <Card className="border-error/20 bg-error-soft px-6 py-10 text-center">
@@ -274,7 +311,7 @@ export function ProductsPage() {
       ) : null}
 
       {!productsQuery.isError && products.length > 0 ? (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4" data-products-keep-focus>
           <ProductsTable
             products={products}
             stocks={stocksQuery.data ?? {}}
@@ -291,14 +328,16 @@ export function ProductsPage() {
           ) : null}
 
           {metadata ? (
-            <ListPagination
-              pageNumber={metadata.pageNumber}
-              totalPages={metadata.totalPages}
-              count={metadata.count}
-              itemLabel={{ singular: 'producto', plural: 'productos' }}
-              disabled={productsQuery.isFetching}
-              onPageChange={setPage}
-            />
+            <div data-products-keep-focus>
+              <ListPagination
+                pageNumber={metadata.pageNumber}
+                totalPages={metadata.totalPages}
+                count={metadata.count}
+                itemLabel={{ singular: 'producto', plural: 'productos' }}
+                disabled={productsQuery.isFetching}
+                onPageChange={setPage}
+              />
+            </div>
           ) : null}
         </div>
       ) : null}

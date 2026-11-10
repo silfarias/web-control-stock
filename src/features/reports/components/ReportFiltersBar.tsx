@@ -2,6 +2,13 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { useCategoryOptions } from '@/features/categories/hooks/use-category-options'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/Select'
 import { cn } from '@/lib/utils/cn'
 
 export type ReportFilterValues = {
@@ -22,11 +29,6 @@ type ReportFiltersBarProps = {
   productHint?: string
   className?: string
 }
-
-const selectClassName = cn(
-  'h-11 w-full rounded-xl border border-border bg-surface px-3 text-sm text-foreground transition-colors',
-  'hover:border-border-strong focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
-)
 
 const dateClassName = 'w-full min-w-0 px-2.5'
 
@@ -128,26 +130,28 @@ export function ReportFiltersBar({
         ) : null}
 
         <Field label="Categoría" className="w-44">
-          <select
-            className={selectClassName}
-            aria-label="Categoría"
-            value={values.categoriaId ?? ''}
-            onChange={(event) => {
-              const raw = event.target.value
+          <Select
+            value={values.categoriaId != null ? String(values.categoriaId) : 'all'}
+            onValueChange={(raw) => {
               onChange({
                 ...values,
-                categoriaId: raw ? Number(raw) : undefined,
+                categoriaId: raw === 'all' ? undefined : Number(raw),
               })
             }}
             disabled={categoriesQuery.isLoading}
           >
-            <option value="">Todas</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.nombre}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger aria-label="Categoría">
+              <SelectValue placeholder="Todas" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todas</SelectItem>
+              {categories.map((category) => (
+                <SelectItem key={category.id} value={String(category.id)}>
+                  {category.nombre}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </Field>
 
         <Field label="Código" className="w-40">

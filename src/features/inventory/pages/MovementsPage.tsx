@@ -3,16 +3,23 @@ import { useSearchParams } from 'react-router'
 import { History, Search } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ListPagination } from '@/components/common/ListPagination'
+import { TableSkeleton } from '@/components/common/TableSkeleton'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/Select'
 import { MovementsTable } from '@/features/inventory/components/MovementsTable'
 import { useStockMovements } from '@/features/inventory/hooks/use-stock-movements'
 import type { TipoMovimientoStock } from '@/features/inventory/types'
 import { movementTypeLabel } from '@/features/inventory/utils/movement-labels'
 import { getApiErrorMessage } from '@/lib/api/errors'
 import { DEFAULT_PAGE_SIZE } from '@/lib/api/pagination'
-import { cn } from '@/lib/utils/cn'
 
 const MOVEMENT_TYPES: TipoMovimientoStock[] = [
   'COMPRA',
@@ -118,33 +125,29 @@ export function MovementsPage() {
               aria-label="Buscar movimientos"
             />
           </div>
-          <label className="flex w-full items-center gap-2.5 text-sm lg:w-auto">
+          <div className="flex w-full items-center gap-2.5 text-sm lg:w-auto">
             <span className="shrink-0 font-medium whitespace-nowrap text-foreground">Tipo</span>
-            <select
-              value={tipoFromUrl ?? ''}
-              onChange={(event) => handleTipoChange(event.target.value)}
-              className={cn(
-                'h-11 w-full min-w-0 rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors lg:w-52',
-                'hover:border-border-strong focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
-              )}
-              aria-label="Filtrar por tipo de movimiento"
+            <Select
+              value={tipoFromUrl ?? 'all'}
+              onValueChange={(value) => handleTipoChange(value === 'all' ? '' : value)}
             >
-              <option value="">Todos los tipos</option>
-              {MOVEMENT_TYPES.map((tipo) => (
-                <option key={tipo} value={tipo}>
-                  {movementTypeLabel(tipo)}
-                </option>
-              ))}
-            </select>
-          </label>
+              <SelectTrigger className="w-full lg:w-52" aria-label="Filtrar por tipo de movimiento">
+                <SelectValue placeholder="Todos los tipos" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los tipos</SelectItem>
+                {MOVEMENT_TYPES.map((tipo) => (
+                  <SelectItem key={tipo} value={tipo}>
+                    {movementTypeLabel(tipo)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </Card>
 
-      {movementsQuery.isLoading ? (
-        <Card className="px-6 py-16 text-center">
-          <p className="text-sm font-medium">Cargando movimientos…</p>
-        </Card>
-      ) : null}
+      {movementsQuery.isLoading ? <TableSkeleton columns={5} /> : null}
 
       {movementsQuery.isError ? (
         <Card className="border-error/20 bg-error-soft px-6 py-10 text-center">

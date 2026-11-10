@@ -1,6 +1,6 @@
-import { useMemo, useRef, useState, type KeyboardEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from 'react'
 import { Link } from 'react-router'
-import { useFieldArray, useForm, useWatch } from 'react-hook-form'
+import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import axios from 'axios'
 import { Barcode, Package, Trash2, Wallet } from 'lucide-react'
@@ -9,6 +9,22 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { MoneyInput } from '@/components/ui/MoneyInput'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/Select'
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/Table'
 import { useActiveCashRegister } from '@/features/cash-register/hooks/use-cash-register'
 import { inventoryApi } from '@/features/inventory/api/inventory-api'
 import { productsApi } from '@/features/products/api/products-api'
@@ -35,12 +51,6 @@ type SaleFormProps = {
   onSubmit: (values: SaleFormValues, checkout?: SaleCheckout) => Promise<void>
   onCancel: () => void
 }
-
-const selectClassName = cn(
-  'h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors',
-  'hover:border-border-strong focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
-  'disabled:cursor-not-allowed disabled:opacity-60',
-)
 
 export function SaleForm({
   submitting = false,
@@ -163,6 +173,63 @@ export function SaleForm({
     void addByCode()
   }
 
+  const itemsRef = useRef(items)
+  const busyRef = useRef(busy)
+  itemsRef.current = items
+  busyRef.current = busy
+
+  useEffect(() => {
+    function onKeyDown(event: globalThis.KeyboardEvent) {
+      const currentItems = itemsRef.current
+      if (busyRef.current || currentItems.length === 0) return
+      if (event.ctrlKey || event.metaKey || event.altKey) return
+
+      const isPlus =
+        event.key === '+' || event.code === 'NumpadAdd' || (event.key === '=' && event.shiftKey)
+      const isMinus =
+        event.key === '-' || event.key === '_' || event.code === 'NumpadSubtract'
+      if (!isPlus && !isMinus) return
+
+      const target = event.target
+      if (!(target instanceof HTMLElement)) return
+      if (target.closest('[data-no-qty-shortcut]')) return
+
+      const name = target.getAttribute('name') ?? ''
+      const qtyMatch = /^items\.(\d+)\.cantidad$/.exec(name)
+      const index = qtyMatch ? Number(qtyMatch[1]) : currentItems.length - 1
+      if (!Number.isInteger(index) || index < 0 || index >= currentItems.length) return
+
+      const item = currentItems[index]
+      if (!item) return
+
+      event.preventDefault()
+
+      const currentQty = /^\d+$/.test(item.cantidad?.trim() ?? '') ? Number(item.cantidad) : 0
+      const nextQty = currentQty + (isPlus ? 1 : -1)
+
+      if (nextQty < 1) {
+        remove(index)
+        setLookupError(null)
+        codeRef.current?.focus()
+        return
+      }
+
+      if (item.stockDisponible != null && nextQty > item.stockDisponible) {
+        setLookupError(`Stock disponible: ${item.stockDisponible}.`)
+        return
+      }
+
+      setLookupError(null)
+      setValue(`items.${index}.cantidad`, String(nextQty), {
+        shouldValidate: true,
+        shouldDirty: true,
+      })
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [remove, setValue])
+
   const submit = handleSubmit(async (values) => {
     if (busy) return
     if (values.metodoPago === 'EFECTIVO' && !hasOpenCash) {
@@ -250,32 +317,22 @@ export function SaleForm({
               className="py-10"
             />
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-border">
-              <table className="w-full min-w-[36rem] border-collapse text-left text-sm">
-                <caption className="sr-only">Ítems de la venta</caption>
-                <thead>
-                  <tr className="border-b border-border text-xs tracking-wide text-muted uppercase">
-                    <th scope="col" className="px-3 py-2.5 font-medium">
-                      Producto
-                    </th>
-                    <th scope="col" className="px-3 py-2.5 font-medium">
-                      Stock
-                    </th>
-                    <th scope="col" className="px-3 py-2.5 font-medium">
-                      Cant.
-                    </th>
-                    <th scope="col" className="px-3 py-2.5 font-medium">
-                      Precio
-                    </th>
-                    <th scope="col" className="px-3 py-2.5 font-medium">
-                      Subtotal
-                    </th>
-                    <th scope="col" className="px-3 py-2.5 text-right font-medium">
+            <div className="rounded-xl border border-border">
+              <Table className="min-w-[36rem]">
+                <TableCaption className="sr-only">Ítems de la venta</TableCaption>
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="px-3 sm:px-3">Producto</TableHead>
+                    <TableHead className="px-3 sm:px-3">Stock</TableHead>
+                    <TableHead className="px-3 sm:px-3">Cant.</TableHead>
+                    <TableHead className="px-3 sm:px-3">Precio</TableHead>
+                    <TableHead className="px-3 sm:px-3">Subtotal</TableHead>
+                    <TableHead className="px-3 text-right sm:px-3">
                       <span className="sr-only">Quitar</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                   {fields.map((field, index) => {
                     const item = items[index]
                     const subtotal =
@@ -283,8 +340,8 @@ export function SaleForm({
                         ? estimateItemSubtotal(item.cantidad, item.precioVentaRef)
                         : null
                     return (
-                      <tr key={field.id} className="border-b border-border last:border-b-0">
-                        <td className="px-3 py-3 align-top">
+                      <TableRow key={field.id} className="hover:bg-transparent">
+                        <TableCell className="px-3 align-top sm:px-3">
                           <input
                             type="hidden"
                             {...register(`items.${index}.productoId`, { valueAsNumber: true })}
@@ -307,13 +364,13 @@ export function SaleForm({
                           />
                           <p className="font-medium">{field.nombre}</p>
                           <p className="mt-0.5 font-mono text-xs text-muted">{field.codigo}</p>
-                        </td>
-                        <td className="px-3 py-3 align-top text-muted tabular-nums">
+                        </TableCell>
+                        <TableCell className="px-3 align-top text-muted tabular-nums sm:px-3">
                           <span className="inline-flex h-11 items-center">
                             {item?.stockDisponible == null ? '—' : item.stockDisponible}
                           </span>
-                        </td>
-                        <td className="px-3 py-3 align-top">
+                        </TableCell>
+                        <TableCell className="px-3 align-top sm:px-3">
                           <Input
                             type="number"
                             inputMode="numeric"
@@ -325,18 +382,18 @@ export function SaleForm({
                             error={errors.items?.[index]?.cantidad?.message}
                             {...register(`items.${index}.cantidad`)}
                           />
-                        </td>
-                        <td className="px-3 py-3 align-top whitespace-nowrap tabular-nums">
+                        </TableCell>
+                        <TableCell className="px-3 align-top whitespace-nowrap tabular-nums sm:px-3">
                           <span className="inline-flex h-11 items-center">
                             {formatMoney(field.precioVentaRef)}
                           </span>
-                        </td>
-                        <td className="px-3 py-3 align-top font-medium whitespace-nowrap tabular-nums">
+                        </TableCell>
+                        <TableCell className="px-3 align-top font-medium whitespace-nowrap tabular-nums sm:px-3">
                           <span className="inline-flex h-11 items-center">
                             {subtotal != null ? formatMoney(subtotal) : '—'}
                           </span>
-                        </td>
-                        <td className="px-3 py-3 align-top">
+                        </TableCell>
+                        <TableCell className="px-3 align-top sm:px-3">
                           <div className="flex justify-end">
                             <Button
                               type="button"
@@ -350,12 +407,12 @@ export function SaleForm({
                               <Trash2 className="size-4" />
                             </Button>
                           </div>
-                        </td>
-                      </tr>
+                        </TableCell>
+                      </TableRow>
                     )
                   })}
-                </tbody>
-              </table>
+                </TableBody>
+              </Table>
             </div>
           )}
         </div>
@@ -371,29 +428,42 @@ export function SaleForm({
           </p>
         </div>
 
-        <div className="flex flex-col gap-4 p-5">
-          <label className="flex w-full flex-col gap-1.5 text-sm">
+        <div className="flex flex-col gap-4 p-5" data-no-qty-shortcut>
+          <div className="flex w-full flex-col gap-1.5 text-sm">
             <span className="font-medium text-foreground">
               Método de pago <span className="text-error">*</span>
             </span>
-            <select
-              className={cn(selectClassName, errors.metodoPago && 'border-error')}
-              disabled={busy}
-              aria-invalid={errors.metodoPago ? true : undefined}
-              {...register('metodoPago')}
-            >
-              {PAYMENT_METHODS.map((method) => (
-                <option key={method} value={method}>
-                  {paymentMethodLabel(method)}
-                </option>
-              ))}
-            </select>
+            <Controller
+              name="metodoPago"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={busy}
+                >
+                  <SelectTrigger
+                    aria-invalid={errors.metodoPago ? true : undefined}
+                    className={cn(errors.metodoPago && 'border-error')}
+                  >
+                    <SelectValue placeholder="Elegí un método" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PAYMENT_METHODS.map((method) => (
+                      <SelectItem key={method} value={method}>
+                        {paymentMethodLabel(method)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
             {errors.metodoPago?.message ? (
               <span className="text-xs text-error-ink" role="alert">
                 {errors.metodoPago.message}
               </span>
             ) : null}
-          </label>
+          </div>
 
           {needsCash ? (
             <div className="flex flex-col gap-3">

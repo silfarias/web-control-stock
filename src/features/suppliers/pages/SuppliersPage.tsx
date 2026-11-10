@@ -3,10 +3,18 @@ import { Plus, Search, Truck } from 'lucide-react'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ListPagination } from '@/components/common/ListPagination'
+import { TableSkeleton } from '@/components/common/TableSkeleton'
 import { useToast } from '@/components/common/use-toast'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/Select'
 import { useAuth } from '@/features/auth/hooks/use-auth'
 import { SupplierFormDialog } from '@/features/suppliers/components/SupplierFormDialog'
 import { SuppliersTable } from '@/features/suppliers/components/SuppliersTable'
@@ -24,7 +32,6 @@ import {
 import type { Proveedor } from '@/features/suppliers/types'
 import { getApiErrorMessage } from '@/lib/api/errors'
 import { DEFAULT_PAGE_SIZE } from '@/lib/api/pagination'
-import { cn } from '@/lib/utils/cn'
 
 export function SuppliersPage() {
   const { user } = useAuth()
@@ -149,34 +156,29 @@ export function SuppliersPage() {
               aria-label="Buscar proveedores"
             />
           </div>
-          <label className="flex w-full items-center gap-2.5 text-sm lg:w-auto">
+          <div className="flex w-full items-center gap-2.5 text-sm lg:w-auto">
             <span className="shrink-0 font-medium whitespace-nowrap text-foreground">Estado</span>
-            <select
+            <Select
               value={activoFilter}
-              onChange={(event) => {
-                setActivoFilter(event.target.value as 'all' | 'true' | 'false')
+              onValueChange={(value) => {
+                setActivoFilter(value as 'all' | 'true' | 'false')
                 setPageNumber(1)
               }}
-              className={cn(
-                'h-11 w-full min-w-0 rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors lg:w-40',
-                'hover:border-border-strong focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
-              )}
-              aria-label="Filtrar por estado"
             >
-              <option value="all">Todos</option>
-              <option value="true">Activos</option>
-              <option value="false">Inactivos</option>
-            </select>
-          </label>
+              <SelectTrigger className="w-full lg:w-40" aria-label="Filtrar por estado">
+                <SelectValue placeholder="Todos" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="true">Activos</SelectItem>
+                <SelectItem value="false">Inactivos</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </Card>
 
-      {suppliersQuery.isLoading ? (
-        <Card className="px-6 py-16 text-center">
-          <p className="text-sm font-medium">Cargando proveedores…</p>
-          <p className="mt-1 text-sm text-muted">Un momento, por favor.</p>
-        </Card>
-      ) : null}
+      {suppliersQuery.isLoading ? <TableSkeleton columns={5} /> : null}
 
       {suppliersQuery.isError ? (
         <Card className="border-error/20 bg-error-soft px-6 py-10 text-center">

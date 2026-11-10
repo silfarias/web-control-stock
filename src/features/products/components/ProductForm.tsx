@@ -4,6 +4,13 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { MoneyInput } from '@/components/ui/MoneyInput'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
 import { useCategoryOptions } from '@/features/categories/hooks/use-category-options'
 import {
@@ -21,12 +28,6 @@ type ProductFormProps = {
   onSubmit: (values: ProductFormValues) => Promise<void>
   onCancel: () => void
 }
-
-const selectClassName = cn(
-  'h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors',
-  'hover:border-border-strong focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
-  'disabled:cursor-not-allowed disabled:opacity-60',
-)
 
 export function ProductForm({
   mode,
@@ -70,27 +71,41 @@ export function ProductForm({
               Categoría, nombre y descripción visibles en el catálogo.
             </p>
             <div className="mt-4 flex flex-col gap-4">
-              <label className="flex w-full flex-col gap-1.5 text-sm">
+              <div className="flex w-full flex-col gap-1.5 text-sm">
                 <span className="font-medium text-foreground">
                   Categoría <span className="text-error">*</span>
                 </span>
-                <select
-                  className={cn(selectClassName, errors.categoriaId && 'border-error')}
-                  disabled={busy || categoriesQuery.isLoading}
-                  aria-invalid={errors.categoriaId ? true : undefined}
-                  {...register('categoriaId')}
-                >
-                  <option value="">
-                    {categoriesQuery.isLoading
-                      ? 'Cargando categorías…'
-                      : 'Seleccioná una categoría'}
-                  </option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={String(category.id)}>
-                      {category.nombre}
-                    </option>
-                  ))}
-                </select>
+                <Controller
+                  name="categoriaId"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value || undefined}
+                      onValueChange={field.onChange}
+                      disabled={busy || categoriesQuery.isLoading}
+                    >
+                      <SelectTrigger
+                        aria-invalid={errors.categoriaId ? true : undefined}
+                        className={cn(errors.categoriaId && 'border-error')}
+                      >
+                        <SelectValue
+                          placeholder={
+                            categoriesQuery.isLoading
+                              ? 'Cargando categorías…'
+                              : 'Seleccioná una categoría'
+                          }
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((category) => (
+                          <SelectItem key={category.id} value={String(category.id)}>
+                            {category.nombre}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
                 {errors.categoriaId?.message ? (
                   <span className="text-xs text-error-ink" role="alert">
                     {errors.categoriaId.message}
@@ -104,7 +119,7 @@ export function ProductForm({
                     Obligatoria. Se listan todas las categorías.
                   </span>
                 )}
-              </label>
+              </div>
 
               <Input
                 label="Nombre"

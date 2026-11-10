@@ -1,4 +1,4 @@
-import { Card } from '@/components/ui/Card'
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
 import { PaymentMethodsTable } from '@/features/reports/components/PaymentMethodsTable'
 import { ReportFiltersBar } from '@/features/reports/components/ReportFiltersBar'
 import { ReportQueryState } from '@/features/reports/components/ReportQueryState'
@@ -63,13 +63,13 @@ export function SalesReportPage() {
               ]}
             />
 
-            <Card className="overflow-hidden">
-              <div className="border-b border-border px-4 py-3.5 sm:px-5">
-                <h3 className="text-sm font-semibold tracking-tight">Por método de pago</h3>
-                <p className="mt-0.5 text-sm text-muted">
+            <Card className="overflow-hidden pt-0">
+              <CardHeader className="border-b border-border px-4 py-3.5 sm:px-5">
+                <CardTitle>Por método de pago</CardTitle>
+                <CardDescription>
                   Cantidad, unidades e ingresos de cada medio usado en el período.
-                </p>
-              </div>
+                </CardDescription>
+              </CardHeader>
               <PaymentMethodsTable items={data.porMetodoPago} />
             </Card>
           </div>

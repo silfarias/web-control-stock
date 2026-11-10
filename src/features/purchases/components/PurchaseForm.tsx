@@ -8,6 +8,22 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 import { MoneyInput } from '@/components/ui/MoneyInput'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/Select'
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/Table'
 import { PurchaseProductPicker } from '@/features/purchases/components/PurchaseProductPicker'
 import {
   emptyPurchaseFormValues,
@@ -39,12 +55,6 @@ type PurchaseFormProps = {
   onSubmit: (values: PurchaseFormValues) => Promise<void>
   onCancel: () => void
 }
-
-const selectClassName = cn(
-  'h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors',
-  'hover:border-border-strong focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
-  'disabled:cursor-not-allowed disabled:opacity-60',
-)
 
 export function PurchaseForm({
   mode,
@@ -152,28 +162,42 @@ export function PurchaseForm({
                 La compra se guarda como borrador. El stock no cambia hasta confirmarla.
               </p>
               <div className="mt-4">
-                <label className="flex w-full flex-col gap-1.5 text-sm">
+                <div className="flex w-full flex-col gap-1.5 text-sm">
                   <span className="font-medium text-foreground">
                     Proveedor <span className="text-error">*</span>
                   </span>
-                  <select
-                    className={cn(selectClassName, errors.proveedorId && 'border-error')}
-                    disabled={busy || suppliersQuery.isLoading}
-                    aria-invalid={errors.proveedorId ? true : undefined}
-                    {...register('proveedorId')}
-                  >
-                    <option value="">
-                      {suppliersQuery.isLoading
-                        ? 'Cargando proveedores…'
-                        : 'Seleccioná un proveedor'}
-                    </option>
-                    {suppliers.map((supplier) => (
-                      <option key={supplier.id} value={String(supplier.id)}>
-                        {supplier.nombre}
-                        {!supplier.activo ? ' (inactivo)' : ''}
-                      </option>
-                    ))}
-                  </select>
+                  <Controller
+                    name="proveedorId"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        value={field.value || undefined}
+                        onValueChange={field.onChange}
+                        disabled={busy || suppliersQuery.isLoading}
+                      >
+                        <SelectTrigger
+                          aria-invalid={errors.proveedorId ? true : undefined}
+                          className={cn(errors.proveedorId && 'border-error')}
+                        >
+                          <SelectValue
+                            placeholder={
+                              suppliersQuery.isLoading
+                                ? 'Cargando proveedores…'
+                                : 'Seleccioná un proveedor'
+                            }
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {suppliers.map((supplier) => (
+                            <SelectItem key={supplier.id} value={String(supplier.id)}>
+                              {supplier.nombre}
+                              {!supplier.activo ? ' (inactivo)' : ''}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                   {errors.proveedorId?.message ? (
                     <span className="text-xs text-error-ink" role="alert">
                       {errors.proveedorId.message}
@@ -189,7 +213,7 @@ export function PurchaseForm({
                   ) : (
                     <span className="text-xs text-muted">Solo se listan proveedores activos.</span>
                   )}
-                </label>
+                </div>
               </div>
             </Card>
 
@@ -223,29 +247,21 @@ export function PurchaseForm({
                     className="py-8"
                   />
                 ) : (
-                  <div className="overflow-x-auto rounded-xl border border-border">
-                    <table className="w-full min-w-[28rem] border-collapse text-left text-sm">
-                      <caption className="sr-only">Ítems de la compra</caption>
-                      <thead>
-                        <tr className="border-b border-border text-xs tracking-wide text-muted uppercase">
-                          <th scope="col" className="px-3 py-2.5 font-medium">
-                            Producto
-                          </th>
-                          <th scope="col" className="px-3 py-2.5 font-medium">
-                            Cant.
-                          </th>
-                          <th scope="col" className="px-3 py-2.5 font-medium">
-                            Costo
-                          </th>
-                          <th scope="col" className="px-3 py-2.5 font-medium">
-                            Subtotal
-                          </th>
-                          <th scope="col" className="px-3 py-2.5 text-right font-medium">
+                  <div className="rounded-xl border border-border">
+                    <Table className="min-w-[28rem]">
+                      <TableCaption className="sr-only">Ítems de la compra</TableCaption>
+                      <TableHeader>
+                        <TableRow className="hover:bg-transparent">
+                          <TableHead className="px-3 sm:px-3">Producto</TableHead>
+                          <TableHead className="px-3 sm:px-3">Cant.</TableHead>
+                          <TableHead className="px-3 sm:px-3">Costo</TableHead>
+                          <TableHead className="px-3 sm:px-3">Subtotal</TableHead>
+                          <TableHead className="px-3 text-right sm:px-3">
                             <span className="sr-only">Quitar</span>
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
                         {fields.map((field, index) => {
                           const item = items[index]
                           const subtotal =
@@ -253,11 +269,8 @@ export function PurchaseForm({
                               ? estimateItemSubtotal(item.cantidad, item.costoUnitario)
                               : null
                           return (
-                            <tr
-                              key={field.id}
-                              className="border-b border-border last:border-b-0"
-                            >
-                              <td className="px-3 py-3 align-top">
+                            <TableRow key={field.id} className="hover:bg-transparent">
+                              <TableCell className="px-3 align-top sm:px-3">
                                 <input
                                   type="hidden"
                                   {...register(`items.${index}.productoId`, {
@@ -275,8 +288,8 @@ export function PurchaseForm({
                                     {errors.items[index].productoId.message}
                                   </p>
                                 ) : null}
-                              </td>
-                              <td className="px-3 py-3 align-top">
+                              </TableCell>
+                              <TableCell className="px-3 align-top sm:px-3">
                                 <Input
                                   type="number"
                                   inputMode="numeric"
@@ -287,8 +300,8 @@ export function PurchaseForm({
                                   error={errors.items?.[index]?.cantidad?.message}
                                   {...register(`items.${index}.cantidad`)}
                                 />
-                              </td>
-                              <td className="px-3 py-3 align-top">
+                              </TableCell>
+                              <TableCell className="px-3 align-top sm:px-3">
                                 <Controller
                                   name={`items.${index}.costoUnitario`}
                                   control={control}
@@ -305,13 +318,13 @@ export function PurchaseForm({
                                     />
                                   )}
                                 />
-                              </td>
-                              <td className="px-3 py-3 align-top whitespace-nowrap tabular-nums">
+                              </TableCell>
+                              <TableCell className="px-3 align-top whitespace-nowrap tabular-nums sm:px-3">
                                 <span className="inline-flex h-11 items-center text-sm font-medium">
                                   {subtotal != null ? formatMoney(subtotal) : '—'}
                                 </span>
-                              </td>
-                              <td className="px-3 py-3 align-top">
+                              </TableCell>
+                              <TableCell className="px-3 align-top sm:px-3">
                                 <div className="flex justify-end">
                                   <Button
                                     type="button"
@@ -325,12 +338,12 @@ export function PurchaseForm({
                                     <Trash2 className="size-4" />
                                   </Button>
                                 </div>
-                              </td>
-                            </tr>
+                              </TableCell>
+                            </TableRow>
                           )
                         })}
-                      </tbody>
-                    </table>
+                      </TableBody>
+                    </Table>
                   </div>
                 )}
               </div>

@@ -2,6 +2,13 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
 import { Input } from '@/components/ui/Input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/Select'
 import { useToast } from '@/components/common/use-toast'
 import { buildTicketHtml } from '@/features/sales/ticket/build-ticket-html'
 import { sampleTicketCashReceived, sampleTicketSale } from '@/features/sales/ticket/sample-ticket'
@@ -14,18 +21,12 @@ import {
   type TicketSettings,
 } from '@/features/sales/ticket/ticket-settings'
 import { getApiErrorMessage, normalizeApiError } from '@/lib/api/errors'
-import { cn } from '@/lib/utils/cn'
 
 type TicketSettingsDialogProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   settings: TicketSettings
 }
-
-const selectClassName = cn(
-  'h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors',
-  'hover:border-border-strong focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
-)
 
 export function TicketSettingsDialog({ open, onOpenChange, settings }: TicketSettingsDialogProps) {
   const updateTicket = useUpdateTicket()
@@ -100,20 +101,24 @@ export function TicketSettingsDialog({ open, onOpenChange, settings }: TicketSet
     >
       <div className="grid gap-5 lg:grid-cols-[16rem_minmax(0,1fr)]">
         <div className="flex flex-col gap-3">
-          <label className="flex flex-col gap-1.5 text-sm">
+          <div className="flex flex-col gap-1.5 text-sm">
             <span className="font-medium">Ancho de papel</span>
-            <select
-              className={selectClassName}
-              value={draft.paperMm}
-              onChange={(event) => update({ paperMm: Number(event.target.value) as TicketPaperMm })}
+            <Select
+              value={String(draft.paperMm)}
+              onValueChange={(value) => update({ paperMm: Number(value) as TicketPaperMm })}
             >
-              {TICKET_PAPER_WIDTHS.map((width) => (
-                <option key={width} value={width}>
-                  {width} mm
-                </option>
-              ))}
-            </select>
-          </label>
+              <SelectTrigger aria-label="Ancho de papel">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {TICKET_PAPER_WIDTHS.map((width) => (
+                  <SelectItem key={width} value={String(width)}>
+                    {width} mm
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <Input
             label="Comercio"
             value={draft.comercio}

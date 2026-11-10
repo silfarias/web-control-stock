@@ -3,10 +3,18 @@ import { Plus, Search, Users } from 'lucide-react'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ListPagination } from '@/components/common/ListPagination'
+import { TableSkeleton } from '@/components/common/TableSkeleton'
 import { useToast } from '@/components/common/use-toast'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/Select'
 import { useAuth } from '@/features/auth/hooks/use-auth'
 import { UserFormDialog } from '@/features/users/components/UserFormDialog'
 import { UsersTable } from '@/features/users/components/UsersTable'
@@ -25,12 +33,6 @@ import {
 import type { Usuario, UsuarioRole } from '@/features/users/types'
 import { getApiErrorMessage } from '@/lib/api/errors'
 import { DEFAULT_PAGE_SIZE } from '@/lib/api/pagination'
-import { cn } from '@/lib/utils/cn'
-
-const selectClassName = cn(
-  'h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors',
-  'hover:border-border-strong focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
-)
 
 export function UsersPage() {
   const { user: authUser, refreshUser, logout } = useAuth()
@@ -167,30 +169,29 @@ export function UsersPage() {
               aria-label="Buscar usuarios"
             />
           </div>
-          <label className="flex w-full items-center gap-2.5 text-sm sm:w-auto">
+          <div className="flex w-full items-center gap-2.5 text-sm sm:w-auto">
             <span className="shrink-0 font-medium whitespace-nowrap text-foreground">Rol</span>
-            <select
-              className={cn(selectClassName, 'min-w-0 sm:w-44')}
+            <Select
               value={roleFilter}
-              onChange={(event) => {
-                setRoleFilter(event.target.value as 'all' | UsuarioRole)
+              onValueChange={(value) => {
+                setRoleFilter(value as 'all' | UsuarioRole)
                 setPageNumber(1)
               }}
-              aria-label="Filtrar por rol"
             >
-              <option value="all">Todos los roles</option>
-              <option value="ADMIN">Administrador</option>
-              <option value="EMPLEADO">Empleado</option>
-            </select>
-          </label>
+              <SelectTrigger className="w-full sm:w-44" aria-label="Filtrar por rol">
+                <SelectValue placeholder="Todos los roles" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los roles</SelectItem>
+                <SelectItem value="ADMIN">Administrador</SelectItem>
+                <SelectItem value="EMPLEADO">Empleado</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </Card>
 
-      {usersQuery.isLoading ? (
-        <Card className="px-6 py-16 text-center">
-          <p className="text-sm font-medium">Cargando usuarios…</p>
-        </Card>
-      ) : null}
+      {usersQuery.isLoading ? <TableSkeleton columns={4} /> : null}
 
       {usersQuery.isError ? (
         <Card className="border-error/20 bg-error-soft px-6 py-10 text-center">

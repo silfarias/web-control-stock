@@ -1,10 +1,23 @@
 import { useState } from 'react'
-import { useForm, type FieldErrors, type UseFormRegister } from 'react-hook-form'
+import {
+  Controller,
+  useForm,
+  type Control,
+  type FieldErrors,
+  type UseFormRegister,
+} from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
 import { Input } from '@/components/ui/Input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/Select'
 import {
   createUserFormSchema,
   editUserFormSchema,
@@ -27,12 +40,6 @@ type UserFormDialogProps = {
   onSubmitCreate?: (values: CreateUserFormValues) => Promise<void>
   onSubmitEdit: (values: EditUserFormValues) => Promise<void>
 }
-
-const selectClassName = cn(
-  'h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors',
-  'hover:border-border-strong focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
-  'disabled:cursor-not-allowed disabled:opacity-60',
-)
 
 export function UserFormDialog({
   open,
@@ -108,6 +115,7 @@ function CreateUserForm({
   onSubmit: (values: CreateUserFormValues) => Promise<void>
 }) {
   const {
+    control,
     register,
     handleSubmit,
     setError,
@@ -141,6 +149,7 @@ function CreateUserForm({
     >
       <form id="user-form" className="space-y-4" onSubmit={submit} noValidate>
         <UserFields
+          control={control}
           register={register}
           errors={errors}
           requiredPassword
@@ -169,6 +178,7 @@ function EditUserForm({
   onSubmit: (values: EditUserFormValues) => Promise<void>
 }) {
   const {
+    control,
     register,
     handleSubmit,
     setError,
@@ -206,6 +216,7 @@ function EditUserForm({
     >
       <form id="user-form" className="space-y-4" onSubmit={submit} noValidate>
         <UserFields
+          control={control}
           register={register}
           errors={errors}
           requiredPassword={false}
@@ -250,10 +261,12 @@ type SharedFields = {
 }
 
 function UserFields({
+  control,
   register,
   errors,
   requiredPassword,
 }: {
+  control: Control<SharedFields>
   register: UseFormRegister<SharedFields>
   errors: FieldErrors<SharedFields>
   requiredPassword: boolean
@@ -292,20 +305,30 @@ function UserFields({
         ) : null}
       </label>
 
-      <label className="block space-y-1.5">
+      <div className="block space-y-1.5">
         <span className="text-sm font-medium">Rol</span>
-        <select
-          className={cn(selectClassName, errors.role && 'border-error')}
-          aria-invalid={errors.role ? true : undefined}
-          {...register('role')}
-        >
-          <option value="EMPLEADO">Empleado</option>
-          <option value="ADMIN">Administrador</option>
-        </select>
+        <Controller
+          name="role"
+          control={control}
+          render={({ field }) => (
+            <Select value={field.value} onValueChange={field.onChange}>
+              <SelectTrigger
+                aria-invalid={errors.role ? true : undefined}
+                className={cn(errors.role && 'border-error')}
+              >
+                <SelectValue placeholder="Elegí un rol" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="EMPLEADO">Empleado</SelectItem>
+                <SelectItem value="ADMIN">Administrador</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
+        />
         {errors.role?.message ? (
           <p className="text-xs text-error-ink">{errors.role.message}</p>
         ) : null}
-      </label>
+      </div>
 
       <label className="block space-y-1.5">
         <span className="text-sm font-medium">

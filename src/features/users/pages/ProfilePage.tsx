@@ -115,10 +115,6 @@ export function ProfilePage() {
             <dt className="text-muted">Rol</dt>
             <dd className="font-medium">{getRoleLabel(user.role)}</dd>
           </div>
-          <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <dt className="text-muted">ID</dt>
-            <dd className="font-medium tabular-nums">{user.id}</dd>
-          </div>
         </dl>
 
         <form className="space-y-4" onSubmit={onSubmit} noValidate>

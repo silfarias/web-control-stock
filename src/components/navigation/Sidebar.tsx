@@ -1,15 +1,16 @@
-import { useEffect, useMemo, useState, useRef } from 'react'
+import { useMemo, useState, type Dispatch, type SetStateAction } from 'react'
 import { Link, NavLink, useLocation } from 'react-router'
-import { ChevronDown, PanelLeftClose, PanelLeftOpen, X } from 'lucide-react'
+import { ChevronDown, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { BrandMark } from '@/components/navigation/BrandMark'
 import { getNavigationForRole, type NavChild } from '@/components/navigation/nav-items'
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/Sheet'
 import { useAuth } from '@/features/auth/hooks/use-auth'
 import { cn } from '@/lib/utils/cn'
 
 type SidebarProps = {
   collapsed: boolean
   mobileOpen: boolean
-  inert: boolean
+  inert?: boolean
   onClose: () => void
   onToggleCollapsed: () => void
 }
@@ -17,34 +18,97 @@ type SidebarProps = {
 export function Sidebar({
   collapsed,
   mobileOpen,
-  inert,
   onClose,
   onToggleCollapsed,
 }: SidebarProps) {
   const { user } = useAuth()
   const { pathname } = useLocation()
   const sections = useMemo(() => getNavigationForRole(user?.role), [user?.role])
-  const closeRef = useRef<HTMLButtonElement>(null)
   const [collapsedMenus, setCollapsedMenus] = useState<Record<string, boolean>>({})
 
-  useEffect(() => {
-    if (mobileOpen) closeRef.current?.focus()
-  }, [mobileOpen])
-
-  return (
+  const desktop = (
     <aside
-      inert={inert}
       aria-label="Navegación principal"
       className={cn(
-        'fixed inset-y-0 left-0 z-50 flex h-svh w-[260px] shrink-0 flex-col bg-sidebar text-sidebar-foreground transition-[transform,width] duration-200 ease-out lg:relative lg:inset-auto lg:h-full lg:max-h-full lg:translate-x-0',
+        'relative hidden h-full max-h-full w-[260px] shrink-0 flex-col bg-sidebar text-sidebar-foreground transition-[width] duration-200 ease-out lg:flex',
         collapsed && 'lg:w-[76px]',
-        mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
       )}
     >
+      <SidebarChrome
+        collapsed={collapsed}
+        mobile={false}
+        sections={sections}
+        pathname={pathname}
+        collapsedMenus={collapsedMenus}
+        setCollapsedMenus={setCollapsedMenus}
+        onClose={onClose}
+        onToggleCollapsed={onToggleCollapsed}
+      />
+    </aside>
+  )
+
+  return (
+    <>
+      {desktop}
+      <Sheet
+        open={mobileOpen}
+        onOpenChange={(open) => {
+          if (!open) onClose()
+        }}
+      >
+        <SheetContent
+          side="left"
+          showClose
+          className="gap-0 border-0 bg-sidebar p-0 text-sidebar-foreground lg:hidden [&_button.absolute]:text-sidebar-foreground [&_button.absolute]:hover:bg-white/10"
+        >
+          <SheetTitle className="sr-only">Menú de navegación</SheetTitle>
+          <SheetDescription className="sr-only">
+            Secciones del sistema de control de stock
+          </SheetDescription>
+          <SidebarChrome
+            collapsed={false}
+            mobile
+            sections={sections}
+            pathname={pathname}
+            collapsedMenus={collapsedMenus}
+            setCollapsedMenus={setCollapsedMenus}
+            onClose={onClose}
+            onToggleCollapsed={onToggleCollapsed}
+          />
+        </SheetContent>
+      </Sheet>
+    </>
+  )
+}
+
+type Section = ReturnType<typeof getNavigationForRole>[number]
+
+function SidebarChrome({
+  collapsed,
+  mobile,
+  sections,
+  pathname,
+  collapsedMenus,
+  setCollapsedMenus,
+  onClose,
+  onToggleCollapsed,
+}: {
+  collapsed: boolean
+  mobile: boolean
+  sections: Section[]
+  pathname: string
+  collapsedMenus: Record<string, boolean>
+  setCollapsedMenus: Dispatch<SetStateAction<Record<string, boolean>>>
+  onClose: () => void
+  onToggleCollapsed: () => void
+}) {
+  return (
+    <div className="flex h-full min-h-0 flex-col">
       <div
         className={cn(
           'flex h-16 shrink-0 items-center gap-3 border-b border-white/10 px-4',
-          collapsed && 'lg:justify-center lg:px-2',
+          collapsed && !mobile && 'lg:justify-center lg:px-2',
+          mobile && 'pr-12',
         )}
       >
         <Link
@@ -53,22 +117,13 @@ export function Sidebar({
           onClick={onClose}
         >
           <BrandMark />
-          <span className={cn('min-w-0', collapsed && 'lg:sr-only')}>
+          <span className={cn('min-w-0', collapsed && !mobile && 'lg:sr-only')}>
             <span className="block truncate text-sm font-semibold tracking-tight">
               Control de stock
             </span>
             <span className="block truncate text-xs text-sidebar-muted">Gestión comercial</span>
           </span>
         </Link>
-        <button
-          ref={closeRef}
-          type="button"
-          className="ml-auto grid size-9 place-items-center rounded-xl text-sidebar-foreground hover:bg-white/10 lg:hidden"
-          onClick={onClose}
-          aria-label="Cerrar menú"
-        >
-          <X className="size-4" />
-        </button>
       </div>
 
       <nav className="sidebar-scroll flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto overscroll-contain px-3 py-4">
@@ -77,7 +132,7 @@ export function Sidebar({
             <p
               className={cn(
                 'px-3 pb-1 text-[11px] font-semibold tracking-[0.14em] text-sidebar-muted uppercase',
-                collapsed && 'lg:sr-only',
+                collapsed && !mobile && 'lg:sr-only',
               )}
             >
               {section.label}
@@ -86,7 +141,7 @@ export function Sidebar({
               const Icon = item.icon
               const children = item.children ?? []
               const routeOpen = children.some((child) => isChildActive(child, children, pathname))
-              const submenuVisible = mobileOpen || !collapsed
+              const submenuVisible = mobile || !collapsed
               const sectionOpen = routeOpen && !collapsedMenus[item.to]
 
               return (
@@ -113,25 +168,28 @@ export function Sidebar({
                     className={({ isActive }) =>
                       cn(
                         'flex h-10 items-center gap-3 rounded-xl px-3 text-sm font-medium text-sidebar-foreground/90 transition-colors hover:bg-white/10 focus-visible:outline-offset-[-2px]',
-                        collapsed && 'lg:justify-center lg:px-0',
+                        collapsed && !mobile && 'lg:justify-center lg:px-0',
                         isActive &&
                           children.length === 0 &&
                           'bg-background text-sidebar hover:bg-background',
                         sectionOpen && 'bg-white/10 text-sidebar-foreground hover:bg-white/15',
                         collapsed &&
+                          !mobile &&
                           sectionOpen &&
                           'lg:bg-background lg:text-sidebar lg:hover:bg-background',
                       )
                     }
                   >
                     <Icon className="size-[18px] shrink-0" strokeWidth={1.75} aria-hidden />
-                    <span className={cn('truncate', collapsed && 'lg:sr-only')}>{item.title}</span>
+                    <span className={cn('truncate', collapsed && !mobile && 'lg:sr-only')}>
+                      {item.title}
+                    </span>
                     {children.length > 0 ? (
                       <ChevronDown
                         className={cn(
                           'ml-auto size-4 shrink-0 text-sidebar-muted transition-transform duration-200',
                           sectionOpen && 'rotate-180',
-                          collapsed && 'lg:hidden',
+                          collapsed && !mobile && 'lg:hidden',
                         )}
                         aria-hidden
                       />
@@ -142,7 +200,7 @@ export function Sidebar({
                       className={cn(
                         'grid transition-[grid-template-rows] duration-200 ease-out',
                         sectionOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]',
-                        collapsed && 'lg:hidden',
+                        collapsed && !mobile && 'lg:hidden',
                       )}
                     >
                       <div className="overflow-hidden" inert={!sectionOpen}>
@@ -184,28 +242,27 @@ export function Sidebar({
         ))}
       </nav>
 
-      <div className="hidden shrink-0 border-t border-white/10 p-3 lg:block">
-        <button
-          type="button"
-          className={cn(
-            'flex h-10 w-full items-center gap-3 rounded-xl px-3 text-sm font-medium text-sidebar-muted transition-colors hover:bg-white/10 hover:text-sidebar-foreground focus-visible:outline-offset-[-2px]',
-            collapsed && 'justify-center px-0',
-          )}
-          onClick={onToggleCollapsed}
-          aria-pressed={collapsed}
-          aria-label={collapsed ? 'Expandir menú' : 'Contraer menú'}
-        >
-          {collapsed ? (
-            <PanelLeftOpen className="size-[18px]" strokeWidth={1.75} />
-          ) : (
-            <PanelLeftClose className="size-[18px]" strokeWidth={1.75} />
-          )}
-          {/* <span className={cn(collapsed && 'sr-only')}>
-            {collapsed ? 'Expandir menú' : 'Contraer menú'}
-          </span> */}
-        </button>
-      </div>
-    </aside>
+      {!mobile ? (
+        <div className="hidden shrink-0 border-t border-white/10 p-3 lg:block">
+          <button
+            type="button"
+            className={cn(
+              'flex h-10 w-full items-center gap-3 rounded-xl px-3 text-sm font-medium text-sidebar-muted transition-colors hover:bg-white/10 hover:text-sidebar-foreground focus-visible:outline-offset-[-2px]',
+              collapsed && 'justify-center px-0',
+            )}
+            onClick={onToggleCollapsed}
+            aria-pressed={collapsed}
+            aria-label={collapsed ? 'Expandir menú' : 'Contraer menú'}
+          >
+            {collapsed ? (
+              <PanelLeftOpen className="size-[18px]" strokeWidth={1.75} />
+            ) : (
+              <PanelLeftClose className="size-[18px]" strokeWidth={1.75} />
+            )}
+          </button>
+        </div>
+      ) : null}
+    </div>
   )
 }
 

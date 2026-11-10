@@ -1,8 +1,8 @@
-import { NavLink } from 'react-router'
-import { cn } from '@/lib/utils/cn'
+import { useNavigate, useLocation } from 'react-router'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/Tabs'
 
 const links = [
-  { to: '/reportes', end: true, label: 'Resumen' },
+  { to: '/reportes', label: 'Resumen' },
   { to: '/reportes/ventas', label: 'Ventas' },
   { to: '/reportes/ventas-diarias', label: 'Ventas diarias' },
   { to: '/reportes/productos-top', label: 'Más vendidos' },
@@ -10,29 +10,39 @@ const links = [
   { to: '/reportes/inventario', label: 'Inventario' },
 ] as const
 
+function activeReportPath(pathname: string) {
+  const match = links.find((link) =>
+    link.to === '/reportes' ? pathname === '/reportes' : pathname.startsWith(link.to),
+  )
+  return match?.to ?? '/reportes'
+}
+
 export function ReportNav() {
+  const navigate = useNavigate()
+  const { pathname } = useLocation()
+  const value = activeReportPath(pathname)
+
   return (
-    <nav
-      aria-label="Secciones de reportes"
-      className="-mx-1 flex gap-1 overflow-x-auto px-1 pb-1"
+    <Tabs
+      value={value}
+      onValueChange={(next) => {
+        void navigate(next)
+      }}
     >
-      {links.map((link) => (
-        <NavLink
-          key={link.to}
-          to={link.to}
-          end={'end' in link ? link.end : false}
-          className={({ isActive }) =>
-            cn(
-              'shrink-0 rounded-xl px-3.5 py-2 text-sm font-medium transition-colors',
-              isActive
-                ? 'bg-primary text-primary-foreground'
-                : 'text-muted hover:bg-surface-muted hover:text-foreground',
-            )
-          }
-        >
-          {link.label}
-        </NavLink>
-      ))}
-    </nav>
+      <TabsList
+        aria-label="Secciones de reportes"
+        className="h-auto w-full justify-start gap-1 overflow-x-auto bg-transparent p-0"
+      >
+        {links.map((link) => (
+          <TabsTrigger
+            key={link.to}
+            value={link.to}
+            className="shrink-0 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:hover:bg-primary-hover"
+          >
+            {link.label}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+    </Tabs>
   )
 }

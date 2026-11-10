@@ -3,9 +3,17 @@ import { useSearchParams } from 'react-router'
 import { ClipboardList, Search } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ListPagination } from '@/components/common/ListPagination'
+import { TableSkeleton } from '@/components/common/TableSkeleton'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/Select'
 import { useAuth } from '@/features/auth/hooks/use-auth'
 import { PurchasesTable } from '@/features/purchases/components/PurchasesTable'
 import { usePurchases } from '@/features/purchases/hooks/use-purchases'
@@ -14,7 +22,6 @@ import { purchaseStatusLabel } from '@/features/purchases/utils/purchase-status'
 import { useSupplierOptions } from '@/features/suppliers/hooks/use-supplier-options'
 import { getApiErrorMessage } from '@/lib/api/errors'
 import { DEFAULT_PAGE_SIZE } from '@/lib/api/pagination'
-import { cn } from '@/lib/utils/cn'
 
 const ESTADOS: EstadoCompra[] = ['BORRADOR', 'CONFIRMADA', 'CANCELADA']
 
@@ -124,70 +131,64 @@ export function PurchasesPage() {
             />
           </div>
 
-          <label className="flex w-full items-center gap-2.5 text-sm lg:w-auto">
+          <div className="flex w-full items-center gap-2.5 text-sm lg:w-auto">
             <span className="shrink-0 font-medium whitespace-nowrap text-foreground">
               Proveedor
             </span>
-            <select
-              value={proveedorIdFromUrl ?? ''}
-              onChange={(event) => {
+            <Select
+              value={proveedorIdFromUrl != null ? String(proveedorIdFromUrl) : 'all'}
+              onValueChange={(value) => {
                 updateParams((next) => {
-                  if (event.target.value) next.set('proveedorId', event.target.value)
+                  if (value !== 'all') next.set('proveedorId', value)
                   else next.delete('proveedorId')
                   next.delete('page')
                 })
               }}
               disabled={suppliersQuery.isLoading}
-              className={cn(
-                'h-11 w-full min-w-0 rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors lg:w-52',
-                'hover:border-border-strong focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
-                'disabled:cursor-not-allowed disabled:opacity-60',
-              )}
-              aria-label="Filtrar por proveedor"
             >
-              <option value="">Todos los proveedores</option>
-              {suppliers.map((supplier) => (
-                <option key={supplier.id} value={supplier.id}>
-                  {supplier.nombre}
-                </option>
-              ))}
-            </select>
-          </label>
+              <SelectTrigger className="w-full lg:w-52" aria-label="Filtrar por proveedor">
+                <SelectValue placeholder="Todos los proveedores" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los proveedores</SelectItem>
+                {suppliers.map((supplier) => (
+                  <SelectItem key={supplier.id} value={String(supplier.id)}>
+                    {supplier.nombre}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-          <label className="flex w-full items-center gap-2.5 text-sm lg:w-auto">
+          <div className="flex w-full items-center gap-2.5 text-sm lg:w-auto">
             <span className="shrink-0 font-medium whitespace-nowrap text-foreground">Estado</span>
-            <select
-              value={estadoFromUrl ?? ''}
-              onChange={(event) => {
+            <Select
+              value={estadoFromUrl ?? 'all'}
+              onValueChange={(value) => {
                 updateParams((next) => {
-                  if (event.target.value) next.set('estado', event.target.value)
+                  if (value !== 'all') next.set('estado', value)
                   else next.delete('estado')
                   next.delete('page')
                 })
               }}
-              className={cn(
-                'h-11 w-full min-w-0 rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors lg:w-44',
-                'hover:border-border-strong focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
-              )}
-              aria-label="Filtrar por estado"
             >
-              <option value="">Todos los estados</option>
-              {ESTADOS.map((estado) => (
-                <option key={estado} value={estado}>
-                  {purchaseStatusLabel(estado)}
-                </option>
-              ))}
-            </select>
-          </label>
+              <SelectTrigger className="w-full lg:w-44" aria-label="Filtrar por estado">
+                <SelectValue placeholder="Todos los estados" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los estados</SelectItem>
+                {ESTADOS.map((estado) => (
+                  <SelectItem key={estado} value={estado}>
+                    {purchaseStatusLabel(estado)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </Card>
 
-      {purchasesQuery.isLoading ? (
-        <Card className="px-6 py-16 text-center">
-          <p className="text-sm font-medium">Cargando compras…</p>
-          <p className="mt-1 text-sm text-muted">Un momento, por favor.</p>
-        </Card>
-      ) : null}
+      {purchasesQuery.isLoading ? <TableSkeleton columns={6} /> : null}
 
       {purchasesQuery.isError ? (
         <Card className="border-error/20 bg-error-soft px-6 py-10 text-center">

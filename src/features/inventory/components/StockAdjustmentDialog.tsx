@@ -1,11 +1,18 @@
 import { useMemo, useState } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
+import { Controller, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { useToast } from '@/components/common/use-toast'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
 import { Input } from '@/components/ui/Input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
 import { useCreateStockAdjustment } from '@/features/inventory/hooks/use-stock-adjustment'
 import {
@@ -34,12 +41,6 @@ type StockAdjustmentDialogProps = {
   currentStock: number | null
   stockUnavailable?: boolean
 }
-
-const selectClassName = cn(
-  'h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors',
-  'hover:border-border-strong focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
-  'disabled:cursor-not-allowed disabled:opacity-60',
-)
 
 export function StockAdjustmentDialog({
   open,
@@ -206,18 +207,32 @@ function StockAdjustmentDialogContent({
             </p>
           </div>
 
-          <label className="flex w-full flex-col gap-1.5 text-sm">
+          <div className="flex w-full flex-col gap-1.5 text-sm">
             <span className="font-medium text-foreground">
               Tipo de ajuste <span className="text-error">*</span>
             </span>
-            <select
-              className={cn(selectClassName, errors.tipo && 'border-error')}
-              disabled={busy}
-              {...register('tipo')}
-            >
-              <option value="AJUSTE_ENTRADA">{movementTypeLabel('AJUSTE_ENTRADA')}</option>
-              <option value="AJUSTE_SALIDA">{movementTypeLabel('AJUSTE_SALIDA')}</option>
-            </select>
+            <Controller
+              name="tipo"
+              control={control}
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange} disabled={busy}>
+                  <SelectTrigger
+                    aria-invalid={errors.tipo ? true : undefined}
+                    className={cn(errors.tipo && 'border-error')}
+                  >
+                    <SelectValue placeholder="Elegí un tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="AJUSTE_ENTRADA">
+                      {movementTypeLabel('AJUSTE_ENTRADA')}
+                    </SelectItem>
+                    <SelectItem value="AJUSTE_SALIDA">
+                      {movementTypeLabel('AJUSTE_SALIDA')}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
             {errors.tipo?.message ? (
               <span className="text-xs text-error-ink" role="alert">
                 {errors.tipo.message}
@@ -229,7 +244,7 @@ function StockAdjustmentDialogContent({
                   : 'Se van a retirar unidades del stock.'}
               </span>
             )}
-          </label>
+          </div>
 
           <Input
             label="Cantidad"

@@ -4,6 +4,13 @@ import { useToast } from '@/components/common/use-toast'
 import { Button } from '@/components/ui/Button'
 import { Dialog } from '@/components/ui/Dialog'
 import { MoneyInput } from '@/components/ui/MoneyInput'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
 import { useCreateCashMovement } from '@/features/cash-register/hooks/use-cash-register-mutations'
 import {
@@ -25,12 +32,6 @@ type CashMovementDialogProps = {
   onOpenChange: (open: boolean) => void
   caja: Caja | null
 }
-
-const selectClassName = cn(
-  'h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors',
-  'hover:border-border-strong focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
-  'disabled:cursor-not-allowed disabled:opacity-60',
-)
 
 export function CashMovementDialog({
   open,
@@ -108,25 +109,34 @@ function CashMovementDialogContent({
       }
     >
       <form id="cash-movement-form" className="flex flex-col gap-4" onSubmit={submit} noValidate>
-        <label className="flex w-full flex-col gap-1.5 text-sm">
+        <div className="flex w-full flex-col gap-1.5 text-sm">
           <span className="font-medium text-foreground">
             Tipo <span className="text-error">*</span>
           </span>
-          <select
-            className={cn(selectClassName, errors.tipo && 'border-error')}
-            disabled={busy}
-            aria-invalid={errors.tipo ? true : undefined}
-            {...register('tipo')}
-          >
-            <option value="INGRESO">Ingreso</option>
-            <option value="EGRESO">Egreso</option>
-          </select>
+          <Controller
+            name="tipo"
+            control={control}
+            render={({ field }) => (
+              <Select value={field.value} onValueChange={field.onChange} disabled={busy}>
+                <SelectTrigger
+                  aria-invalid={errors.tipo ? true : undefined}
+                  className={cn(errors.tipo && 'border-error')}
+                >
+                  <SelectValue placeholder="Elegí un tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="INGRESO">Ingreso</SelectItem>
+                  <SelectItem value="EGRESO">Egreso</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+          />
           {errors.tipo?.message ? (
             <span className="text-xs text-error-ink" role="alert">
               {errors.tipo.message}
             </span>
           ) : null}
-        </label>
+        </div>
 
         <Controller
           name="monto"

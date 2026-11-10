@@ -1,5 +1,6 @@
+import { AlertCircle } from 'lucide-react'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
 import { LowStockList } from '@/features/dashboard/components/LowStockList'
 import { MetricCards } from '@/features/dashboard/components/MetricCards'
 import { QuickActions } from '@/features/dashboard/components/QuickActions'
@@ -34,20 +35,24 @@ export function DashboardPage() {
       <QuickActions />
 
       {dashboard.isError ? (
-        <Card className="border-error/20 bg-error-soft px-5 py-4">
-          <p className="text-sm font-medium text-error-ink">
-            Algunas consultas del panel no pudieron cargarse.
-          </p>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="mt-3 bg-surface"
-            onClick={() => dashboard.refetchAll()}
-          >
-            Reintentar
-          </Button>
-        </Card>
+        <Alert tone="error">
+          <AlertCircle className="size-4" aria-hidden />
+          <AlertTitle>No se pudo completar el panel</AlertTitle>
+          <AlertDescription className="flex flex-col gap-3">
+            <p>Algunas consultas del panel no pudieron cargarse.</p>
+            <div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="bg-surface"
+                onClick={() => dashboard.refetchAll()}
+              >
+                Reintentar
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
       ) : null}
 
       <MetricCards

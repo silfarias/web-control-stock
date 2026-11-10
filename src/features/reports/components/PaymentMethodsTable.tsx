@@ -1,3 +1,11 @@
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/Table'
 import type { ReporteVentasPorMetodoPago } from '@/features/reports/types'
 import { paymentMethodLabel } from '@/features/sales/utils/sale-labels'
 import { formatMoney } from '@/lib/utils/format'
@@ -8,40 +16,32 @@ type PaymentMethodsTableProps = {
 
 export function PaymentMethodsTable({ items }: PaymentMethodsTableProps) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[36rem] text-left text-sm">
-        <thead>
-          <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
-            <th className="px-4 py-3 font-medium sm:px-5">Método de pago</th>
-            <th className="px-4 py-3 text-right font-medium sm:px-5">Ventas</th>
-            <th className="px-4 py-3 text-right font-medium sm:px-5">Unidades</th>
-            <th className="px-4 py-3 text-right font-medium sm:px-5">Ingresos</th>
-            <th className="px-4 py-3 text-right font-medium sm:px-5">% ingresos</th>
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((item) => (
-            <tr key={item.metodoPago} className="border-b border-border/70 last:border-0">
-              <td className="px-4 py-3.5 font-medium sm:px-5">
-                {paymentMethodLabel(item.metodoPago)}
-              </td>
-              <td className="px-4 py-3.5 text-right tabular-nums sm:px-5">
-                {item.cantidadVentas}
-              </td>
-              <td className="px-4 py-3.5 text-right tabular-nums sm:px-5">
-                {item.unidadesVendidas}
-              </td>
-              <td className="px-4 py-3.5 text-right font-medium tabular-nums sm:px-5">
-                {formatMoney(item.totalIngresos)}
-              </td>
-              <td className="px-4 py-3.5 text-right tabular-nums text-muted sm:px-5">
-                {formatPercent(item.porcentajeIngresos)}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <Table className="min-w-[36rem]">
+      <TableHeader>
+        <TableRow className="hover:bg-transparent">
+          <TableHead>Método de pago</TableHead>
+          <TableHead className="text-right">Ventas</TableHead>
+          <TableHead className="text-right">Unidades</TableHead>
+          <TableHead className="text-right">Ingresos</TableHead>
+          <TableHead className="text-right">% ingresos</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {items.map((item) => (
+          <TableRow key={item.metodoPago}>
+            <TableCell className="font-medium">{paymentMethodLabel(item.metodoPago)}</TableCell>
+            <TableCell className="text-right tabular-nums">{item.cantidadVentas}</TableCell>
+            <TableCell className="text-right tabular-nums">{item.unidadesVendidas}</TableCell>
+            <TableCell className="text-right font-medium tabular-nums">
+              {formatMoney(item.totalIngresos)}
+            </TableCell>
+            <TableCell className="text-right tabular-nums text-muted">
+              {formatPercent(item.porcentajeIngresos)}
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   )
 }
 

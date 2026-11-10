@@ -4,6 +4,7 @@
   /* Interacción principal (índigo) */
   --primary: #303f97;
   --primary-hover: #211581;
+  --primary-foreground: #ffffff;
   /* Acento vibrante (uso puntual) */
   --accent: #b628c2;
   --accent-soft: #f0edf8;
@@ -42,6 +43,7 @@
   --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
   --color-background: var(--background);
   --color-surface: var(--surface);
   --color-surface-muted: var(--surface-muted);

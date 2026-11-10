@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { ToastProvider } from '@/components/common/ToastProvider'
+import { Toaster } from '@/components/ui/Sonner'
+import { TooltipProvider } from '@/components/ui/Tooltip'
 import { AuthProvider } from '@/features/auth/context/AuthProvider'
 
 const queryClient = new QueryClient({
@@ -17,7 +18,10 @@ export function AppProviders({ children }: { children: ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <ToastProvider>{children}</ToastProvider>
+        <TooltipProvider delayDuration={250}>
+          {children}
+          <Toaster />
+        </TooltipProvider>
       </AuthProvider>
     </QueryClientProvider>
   )

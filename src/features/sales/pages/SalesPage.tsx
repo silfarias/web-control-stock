@@ -3,9 +3,17 @@ import { useSearchParams } from 'react-router'
 import { Search, ShoppingBag } from 'lucide-react'
 import { EmptyState } from '@/components/common/EmptyState'
 import { ListPagination } from '@/components/common/ListPagination'
+import { TableSkeleton } from '@/components/common/TableSkeleton'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/Select'
 import { SalesTable } from '@/features/sales/components/SalesTable'
 import { useSales } from '@/features/sales/hooks/use-sales'
 import type { EstadoVenta, MetodoPago } from '@/features/sales/types'
@@ -17,7 +25,6 @@ import {
 } from '@/features/sales/utils/sale-labels'
 import { getApiErrorMessage } from '@/lib/api/errors'
 import { DEFAULT_PAGE_SIZE } from '@/lib/api/pagination'
-import { cn } from '@/lib/utils/cn'
 
 function parsePage(value: string | null) {
   const parsed = Number(value)
@@ -117,68 +124,63 @@ export function SalesPage() {
             />
           </div>
 
-          <label className="flex w-full items-center gap-2.5 text-sm lg:w-auto">
+          <div className="flex w-full items-center gap-2.5 text-sm lg:w-auto">
             <span className="shrink-0 font-medium whitespace-nowrap text-foreground">Estado</span>
-            <select
-              value={estadoFromUrl ?? ''}
-              onChange={(event) => {
+            <Select
+              value={estadoFromUrl ?? 'all'}
+              onValueChange={(value) => {
                 updateParams((next) => {
-                  if (event.target.value) next.set('estado', event.target.value)
+                  if (value !== 'all') next.set('estado', value)
                   else next.delete('estado')
                   next.delete('page')
                 })
               }}
-              className={cn(
-                'h-11 w-full min-w-0 rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors lg:w-44',
-                'hover:border-border-strong focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
-              )}
-              aria-label="Filtrar por estado"
             >
-              <option value="">Todos los estados</option>
-              {SALE_STATUSES.map((estado) => (
-                <option key={estado} value={estado}>
-                  {saleStatusLabel(estado)}
-                </option>
-              ))}
-            </select>
-          </label>
+              <SelectTrigger className="w-full lg:w-44" aria-label="Filtrar por estado">
+                <SelectValue placeholder="Todos los estados" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los estados</SelectItem>
+                {SALE_STATUSES.map((estado) => (
+                  <SelectItem key={estado} value={estado}>
+                    {saleStatusLabel(estado)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-          <label className="flex w-full items-center gap-2.5 text-sm lg:w-auto">
+          <div className="flex w-full items-center gap-2.5 text-sm lg:w-auto">
             <span className="shrink-0 font-medium whitespace-nowrap text-foreground">
               Método de pago
             </span>
-            <select
-              value={metodoFromUrl ?? ''}
-              onChange={(event) => {
+            <Select
+              value={metodoFromUrl ?? 'all'}
+              onValueChange={(value) => {
                 updateParams((next) => {
-                  if (event.target.value) next.set('metodoPago', event.target.value)
+                  if (value !== 'all') next.set('metodoPago', value)
                   else next.delete('metodoPago')
                   next.delete('page')
                 })
               }}
-              className={cn(
-                'h-11 w-full min-w-0 rounded-xl border border-border bg-surface px-3.5 text-sm text-foreground transition-colors lg:w-48',
-                'hover:border-border-strong focus-visible:border-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25',
-              )}
-              aria-label="Filtrar por método de pago"
             >
-              <option value="">Todos los métodos</option>
-              {PAYMENT_METHODS.map((method) => (
-                <option key={method} value={method}>
-                  {paymentMethodLabel(method)}
-                </option>
-              ))}
-            </select>
-          </label>
+              <SelectTrigger className="w-full lg:w-48" aria-label="Filtrar por método de pago">
+                <SelectValue placeholder="Todos los métodos" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los métodos</SelectItem>
+                {PAYMENT_METHODS.map((method) => (
+                  <SelectItem key={method} value={method}>
+                    {paymentMethodLabel(method)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </Card>
 
-      {salesQuery.isLoading ? (
-        <Card className="px-6 py-16 text-center">
-          <p className="text-sm font-medium">Cargando ventas…</p>
-          <p className="mt-1 text-sm text-muted">Un momento, por favor.</p>
-        </Card>
-      ) : null}
+      {salesQuery.isLoading ? <TableSkeleton columns={6} /> : null}
 
       {salesQuery.isError ? (
         <Card className="border-error/20 bg-error-soft px-6 py-10 text-center">
