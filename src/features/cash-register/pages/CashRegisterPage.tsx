@@ -18,6 +18,11 @@ import {
   useCashMovementsByCaja,
   useCashRegisters,
 } from '@/features/cash-register/hooks/use-cash-register'
+import {
+  canCloseCashRegister,
+  canRegisterManualCashMovement,
+  isCashOwnedByUser,
+} from '@/features/cash-register/utils/cash-permissions'
 import { getApiErrorMessage } from '@/lib/api/errors'
 import { DEFAULT_PAGE_SIZE } from '@/lib/api/pagination'
 import { cn } from '@/lib/utils/cn'
@@ -25,7 +30,7 @@ import { formatComprobante, formatDateTime, formatMoney } from '@/lib/utils/form
 
 export function CashRegisterPage() {
   const { user } = useAuth()
-  const canManage = user?.role === 'ADMIN'
+  const canManualMovement = canRegisterManualCashMovement(user)
 
   const [openDialog, setOpenDialog] = useState(false)
   const [closeDialog, setCloseDialog] = useState(false)
@@ -36,6 +41,9 @@ export function CashRegisterPage() {
   const activeQuery = useActiveCashRegister()
   const activeCaja = activeQuery.data ?? null
   const isOpen = activeCaja?.estado === 'ABIERTA'
+  const canClose = canCloseCashRegister(user, activeCaja)
+  const isOwnOpenCash = isCashOwnedByUser(user, activeCaja)
+  const canOpen = !isOpen
 
   const historyParams = useMemo(
     () => ({
@@ -71,22 +79,26 @@ export function CashRegisterPage() {
           haber una caja abierta a la vez.
         </p>
         <div className="flex flex-wrap gap-2">
-          {canManage && !isOpen ? (
+          {canOpen ? (
             <Button type="button" onClick={() => setOpenDialog(true)}>
               <Unlock className="size-4" aria-hidden />
               Abrir caja
             </Button>
           ) : null}
-          {canManage && isOpen && activeCaja ? (
+          {isOpen && activeCaja ? (
             <>
-              <Button type="button" variant="outline" onClick={() => setMovementDialog(true)}>
-                <ArrowLeftRight className="size-4" aria-hidden />
-                Ingreso / egreso
-              </Button>
-              <Button type="button" variant="outline" onClick={() => setCloseDialog(true)}>
-                <Lock className="size-4" aria-hidden />
-                Cerrar caja
-              </Button>
+              {canManualMovement ? (
+                <Button type="button" variant="outline" onClick={() => setMovementDialog(true)}>
+                  <ArrowLeftRight className="size-4" aria-hidden />
+                  Ingreso / egreso
+                </Button>
+              ) : null}
+              {canClose ? (
+                <Button type="button" variant="outline" onClick={() => setCloseDialog(true)}>
+                  <Lock className="size-4" aria-hidden />
+                  Cerrar caja
+                </Button>
+              ) : null}
             </>
           ) : null}
         </div>
@@ -125,9 +137,8 @@ export function CashRegisterPage() {
                 <CashStatusBadge estado="CERRADA" />
               </div>
               <p className="mt-2 text-sm text-muted">
-                No hay una caja abierta. {canManage
-                  ? 'Podés abrir una nueva jornada con el monto inicial disponible.'
-                  : 'Cuando un administrador abra la caja, vas a ver aquí el detalle.'}
+                No hay una caja abierta. Podés abrir una nueva jornada con el monto inicial
+                disponible.
               </p>
             </div>
             <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-surface-muted text-primary">
@@ -152,6 +163,9 @@ export function CashRegisterPage() {
                   <dt className="text-xs tracking-wide text-muted uppercase">Responsable</dt>
                   <dd className="mt-1 text-sm font-medium">
                     {activeCaja.usuario?.nombre ?? '—'}
+                    {isOwnOpenCash ? (
+                      <span className="ml-1.5 text-xs font-normal text-muted">(vos)</span>
+                    ) : null}
                   </dd>
                   {activeCaja.usuario?.email ? (
                     <dd className="mt-0.5 text-xs text-muted">{activeCaja.usuario.email}</dd>
@@ -186,30 +200,35 @@ export function CashRegisterPage() {
                 Las ventas en efectivo y los movimientos manuales quedan en el historial. El saldo
                 esperado se calcula al cerrar.
               </p>
-              {canManage ? (
+              {canManualMovement || canClose ? (
                 <div className="mt-5 flex flex-col gap-2">
-                  <Button
-                    type="button"
-                    className="w-full"
-                    variant="outline"
-                    onClick={() => setMovementDialog(true)}
-                  >
-                    <ArrowLeftRight className="size-4" aria-hidden />
-                    Ingreso / egreso
-                  </Button>
-                  <Button
-                    type="button"
-                    className="w-full"
-                    variant="outline"
-                    onClick={() => setCloseDialog(true)}
-                  >
-                    <Lock className="size-4" aria-hidden />
-                    Cerrar caja
-                  </Button>
+                  {canManualMovement ? (
+                    <Button
+                      type="button"
+                      className="w-full"
+                      variant="outline"
+                      onClick={() => setMovementDialog(true)}
+                    >
+                      <ArrowLeftRight className="size-4" aria-hidden />
+                      Ingreso / egreso
+                    </Button>
+                  ) : null}
+                  {canClose ? (
+                    <Button
+                      type="button"
+                      className="w-full"
+                      variant="outline"
+                      onClick={() => setCloseDialog(true)}
+                    >
+                      <Lock className="size-4" aria-hidden />
+                      Cerrar caja
+                    </Button>
+                  ) : null}
                 </div>
               ) : (
                 <p className="mt-5 text-xs text-muted">
-                  Solo un administrador puede registrar movimientos o cerrar la caja.
+                  Esta caja la abrió {activeCaja.usuario?.nombre ?? 'otro usuario'}. Podés
+                  consultarla y registrar ventas en efectivo, pero no cerrarla.
                 </p>
               )}
             </Card>
@@ -344,13 +363,13 @@ export function CashRegisterPage() {
       <CloseCashDialog
         open={closeDialog}
         onOpenChange={setCloseDialog}
-        caja={activeCaja}
+        caja={canClose ? activeCaja : null}
         onClosed={() => setMovementsPage(1)}
       />
       <CashMovementDialog
         open={movementDialog}
         onOpenChange={setMovementDialog}
-        caja={isOpen ? activeCaja : null}
+        caja={canManualMovement && isOpen ? activeCaja : null}
       />
     </div>
   )

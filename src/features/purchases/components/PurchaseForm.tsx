@@ -121,7 +121,7 @@ export function PurchaseForm({
       nombre: product.nombre,
       codigo: product.codigo,
       cantidad: '1',
-      costoUnitario: formatMoneyInput(product.precioCosto),
+      costoUnitario: formatMoneyInput(product.precioCosto ?? 0),
     })
   }
 

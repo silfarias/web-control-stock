@@ -1,5 +1,9 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios'
-import { notifyAuthSessionInvalid } from '@/lib/api/auth-events'
+import {
+  notifyAuthClaimsStale,
+  notifyAuthSessionInvalid,
+  notifyAuthUserSynced,
+} from '@/lib/api/auth-events'
 import {
   broadcastRefreshing,
   broadcastSessionCleared,
@@ -123,6 +127,9 @@ export async function refreshSession(): Promise<string> {
       }
       tokenStore.setTokens(tokens)
       broadcastTokens(tokens)
+      if (data.usuario) {
+        notifyAuthUserSynced(data.usuario)
+      }
       return tokens.accessToken
     } catch (error) {
       tokenStore.clear()
@@ -159,7 +166,16 @@ apiClient.interceptors.response.use(
     const config = error.config as RetriableConfig | undefined
     const status = error.response?.status
 
-    // Solo 401 dispara renovación. 403 = sin permiso, no renovar.
+    // 403 = sin permiso: no renovar tokens; pedir reconciliación de rol vía /auth/me.
+    if (status === 403 && config && !isPublicAuthRequest(config.url)) {
+      const url = config.url ?? ''
+      if (!url.includes('/auth/me')) {
+        notifyAuthClaimsStale()
+      }
+      throw normalizeApiError(error)
+    }
+
+    // Solo 401 dispara renovación.
     if (!config || status !== 401 || config._retry || isPublicAuthRequest(config.url)) {
       throw normalizeApiError(error)
     }

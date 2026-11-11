@@ -70,7 +70,8 @@ export function productToFormValues(product: Producto): ProductFormValues {
     codigo: product.codigo,
     codigoBarras: product.codigoBarras,
     categoriaId: String(product.categoria.id),
-    precioCosto: toMoneyInputValue(product.precioCosto),
+    precioCosto:
+      product.precioCosto != null ? toMoneyInputValue(product.precioCosto) : '',
     precioVenta: toMoneyInputValue(product.precioVenta),
     minimoStock: String(product.minimoStock),
     stockInicial: '',

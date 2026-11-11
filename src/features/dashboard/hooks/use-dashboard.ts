@@ -49,7 +49,7 @@ export function useDashboard() {
 
   const salesTodayQuery = useSalesReport(todaySalesFiltro, { enabled: isAdmin })
   const dailySalesQuery = useDailySalesReport(weekSalesFiltro, { enabled: isAdmin })
-  const lowStockQuery = useLowStockReport({})
+  const lowStockQuery = useLowStockReport({}, { enabled: isAdmin })
 
   const productsQuery = useProducts(COUNT_PARAMS)
   const movementsQuery = useStockMovements(COUNT_PARAMS, { enabled: isAdmin })
@@ -111,7 +111,6 @@ export function useDashboard() {
     if (
       productsQuery.isLoading ||
       salesTotalQuery.isLoading ||
-      lowStockQuery.isLoading ||
       activeCashQuery.isLoading
     ) {
       return null
@@ -119,7 +118,6 @@ export function useDashboard() {
 
     const caja = activeCashQuery.data
     const cashOpen = caja?.estado === 'ABIERTA'
-    const lowStockCount = lowStockQuery.data?.length ?? 0
 
     return {
       cashLabel: cashOpen ? 'Caja abierta' : 'Sin caja abierta',
@@ -130,9 +128,6 @@ export function useDashboard() {
       productsDetail: 'Productos registrados',
       salesTotal: salesTotalQuery.data?.metadata.count ?? 0,
       salesDetail: 'Ventas confirmadas (total)',
-      lowStock: lowStockCount,
-      lowStockDetail:
-        lowStockCount === 0 ? 'Sin alertas de mínimo' : 'Por debajo del mínimo',
     }
   }, [
     isAdmin,
@@ -140,8 +135,6 @@ export function useDashboard() {
     productsQuery.data,
     salesTotalQuery.isLoading,
     salesTotalQuery.data,
-    lowStockQuery.isLoading,
-    lowStockQuery.data,
     activeCashQuery.isLoading,
     activeCashQuery.data,
   ])
@@ -152,8 +145,9 @@ export function useDashboard() {
   }, [isAdmin, dailySalesQuery.data, today])
 
   const lowStockItems = useMemo(
-    () => (lowStockQuery.data ? mapLowStockItems(lowStockQuery.data) : []),
-    [lowStockQuery.data],
+    () =>
+      isAdmin && lowStockQuery.data ? mapLowStockItems(lowStockQuery.data) : [],
+    [isAdmin, lowStockQuery.data],
   )
 
   const recentSales = useMemo(
@@ -174,7 +168,6 @@ export function useDashboard() {
     !isAdmin &&
     (productsQuery.isLoading ||
       salesTotalQuery.isLoading ||
-      lowStockQuery.isLoading ||
       activeCashQuery.isLoading ||
       recentSalesQuery.isLoading)
 
@@ -191,7 +184,6 @@ export function useDashboard() {
     !isAdmin &&
     (productsQuery.isError ||
       salesTotalQuery.isError ||
-      lowStockQuery.isError ||
       activeCashQuery.isError ||
       recentSalesQuery.isError)
 
@@ -200,11 +192,11 @@ export function useDashboard() {
       void salesTodayQuery.refetch()
       void dailySalesQuery.refetch()
       void movementsQuery.refetch()
+      void lowStockQuery.refetch()
     } else {
       void salesTotalQuery.refetch()
       void activeCashQuery.refetch()
     }
-    void lowStockQuery.refetch()
     void productsQuery.refetch()
     void recentSalesQuery.refetch()
   }
@@ -221,8 +213,8 @@ export function useDashboard() {
     isError: adminError || employeeError,
     chartLoading: isAdmin && dailySalesQuery.isLoading,
     chartError: isAdmin && dailySalesQuery.isError,
-    lowStockLoading: lowStockQuery.isLoading,
-    lowStockError: lowStockQuery.isError,
+    lowStockLoading: isAdmin && lowStockQuery.isLoading,
+    lowStockError: isAdmin && lowStockQuery.isError,
     recentLoading: recentSalesQuery.isLoading,
     recentError: recentSalesQuery.isError,
     refetchAll,

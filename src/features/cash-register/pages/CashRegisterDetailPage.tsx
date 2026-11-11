@@ -15,6 +15,10 @@ import {
   useCashMovementsByCaja,
   useCashRegister,
 } from '@/features/cash-register/hooks/use-cash-register'
+import {
+  canCloseCashRegister,
+  canRegisterManualCashMovement,
+} from '@/features/cash-register/utils/cash-permissions'
 import { getApiErrorMessage } from '@/lib/api/errors'
 import { DEFAULT_PAGE_SIZE } from '@/lib/api/pagination'
 import { cn } from '@/lib/utils/cn'
@@ -28,7 +32,7 @@ function parseId(value: string | undefined) {
 
 export function CashRegisterDetailPage() {
   const { user } = useAuth()
-  const canManage = user?.role === 'ADMIN'
+  const canManualMovement = canRegisterManualCashMovement(user)
   const { id: idParam } = useParams()
   const cajaId = parseId(idParam)
   const [closeDialog, setCloseDialog] = useState(false)
@@ -38,6 +42,7 @@ export function CashRegisterDetailPage() {
   const cajaQuery = useCashRegister(cajaId)
   const caja = cajaQuery.data
   const isOpen = caja?.estado === 'ABIERTA'
+  const canClose = canCloseCashRegister(user, caja)
 
   const movementsParams = useMemo(
     () => ({
@@ -102,20 +107,24 @@ export function CashRegisterDetailPage() {
               </p>
             ) : null}
           </div>
-          {canManage && isOpen && caja ? (
+          {isOpen && caja && (canManualMovement || canClose) ? (
             <div className="flex flex-wrap gap-2 self-start">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setMovementDialog(true)}
-              >
-                <ArrowLeftRight className="size-4" aria-hidden />
-                Ingreso / egreso
-              </Button>
-              <Button type="button" variant="outline" onClick={() => setCloseDialog(true)}>
-                <Lock className="size-4" aria-hidden />
-                Cerrar caja
-              </Button>
+              {canManualMovement ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setMovementDialog(true)}
+                >
+                  <ArrowLeftRight className="size-4" aria-hidden />
+                  Ingreso / egreso
+                </Button>
+              ) : null}
+              {canClose ? (
+                <Button type="button" variant="outline" onClick={() => setCloseDialog(true)}>
+                  <Lock className="size-4" aria-hidden />
+                  Cerrar caja
+                </Button>
+              ) : null}
             </div>
           ) : null}
         </div>
@@ -281,13 +290,13 @@ export function CashRegisterDetailPage() {
       <CloseCashDialog
         open={closeDialog}
         onOpenChange={setCloseDialog}
-        caja={isOpen ? (caja ?? null) : null}
+        caja={canClose ? (caja ?? null) : null}
         onClosed={() => void cajaQuery.refetch()}
       />
       <CashMovementDialog
         open={movementDialog}
         onOpenChange={setMovementDialog}
-        caja={isOpen ? (caja ?? null) : null}
+        caja={canManualMovement && isOpen ? (caja ?? null) : null}
       />
     </div>
   )

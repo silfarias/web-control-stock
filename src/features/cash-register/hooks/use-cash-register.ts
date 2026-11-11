@@ -13,11 +13,12 @@ export function useActiveCashRegister() {
   })
 }
 
-export function useCashRegisters(params: SearchCajasParams) {
+export function useCashRegisters(params: SearchCajasParams, enabled = true) {
   return useQuery({
     queryKey: cashRegisterKeys.list(params),
     queryFn: () => cashRegisterApi.search(params),
     placeholderData: keepPreviousData,
+    enabled,
   })
 }
 
@@ -41,11 +42,12 @@ export function useCashMovements(params: SearchMovimientosCajaParams, enabled = 
 export function useCashMovementsByCaja(
   cajaId: number | null,
   params: SearchMovimientosCajaParams,
+  enabled = true,
 ) {
   return useQuery({
     queryKey: cashRegisterKeys.movementsByCash(cajaId ?? 0, params),
     queryFn: () => cashRegisterApi.searchMovimientosByCaja(cajaId!, params),
     placeholderData: keepPreviousData,
-    enabled: cajaId != null && cajaId > 0,
+    enabled: enabled && cajaId != null && cajaId > 0,
   })
 }

@@ -13,6 +13,7 @@ function toQuery(params: SearchVentasParams) {
   if (params.usuarioId != null) query.usuarioId = params.usuarioId
   if (params.estado) query.estado = params.estado
   if (params.metodoPago) query.metodoPago = params.metodoPago
+  if (params.fecha) query.fecha = params.fecha
   if (params.pageNumber != null) query.pageNumber = params.pageNumber
   if (params.pageSize != null) query.pageSize = params.pageSize
   if (params.orderBy) query.orderBy = params.orderBy

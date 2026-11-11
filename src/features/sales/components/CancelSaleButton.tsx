@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { useToast } from '@/components/common/use-toast'
 import { Button } from '@/components/ui/Button'
+import { useAuth } from '@/features/auth/hooks/use-auth'
 import { useCancelSale } from '@/features/sales/hooks/use-sale-mutations'
 import type { Venta } from '@/features/sales/types'
 import { getApiErrorMessage, normalizeApiError } from '@/lib/api/errors'
@@ -13,11 +14,12 @@ type CancelSaleButtonProps = {
 }
 
 export function CancelSaleButton({ sale, className }: CancelSaleButtonProps) {
+  const { user } = useAuth()
   const { pushToast } = useToast()
   const cancelMutation = useCancelSale()
   const [open, setOpen] = useState(false)
 
-  if (sale.estado !== 'CONFIRMADA') return null
+  if (user?.role !== 'ADMIN' || sale.estado !== 'CONFIRMADA') return null
 
   const comprobante = formatComprobante(sale.numero)
   const description =

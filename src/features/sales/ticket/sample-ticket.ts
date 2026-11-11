@@ -24,6 +24,7 @@ export const sampleTicketSale: Venta = {
         precioCosto: 1500,
         precioVenta: 2900,
         minimoStock: 1,
+        stockCantidad: 10,
         categoria: {
           id: 1,
           nombre: 'Iluminación',

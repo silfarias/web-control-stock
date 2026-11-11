@@ -193,12 +193,14 @@ export function ProductDetailPage() {
                     {formatMoney(product.precioVenta)}
                   </dd>
                 </div>
-                <div className="flex items-baseline justify-between gap-3">
-                  <dt className="text-sm text-muted">Costo</dt>
-                  <dd className="text-sm tabular-nums text-muted">
-                    {formatMoney(product.precioCosto)}
-                  </dd>
-                </div>
+                {canManage && product.precioCosto != null ? (
+                  <div className="flex items-baseline justify-between gap-3">
+                    <dt className="text-sm text-muted">Costo</dt>
+                    <dd className="text-sm tabular-nums text-muted">
+                      {formatMoney(product.precioCosto)}
+                    </dd>
+                  </div>
+                ) : null}
               </dl>
             </Card>
 

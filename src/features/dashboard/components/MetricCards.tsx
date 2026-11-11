@@ -81,15 +81,13 @@ export function MetricCards({
             icon: ArrowLeftRight,
             iconClassName: 'bg-accent-soft text-accent-ink',
           },
-          {
-            label: 'Stock bajo',
-            value: String(employeeSummary.lowStock),
-            detail: employeeSummary.lowStockDetail,
-            icon: AlertTriangle,
-            iconClassName: 'bg-warning-soft text-warning-ink',
-          },
         ]
       : []
+
+  const columnsClass =
+    metrics.length > 0 && metrics.length < 4
+      ? 'grid gap-4 sm:grid-cols-2 xl:grid-cols-3'
+      : 'grid gap-4 sm:grid-cols-2 xl:grid-cols-4'
 
   if (loading && metrics.length === 0) {
     return (
@@ -113,7 +111,7 @@ export function MetricCards({
       <h2 id="indicadores-dia" className="sr-only">
         Indicadores del día
       </h2>
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className={columnsClass}>
         {metrics.map((metric) => {
           const Icon = metric.icon
 

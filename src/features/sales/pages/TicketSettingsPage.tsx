@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { useAuth } from '@/features/auth/hooks/use-auth'
 import { buildTicketHtml } from '@/features/sales/ticket/build-ticket-html'
 import { sampleTicketCashReceived, sampleTicketSale } from '@/features/sales/ticket/sample-ticket'
 import { TicketPreview } from '@/features/sales/ticket/TicketPreview'
@@ -10,6 +11,8 @@ import { useTicketConfig } from '@/features/sales/ticket/use-ticket'
 import { getApiErrorMessage } from '@/lib/api/errors'
 
 export function TicketSettingsPage() {
+  const { user } = useAuth()
+  const canConfigure = user?.role === 'ADMIN'
   const ticketQuery = useTicketConfig()
   const [open, setOpen] = useState(false)
   const settings = ticketQuery.data ? toTicketSettings(ticketQuery.data) : null
@@ -30,16 +33,20 @@ export function TicketSettingsPage() {
     <div className="flex min-w-0 flex-col gap-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="max-w-2xl text-sm text-muted">
-          Así se ve el ticket con la configuración actual. Los cambios se usan en cada venta.
+          {canConfigure
+            ? 'Así se ve el ticket con la configuración actual. Los cambios se usan en cada venta.'
+            : 'Vista de consulta del ticket actual. Solo un administrador puede modificar la configuración.'}
         </p>
-        <Button
-          type="button"
-          className="shrink-0 self-start"
-          disabled={!settings}
-          onClick={() => setOpen(true)}
-        >
-          Configurar
-        </Button>
+        {canConfigure ? (
+          <Button
+            type="button"
+            className="shrink-0 self-start"
+            disabled={!settings}
+            onClick={() => setOpen(true)}
+          >
+            Configurar
+          </Button>
+        ) : null}
       </div>
 
       {ticketQuery.isLoading ? (
@@ -63,7 +70,7 @@ export function TicketSettingsPage() {
 
       {settings && html ? <TicketPreview html={html} paperMm={settings.paperMm} /> : null}
 
-      {settings ? (
+      {canConfigure && settings ? (
         <TicketSettingsDialog open={open} settings={settings} onOpenChange={setOpen} />
       ) : null}
     </div>

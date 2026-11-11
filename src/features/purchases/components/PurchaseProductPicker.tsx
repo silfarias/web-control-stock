@@ -124,7 +124,9 @@ export function PurchaseProductPicker({
                   <p className="mt-0.5 font-mono text-xs text-muted">
                     {product.codigo}
                     <span className="mx-1.5 text-border">·</span>
-                    Costo {formatMoney(product.precioCosto)}
+                    {product.precioCosto != null
+                      ? `Costo ${formatMoney(product.precioCosto)}`
+                      : 'Sin costo'}
                   </p>
                 </div>
                 <Button

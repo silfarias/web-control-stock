@@ -35,7 +35,7 @@ const actions: Action[] = [
   },
   {
     title: 'Caja',
-    subtitle: 'Estado y movimientos',
+    subtitle: 'Estado de caja',
     to: '/caja',
     icon: Wallet,
   },

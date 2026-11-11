@@ -58,4 +58,6 @@ export type SearchVentasParams = SearchParams & {
   usuarioId?: number
   estado?: EstadoVenta
   metodoPago?: MetodoPago
+  /** Día de calendario local `YYYY-MM-DD` (sin zona horaria). */
+  fecha?: string
 }

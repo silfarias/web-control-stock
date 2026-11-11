@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { authApi } from '@/features/auth/api/auth-api'
 import {
@@ -6,10 +6,20 @@ import {
   type AuthContextValue,
 } from '@/features/auth/context/auth-context'
 import type { AuthStatus, AuthUsuario, LoginRequest, LoginResponse } from '@/features/auth/types'
-import { onAuthSessionInvalid } from '@/lib/api/auth-events'
+import {
+  onAuthClaimsStale,
+  onAuthSessionInvalid,
+  onAuthUserSynced,
+} from '@/lib/api/auth-events'
 import { broadcastSessionCleared } from '@/lib/api/auth-sync'
 import { refreshSession } from '@/lib/api/client'
+import { normalizeApiError } from '@/lib/api/errors'
 import { tokenStore } from '@/lib/api/token-store'
+
+/** Evita ráfagas de GET /auth/me ante varios 403 seguidos. */
+const RECONCILE_COOLDOWN_MS = 3_000
+/** Reconsulta al volver a la pestaña, sin saturar. */
+const VISIBILITY_RECONCILE_MIN_MS = 15_000
 
 function applySession(data: LoginResponse) {
   tokenStore.setTokens({
@@ -31,14 +41,38 @@ function toAuthUsuario(user: AuthUsuario): AuthUsuario {
   }
 }
 
+function isSameUserSnapshot(a: AuthUsuario | null, b: AuthUsuario) {
+  if (!a) return false
+  return (
+    a.id === b.id &&
+    a.role === b.role &&
+    a.nombre === b.nombre &&
+    a.email === b.email &&
+    (a.updatedAt ?? null) === (b.updatedAt ?? null)
+  )
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient()
   const [status, setStatus] = useState<AuthStatus>('bootstrapping')
   const [user, setUser] = useState<AuthUsuario | null>(null)
+  const statusRef = useRef(status)
+  const userRef = useRef<AuthUsuario | null>(null)
+  const reconcileInFlight = useRef<Promise<void> | null>(null)
+  const lastReconcileAt = useRef(0)
+
+  useEffect(() => {
+    statusRef.current = status
+  }, [status])
+
+  useEffect(() => {
+    userRef.current = user
+  }, [user])
 
   const clearSession = useCallback(
     (options?: { broadcast?: boolean }) => {
       tokenStore.clear()
+      userRef.current = null
       setUser(null)
       setStatus('anonymous')
       queryClient.clear()
@@ -49,12 +83,63 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [queryClient],
   )
 
+  const applyAuthenticatedUser = useCallback(
+    (nextRaw: AuthUsuario) => {
+      const next = toAuthUsuario(nextRaw)
+      const prev = userRef.current
+      if (isSameUserSnapshot(prev, next)) {
+        setStatus('authenticated')
+        return next
+      }
+      if (prev && prev.role !== next.role) {
+        // El menú y las pantallas dependen del rol en memoria; invalidar caché obsoleta.
+        queryClient.clear()
+      }
+      userRef.current = next
+      setUser(next)
+      setStatus('authenticated')
+      return next
+    },
+    [queryClient],
+  )
+
   const loadCurrentUser = useCallback(async (): Promise<AuthUsuario> => {
     const me = await authApi.me()
-    const next = toAuthUsuario(me)
-    setUser(next)
-    return next
-  }, [])
+    return applyAuthenticatedUser(me)
+  }, [applyAuthenticatedUser])
+
+  /**
+   * Reconsulta GET /auth/me sin tratar un fallo genérico como logout.
+   * Solo 401 limpia la sesión. Usado tras 403 o al recuperar el foco.
+   */
+  const reconcileCurrentUser = useCallback(async () => {
+    if (statusRef.current !== 'authenticated') return
+    if (!tokenStore.getAccessToken() && !tokenStore.getRefreshToken()) return
+
+    if (reconcileInFlight.current) {
+      await reconcileInFlight.current
+      return
+    }
+
+    const elapsed = Date.now() - lastReconcileAt.current
+    if (elapsed < RECONCILE_COOLDOWN_MS) return
+
+    reconcileInFlight.current = (async () => {
+      try {
+        await loadCurrentUser()
+      } catch (error) {
+        const apiError = normalizeApiError(error)
+        if (apiError.status === 401) {
+          clearSession({ broadcast: true })
+        }
+      } finally {
+        lastReconcileAt.current = Date.now()
+        reconcileInFlight.current = null
+      }
+    })()
+
+    await reconcileInFlight.current
+  }, [clearSession, loadCurrentUser])
 
   useEffect(() => {
     let cancelled = false
@@ -76,8 +161,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
           const me = await authApi.me()
           if (cancelled) return
-          setUser(toAuthUsuario(me))
-          setStatus('authenticated')
+          applyAuthenticatedUser(me)
         } catch {
           if (cancelled) return
           clearSession({ broadcast: true })
@@ -93,7 +177,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true
     }
-  }, [clearSession])
+  }, [applyAuthenticatedUser, clearSession])
 
   useEffect(() => {
     return onAuthSessionInvalid(() => {
@@ -101,23 +185,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
   }, [clearSession])
 
-  const login = useCallback(async (credentials: LoginRequest) => {
-    const data = await authApi.login(credentials)
-    applySession(data)
+  useEffect(() => {
+    return onAuthClaimsStale(() => {
+      void reconcileCurrentUser()
+    })
+  }, [reconcileCurrentUser])
 
-    try {
-      const me = await authApi.me()
-      const nextUser = toAuthUsuario(me)
-      setUser(nextUser)
-      setStatus('authenticated')
-      return nextUser
-    } catch {
-      const nextUser = toAuthUsuario(data.usuario)
-      setUser(nextUser)
-      setStatus('authenticated')
-      return nextUser
+  useEffect(() => {
+    return onAuthUserSynced((next) => {
+      if (statusRef.current !== 'authenticated' && statusRef.current !== 'bootstrapping') {
+        return
+      }
+      applyAuthenticatedUser(next)
+    })
+  }, [applyAuthenticatedUser])
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+
+    function onVisibilityChange() {
+      if (document.visibilityState !== 'visible') return
+      if (statusRef.current !== 'authenticated') return
+      if (Date.now() - lastReconcileAt.current < VISIBILITY_RECONCILE_MIN_MS) return
+      void reconcileCurrentUser()
     }
-  }, [])
+
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange)
+    }
+  }, [reconcileCurrentUser])
+
+  const login = useCallback(
+    async (credentials: LoginRequest) => {
+      const data = await authApi.login(credentials)
+      applySession(data)
+
+      try {
+        const me = await authApi.me()
+        return applyAuthenticatedUser(me)
+      } catch {
+        return applyAuthenticatedUser(data.usuario)
+      }
+    },
+    [applyAuthenticatedUser],
+  )
 
   const logout = useCallback(async () => {
     try {
@@ -145,9 +257,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     clearSession({ broadcast: true })
   }, [clearSession])
 
-  const syncUser = useCallback((next: AuthUsuario) => {
-    setUser(toAuthUsuario(next))
-  }, [])
+  const syncUser = useCallback(
+    (next: AuthUsuario) => {
+      applyAuthenticatedUser(next)
+    },
+    [applyAuthenticatedUser],
+  )
 
   const refreshUser = useCallback(async () => {
     if (!tokenStore.getAccessToken() && !tokenStore.getRefreshToken()) {

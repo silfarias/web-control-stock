@@ -7,7 +7,8 @@ export type Producto = {
   descripcion?: string | null
   codigo: string
   codigoBarras: string
-  precioCosto: number | string
+  /** Omitido por el backend para EMPLEADO. */
+  precioCosto?: number | string
   precioVenta: number | string
   minimoStock: number
   /** Cantidad actual en inventario (viene en search, get, create y update). */

@@ -106,43 +106,6 @@ const router = createBrowserRouter([
             } satisfies RouteHandle,
           },
           {
-            element: <RequireAdmin />,
-            children: [
-              {
-                path: 'productos/nuevo',
-                element: <ProductCreatePage />,
-                handle: {
-                  title: 'Nuevo producto',
-                  breadcrumb: ['Inicio', 'Productos', 'Nuevo'],
-                } satisfies RouteHandle,
-              },
-              {
-                path: 'productos/:id/editar',
-                element: <ProductEditPage />,
-                handle: {
-                  title: 'Editar producto',
-                  breadcrumb: ['Inicio', 'Productos', 'Editar'],
-                } satisfies RouteHandle,
-              },
-              {
-                path: 'compras/nueva',
-                element: <PurchaseCreatePage />,
-                handle: {
-                  title: 'Nueva compra',
-                  breadcrumb: ['Inicio', 'Compras', 'Nueva'],
-                } satisfies RouteHandle,
-              },
-              {
-                path: 'compras/:id/editar',
-                element: <PurchaseEditPage />,
-                handle: {
-                  title: 'Editar compra',
-                  breadcrumb: ['Inicio', 'Compras', 'Editar'],
-                } satisfies RouteHandle,
-              },
-            ],
-          },
-          {
             path: 'productos/:id',
             element: <ProductDetailPage />,
             handle: {
@@ -180,22 +143,6 @@ const router = createBrowserRouter([
             handle: {
               title: 'Proveedores',
               breadcrumb: ['Inicio', 'Proveedores'],
-            } satisfies RouteHandle,
-          },
-          {
-            path: 'compras',
-            element: <PurchasesPage />,
-            handle: {
-              title: 'Historial de compras',
-              breadcrumb: ['Inicio', 'Compras'],
-            } satisfies RouteHandle,
-          },
-          {
-            path: 'compras/:id',
-            element: <PurchaseDetailPage />,
-            handle: {
-              title: 'Detalle de compra',
-              breadcrumb: ['Inicio', 'Compras', 'Detalle'],
             } satisfies RouteHandle,
           },
           {
@@ -247,60 +194,6 @@ const router = createBrowserRouter([
             } satisfies RouteHandle,
           },
           {
-            path: 'reportes',
-            element: <ReportsLayout />,
-            handle: {
-              title: 'Reportes',
-              breadcrumb: ['Inicio', 'Reportes'],
-            } satisfies RouteHandle,
-            children: [
-              {
-                index: true,
-                element: <ReportsHubPage />,
-              },
-              {
-                path: 'ventas',
-                element: <SalesReportPage />,
-                handle: {
-                  title: 'Reporte de ventas',
-                  breadcrumb: ['Inicio', 'Reportes', 'Ventas'],
-                } satisfies RouteHandle,
-              },
-              {
-                path: 'ventas-diarias',
-                element: <DailySalesReportPage />,
-                handle: {
-                  title: 'Ventas diarias',
-                  breadcrumb: ['Inicio', 'Reportes', 'Ventas diarias'],
-                } satisfies RouteHandle,
-              },
-              {
-                path: 'productos-top',
-                element: <TopProductsReportPage />,
-                handle: {
-                  title: 'Productos más vendidos',
-                  breadcrumb: ['Inicio', 'Reportes', 'Más vendidos'],
-                } satisfies RouteHandle,
-              },
-              {
-                path: 'stock-bajo',
-                element: <LowStockReportPage />,
-                handle: {
-                  title: 'Stock bajo',
-                  breadcrumb: ['Inicio', 'Reportes', 'Stock bajo'],
-                } satisfies RouteHandle,
-              },
-              {
-                path: 'inventario',
-                element: <InventoryReportPage />,
-                handle: {
-                  title: 'Inventario valorizado',
-                  breadcrumb: ['Inicio', 'Reportes', 'Inventario'],
-                } satisfies RouteHandle,
-              },
-            ],
-          },
-          {
             path: 'configurar-ticket',
             element: <TicketSettingsPage />,
             handle: {
@@ -311,6 +204,108 @@ const router = createBrowserRouter([
           {
             element: <RequireAdmin />,
             children: [
+              {
+                path: 'productos/nuevo',
+                element: <ProductCreatePage />,
+                handle: {
+                  title: 'Nuevo producto',
+                  breadcrumb: ['Inicio', 'Productos', 'Nuevo'],
+                } satisfies RouteHandle,
+              },
+              {
+                path: 'productos/:id/editar',
+                element: <ProductEditPage />,
+                handle: {
+                  title: 'Editar producto',
+                  breadcrumb: ['Inicio', 'Productos', 'Editar'],
+                } satisfies RouteHandle,
+              },
+              {
+                path: 'compras',
+                element: <PurchasesPage />,
+                handle: {
+                  title: 'Historial de compras',
+                  breadcrumb: ['Inicio', 'Compras'],
+                } satisfies RouteHandle,
+              },
+              {
+                path: 'compras/nueva',
+                element: <PurchaseCreatePage />,
+                handle: {
+                  title: 'Nueva compra',
+                  breadcrumb: ['Inicio', 'Compras', 'Nueva'],
+                } satisfies RouteHandle,
+              },
+              {
+                path: 'compras/:id/editar',
+                element: <PurchaseEditPage />,
+                handle: {
+                  title: 'Editar compra',
+                  breadcrumb: ['Inicio', 'Compras', 'Editar'],
+                } satisfies RouteHandle,
+              },
+              {
+                path: 'compras/:id',
+                element: <PurchaseDetailPage />,
+                handle: {
+                  title: 'Detalle de compra',
+                  breadcrumb: ['Inicio', 'Compras', 'Detalle'],
+                } satisfies RouteHandle,
+              },
+              {
+                path: 'reportes',
+                element: <ReportsLayout />,
+                handle: {
+                  title: 'Reportes',
+                  breadcrumb: ['Inicio', 'Reportes'],
+                } satisfies RouteHandle,
+                children: [
+                  {
+                    index: true,
+                    element: <ReportsHubPage />,
+                  },
+                  {
+                    path: 'ventas',
+                    element: <SalesReportPage />,
+                    handle: {
+                      title: 'Reporte de ventas',
+                      breadcrumb: ['Inicio', 'Reportes', 'Ventas'],
+                    } satisfies RouteHandle,
+                  },
+                  {
+                    path: 'ventas-diarias',
+                    element: <DailySalesReportPage />,
+                    handle: {
+                      title: 'Ventas diarias',
+                      breadcrumb: ['Inicio', 'Reportes', 'Ventas diarias'],
+                    } satisfies RouteHandle,
+                  },
+                  {
+                    path: 'productos-top',
+                    element: <TopProductsReportPage />,
+                    handle: {
+                      title: 'Productos más vendidos',
+                      breadcrumb: ['Inicio', 'Reportes', 'Más vendidos'],
+                    } satisfies RouteHandle,
+                  },
+                  {
+                    path: 'stock-bajo',
+                    element: <LowStockReportPage />,
+                    handle: {
+                      title: 'Stock bajo',
+                      breadcrumb: ['Inicio', 'Reportes', 'Stock bajo'],
+                    } satisfies RouteHandle,
+                  },
+                  {
+                    path: 'inventario',
+                    element: <InventoryReportPage />,
+                    handle: {
+                      title: 'Inventario valorizado',
+                      breadcrumb: ['Inicio', 'Reportes', 'Inventario'],
+                    } satisfies RouteHandle,
+                  },
+                ],
+              },
               {
                 path: 'usuarios',
                 element: <UsersPage />,

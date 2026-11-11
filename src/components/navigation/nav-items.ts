@@ -94,9 +94,10 @@ export const navigation: NavSection[] = [
         to: '/compras/nueva',
         icon: ClipboardList,
         available: true,
+        roles: ['ADMIN'],
         children: [
           { title: 'Nueva compra', to: '/compras/nueva', roles: ['ADMIN'] },
-          { title: 'Historial de compras', to: '/compras' },
+          { title: 'Historial de compras', to: '/compras', roles: ['ADMIN'] },
         ],
       },
       {
@@ -125,6 +126,7 @@ export const navigation: NavSection[] = [
         to: '/reportes',
         icon: ChartColumn,
         available: true,
+        roles: ['ADMIN'],
       },
       {
         title: 'Configurar ticket',

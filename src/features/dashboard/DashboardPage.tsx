@@ -61,7 +61,13 @@ export function DashboardPage() {
         loading={dashboard.isLoading}
       />
 
-      <div className="grid min-w-0 items-start gap-4 xl:grid-cols-[minmax(0,1.7fr)_minmax(280px,1fr)]">
+      <div
+        className={
+          dashboard.isAdmin
+            ? 'grid min-w-0 items-start gap-4 xl:grid-cols-[minmax(0,1.7fr)_minmax(280px,1fr)]'
+            : 'grid min-w-0 items-start gap-4'
+        }
+      >
         <SalesChart
           series={dashboard.series}
           loading={dashboard.chartLoading}
@@ -69,12 +75,14 @@ export function DashboardPage() {
           restricted={!dashboard.isAdmin}
           onRetry={() => dashboard.refetchAll()}
         />
-        <LowStockList
-          items={dashboard.lowStockItems}
-          loading={dashboard.lowStockLoading}
-          error={dashboard.lowStockError}
-          onRetry={() => dashboard.refetchAll()}
-        />
+        {dashboard.isAdmin ? (
+          <LowStockList
+            items={dashboard.lowStockItems}
+            loading={dashboard.lowStockLoading}
+            error={dashboard.lowStockError}
+            onRetry={() => dashboard.refetchAll()}
+          />
+        ) : null}
       </div>
 
       <RecentSales

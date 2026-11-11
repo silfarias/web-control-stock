@@ -19,8 +19,6 @@ export type EmployeeDashboardSummary = {
   productsDetail: string
   salesTotal: number
   salesDetail: string
-  lowStock: number
-  lowStockDetail: string
 }
 
 export type SalesPoint = {
