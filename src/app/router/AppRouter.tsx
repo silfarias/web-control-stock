@@ -34,7 +34,12 @@ import { SaleCreatePage } from '@/features/sales/pages/SaleCreatePage'
 import { TicketSettingsPage } from '@/features/sales/pages/TicketSettingsPage'
 import { SaleDetailPage } from '@/features/sales/pages/SaleDetailPage'
 import { SalesPage } from '@/features/sales/pages/SalesPage'
+import { SucursalesPage } from '@/features/sucursales/pages/SucursalesPage'
 import { SuppliersPage } from '@/features/suppliers/pages/SuppliersPage'
+import { TransferCreatePage } from '@/features/transfers/pages/TransferCreatePage'
+import { TransferDetailPage } from '@/features/transfers/pages/TransferDetailPage'
+import { TransferEditPage } from '@/features/transfers/pages/TransferEditPage'
+import { TransfersPage } from '@/features/transfers/pages/TransfersPage'
 import { ProfilePage } from '@/features/users/pages/ProfilePage'
 import { UserDetailPage } from '@/features/users/pages/UserDetailPage'
 import { UsersPage } from '@/features/users/pages/UsersPage'
@@ -47,11 +52,14 @@ const implementedPaths = new Set([
   '/proveedores',
   '/compras',
   '/compras/nueva',
+  '/transferencias',
+  '/transferencias/nueva',
   '/caja',
   '/ventas',
   '/ventas/nueva',
   '/reportes',
   '/configurar-ticket',
+  '/sucursales',
   '/usuarios',
 ])
 
@@ -253,6 +261,38 @@ const router = createBrowserRouter([
                 } satisfies RouteHandle,
               },
               {
+                path: 'transferencias',
+                element: <TransfersPage />,
+                handle: {
+                  title: 'Transferencias',
+                  breadcrumb: ['Inicio', 'Transferencias'],
+                } satisfies RouteHandle,
+              },
+              {
+                path: 'transferencias/nueva',
+                element: <TransferCreatePage />,
+                handle: {
+                  title: 'Nueva transferencia',
+                  breadcrumb: ['Inicio', 'Transferencias', 'Nueva'],
+                } satisfies RouteHandle,
+              },
+              {
+                path: 'transferencias/:id/editar',
+                element: <TransferEditPage />,
+                handle: {
+                  title: 'Editar transferencia',
+                  breadcrumb: ['Inicio', 'Transferencias', 'Editar'],
+                } satisfies RouteHandle,
+              },
+              {
+                path: 'transferencias/:id',
+                element: <TransferDetailPage />,
+                handle: {
+                  title: 'Detalle de transferencia',
+                  breadcrumb: ['Inicio', 'Transferencias', 'Detalle'],
+                } satisfies RouteHandle,
+              },
+              {
                 path: 'reportes',
                 element: <ReportsLayout />,
                 handle: {
@@ -305,6 +345,14 @@ const router = createBrowserRouter([
                     } satisfies RouteHandle,
                   },
                 ],
+              },
+              {
+                path: 'sucursales',
+                element: <SucursalesPage />,
+                handle: {
+                  title: 'Sucursales',
+                  breadcrumb: ['Inicio', 'Sucursales'],
+                } satisfies RouteHandle,
               },
               {
                 path: 'usuarios',

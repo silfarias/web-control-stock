@@ -56,7 +56,10 @@ export function PurchaseDetailActions({
 
   async function handleConfirm() {
     try {
-      const updated = await confirmMutation.mutateAsync(purchase.id)
+      const updated = await confirmMutation.mutateAsync({
+        id: purchase.id,
+        sucursalId: purchase.sucursal?.id,
+      })
       pushToast({
         tone: 'success',
         title: 'Compra confirmada',
@@ -75,7 +78,10 @@ export function PurchaseDetailActions({
 
   async function handleCancel() {
     try {
-      const updated = await cancelMutation.mutateAsync(purchase.id)
+      const updated = await cancelMutation.mutateAsync({
+        id: purchase.id,
+        sucursalId: purchase.sucursal?.id,
+      })
       pushToast({
         tone: 'success',
         title: 'Compra cancelada',
@@ -94,7 +100,10 @@ export function PurchaseDetailActions({
 
   async function handleDelete() {
     try {
-      await deleteMutation.mutateAsync(purchase.id)
+      await deleteMutation.mutateAsync({
+        id: purchase.id,
+        sucursalId: purchase.sucursal?.id,
+      })
       pushToast({
         tone: 'success',
         title: 'Borrador eliminado',

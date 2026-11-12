@@ -8,6 +8,15 @@ import type {
   SearchStockParams,
   Stock,
 } from '@/features/inventory/types'
+import {
+  requireSucursalId,
+  sucursalRequestHeaders,
+} from '@/features/sucursales/utils/require-sucursal-id'
+
+type SucursalScopedOptions = {
+  /** Fija `x-sucursal-id` (p. ej. stock del origen de una transferencia). */
+  sucursalId?: number
+}
 
 function toStockQuery(params: SearchStockParams) {
   const query: Record<string, string | number> = {}
@@ -42,9 +51,14 @@ export const inventoryApi = {
       .then((response) => response.data)
   },
 
-  getByProductId(productoId: number) {
+  getByProductId(productoId: number, options?: SucursalScopedOptions) {
     return apiClient
-      .get<Stock>(`/inventario/producto/${productoId}`)
+      .get<Stock>(`/inventario/producto/${productoId}`, {
+        headers:
+          options?.sucursalId != null
+            ? sucursalRequestHeaders(options.sucursalId)
+            : undefined,
+      })
       .then((response) => response.data)
   },
 
@@ -65,8 +79,11 @@ export const inventoryApi = {
   },
 
   createAjuste(payload: CreateAjusteStockRequest) {
+    const sucursalId = requireSucursalId()
     return apiClient
-      .post<AjusteStockResponse>('/inventario/ajustes', payload)
+      .post<AjusteStockResponse>('/inventario/ajustes', payload, {
+        headers: sucursalRequestHeaders(sucursalId),
+      })
       .then((response) => response.data)
   },
 }

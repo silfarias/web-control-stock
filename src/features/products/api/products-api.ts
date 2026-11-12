@@ -6,6 +6,10 @@ import type {
   SearchProductosParams,
   UpdateProductoRequest,
 } from '@/features/products/types'
+import {
+  requireSucursalId,
+  sucursalRequestHeaders,
+} from '@/features/sucursales/utils/require-sucursal-id'
 
 function toQuery(params: SearchProductosParams) {
   const query: Record<string, string | number> = {}
@@ -22,19 +26,40 @@ function toQuery(params: SearchProductosParams) {
   return query
 }
 
+type ProductReadOptions = {
+  /** Fija `x-sucursal-id` para obtener `stockCantidad` de esa sucursal. */
+  sucursalId?: number
+}
+
 export const productsApi = {
-  search(params: SearchProductosParams = {}) {
+  search(params: SearchProductosParams = {}, options?: ProductReadOptions) {
     return apiClient
-      .get<PageDto<Producto>>('/producto/search', { params: toQuery(params) })
+      .get<PageDto<Producto>>('/producto/search', {
+        params: toQuery(params),
+        headers:
+          options?.sucursalId != null
+            ? sucursalRequestHeaders(options.sucursalId)
+            : undefined,
+      })
       .then((response) => response.data)
   },
 
-  getById(id: number) {
-    return apiClient.get<Producto>(`/producto/${id}`).then((response) => response.data)
+  getById(id: number, options?: ProductReadOptions) {
+    return apiClient
+      .get<Producto>(`/producto/${id}`, {
+        headers:
+          options?.sucursalId != null
+            ? sucursalRequestHeaders(options.sucursalId)
+            : undefined,
+      })
+      .then((response) => response.data)
   },
 
   create(payload: CreateProductoRequest) {
-    return apiClient.post<Producto>('/producto', payload).then((response) => response.data)
+    const sucursalId = requireSucursalId()
+    return apiClient
+      .post<Producto>('/producto', payload, { headers: sucursalRequestHeaders(sucursalId) })
+      .then((response) => response.data)
   },
 
   update(id: number, payload: UpdateProductoRequest) {

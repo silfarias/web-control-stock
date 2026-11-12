@@ -1,4 +1,6 @@
 import {
+  ArrowRightLeft,
+  Building2,
   ChartColumn,
   ClipboardList,
   Receipt,
@@ -101,6 +103,17 @@ export const navigation: NavSection[] = [
         ],
       },
       {
+        title: 'Transferencias',
+        to: '/transferencias',
+        icon: ArrowRightLeft,
+        available: true,
+        roles: ['ADMIN'],
+        children: [
+          { title: 'Historial', to: '/transferencias', roles: ['ADMIN'] },
+          { title: 'Nueva transferencia', to: '/transferencias/nueva', roles: ['ADMIN'] },
+        ],
+      },
+      {
         title: 'Caja',
         to: '/caja',
         icon: Wallet,
@@ -133,6 +146,13 @@ export const navigation: NavSection[] = [
         to: '/configurar-ticket',
         icon: Receipt,
         available: true,
+      },
+      {
+        title: 'Sucursales',
+        to: '/sucursales',
+        icon: Building2,
+        available: true,
+        roles: ['ADMIN'],
       },
       {
         title: 'Usuarios',

@@ -24,8 +24,15 @@ export function useUpdatePurchase() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, payload }: { id: number; payload: UpdateCompraRequest }) =>
-      purchasesApi.update(id, payload),
+    mutationFn: ({
+      id,
+      payload,
+      sucursalId,
+    }: {
+      id: number
+      payload: UpdateCompraRequest
+      sucursalId?: number
+    }) => purchasesApi.update(id, payload, sucursalId),
     retry: false,
     onSuccess: async (purchase) => {
       await Promise.all([
@@ -40,13 +47,13 @@ export function useConfirmPurchase() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: number) => purchasesApi.confirm(id),
+    mutationFn: ({ id, sucursalId }: { id: number; sucursalId?: number }) =>
+      purchasesApi.confirm(id, sucursalId),
     retry: false,
     onSuccess: async (purchase) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: purchaseKeys.lists() }),
         queryClient.setQueryData(purchaseKeys.detail(purchase.id), purchase),
-        // Confirmación genera movimientos COMPRA y cambia existencias.
         queryClient.invalidateQueries({ queryKey: inventoryKeys.all }),
         queryClient.invalidateQueries({ queryKey: reportKeys.stockBajoRoot() }),
         queryClient.invalidateQueries({ queryKey: reportKeys.inventarioRoot() }),
@@ -59,7 +66,8 @@ export function useCancelPurchase() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: number) => purchasesApi.cancel(id),
+    mutationFn: ({ id, sucursalId }: { id: number; sucursalId?: number }) =>
+      purchasesApi.cancel(id, sucursalId),
     retry: false,
     onSuccess: async (purchase) => {
       await Promise.all([
@@ -74,12 +82,13 @@ export function useDeletePurchase() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: number) => purchasesApi.remove(id),
+    mutationFn: ({ id, sucursalId }: { id: number; sucursalId?: number }) =>
+      purchasesApi.remove(id, sucursalId),
     retry: false,
-    onSuccess: async (_data, id) => {
+    onSuccess: async (_data, variables) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: purchaseKeys.lists() }),
-        queryClient.removeQueries({ queryKey: purchaseKeys.detail(id) }),
+        queryClient.removeQueries({ queryKey: purchaseKeys.detail(variables.id) }),
       ])
     },
   })

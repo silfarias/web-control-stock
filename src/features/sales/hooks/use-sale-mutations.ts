@@ -4,6 +4,7 @@ import { inventoryKeys } from '@/features/inventory/api/query-keys'
 import { reportKeys } from '@/features/reports/api/query-keys'
 import { salesApi } from '@/features/sales/api/sales-api'
 import { saleKeys } from '@/features/sales/api/query-keys'
+import { productKeys } from '@/features/products/api/query-keys'
 import { normalizeApiError } from '@/lib/api/errors'
 import type { CreateVentaRequest } from '@/features/sales/types'
 
@@ -19,7 +20,7 @@ export function useCreateSale() {
       const tasks = [
         queryClient.invalidateQueries({ queryKey: saleKeys.lists() }),
         queryClient.invalidateQueries({ queryKey: inventoryKeys.all }),
-        // Venta confirmada afecta totales, ranking y stock valorizado / bajo.
+        queryClient.invalidateQueries({ queryKey: productKeys.lists() }),
         queryClient.invalidateQueries({ queryKey: reportKeys.ventasRoot() }),
         queryClient.invalidateQueries({ queryKey: reportKeys.ventasDiarioRoot() }),
         queryClient.invalidateQueries({ queryKey: reportKeys.productosTopRoot() }),
@@ -29,7 +30,7 @@ export function useCreateSale() {
 
       if (sale.metodoPago === 'EFECTIVO') {
         tasks.push(
-          queryClient.invalidateQueries({ queryKey: cashRegisterKeys.active() }),
+          queryClient.invalidateQueries({ queryKey: cashRegisterKeys.all }),
           queryClient.invalidateQueries({ queryKey: cashRegisterKeys.movements() }),
           queryClient.invalidateQueries({ queryKey: cashRegisterKeys.lists() }),
         )
@@ -38,12 +39,11 @@ export function useCreateSale() {
       await Promise.all(tasks)
     },
     onError: async (error) => {
-      // Ante fallo de red el resultado puede ser incierto: refrescar listados sin reenviar.
       if (!normalizeApiError(error).isNetworkError) return
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: saleKeys.lists() }),
         queryClient.invalidateQueries({ queryKey: inventoryKeys.all }),
-        queryClient.invalidateQueries({ queryKey: cashRegisterKeys.active() }),
+        queryClient.invalidateQueries({ queryKey: cashRegisterKeys.all }),
         queryClient.invalidateQueries({ queryKey: cashRegisterKeys.movements() }),
         queryClient.invalidateQueries({ queryKey: reportKeys.ventasRoot() }),
         queryClient.invalidateQueries({ queryKey: reportKeys.ventasDiarioRoot() }),
@@ -67,6 +67,7 @@ export function useCancelSale() {
       const tasks = [
         queryClient.invalidateQueries({ queryKey: saleKeys.lists() }),
         queryClient.invalidateQueries({ queryKey: inventoryKeys.all }),
+        queryClient.invalidateQueries({ queryKey: productKeys.lists() }),
         queryClient.invalidateQueries({ queryKey: reportKeys.ventasRoot() }),
         queryClient.invalidateQueries({ queryKey: reportKeys.ventasDiarioRoot() }),
         queryClient.invalidateQueries({ queryKey: reportKeys.productosTopRoot() }),
@@ -76,7 +77,7 @@ export function useCancelSale() {
 
       if (sale.metodoPago === 'EFECTIVO') {
         tasks.push(
-          queryClient.invalidateQueries({ queryKey: cashRegisterKeys.active() }),
+          queryClient.invalidateQueries({ queryKey: cashRegisterKeys.all }),
           queryClient.invalidateQueries({ queryKey: cashRegisterKeys.movements() }),
           queryClient.invalidateQueries({ queryKey: cashRegisterKeys.lists() }),
         )

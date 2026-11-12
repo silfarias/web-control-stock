@@ -2,6 +2,7 @@ import { Card } from '@/components/ui/Card'
 import { InventoryReportTable } from '@/features/reports/components/InventoryReportTable'
 import { ReportFiltersBar } from '@/features/reports/components/ReportFiltersBar'
 import { ReportQueryState } from '@/features/reports/components/ReportQueryState'
+import { ReportScopeToggle } from '@/features/reports/components/ReportScopeToggle'
 import { ReportStatGrid } from '@/features/reports/components/ReportStatGrid'
 import { useReportFilterParams } from '@/features/reports/hooks/use-report-filter-params'
 import { useInventoryReport } from '@/features/reports/hooks/use-reports'
@@ -18,7 +19,10 @@ export function InventoryReportPage() {
 
   return (
     <div className="space-y-5">
-      <p className="text-sm text-muted">Stock actual valorizado a costo y a precio de venta.</p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <p className="text-sm text-muted">Stock actual valorizado a costo y a precio de venta.</p>
+        <ReportScopeToggle className="shrink-0" />
+      </div>
 
       <Card className="p-4 sm:p-5">
         <ReportFiltersBar

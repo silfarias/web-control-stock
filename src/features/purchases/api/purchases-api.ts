@@ -6,6 +6,10 @@ import type {
   SearchComprasParams,
   UpdateCompraRequest,
 } from '@/features/purchases/types'
+import {
+  requireSucursalId,
+  sucursalRequestHeaders,
+} from '@/features/sucursales/utils/require-sucursal-id'
 
 function toQuery(params: SearchComprasParams) {
   const query: Record<string, string | number> = {}
@@ -21,6 +25,11 @@ function toQuery(params: SearchComprasParams) {
   return query
 }
 
+/** Usa la sucursal del recurso si está disponible; si no, la operativa actual. */
+function headersForPurchase(sucursalId?: number) {
+  return sucursalRequestHeaders(sucursalId ?? requireSucursalId())
+}
+
 export const purchasesApi = {
   search(params: SearchComprasParams = {}) {
     return apiClient
@@ -33,22 +42,37 @@ export const purchasesApi = {
   },
 
   create(payload: CreateCompraRequest) {
-    return apiClient.post<Compra>('/compra', payload).then((response) => response.data)
+    const sucursalId = requireSucursalId()
+    return apiClient
+      .post<Compra>('/compra', payload, { headers: sucursalRequestHeaders(sucursalId) })
+      .then((response) => response.data)
   },
 
-  update(id: number, payload: UpdateCompraRequest) {
-    return apiClient.patch<Compra>(`/compra/${id}`, payload).then((response) => response.data)
+  update(id: number, payload: UpdateCompraRequest, sucursalId?: number) {
+    return apiClient
+      .patch<Compra>(`/compra/${id}`, payload, { headers: headersForPurchase(sucursalId) })
+      .then((response) => response.data)
   },
 
-  confirm(id: number) {
-    return apiClient.post<Compra>(`/compra/${id}/confirmar`).then((response) => response.data)
+  confirm(id: number, sucursalId?: number) {
+    return apiClient
+      .post<Compra>(`/compra/${id}/confirmar`, undefined, {
+        headers: headersForPurchase(sucursalId),
+      })
+      .then((response) => response.data)
   },
 
-  cancel(id: number) {
-    return apiClient.post<Compra>(`/compra/${id}/cancelar`).then((response) => response.data)
+  cancel(id: number, sucursalId?: number) {
+    return apiClient
+      .post<Compra>(`/compra/${id}/cancelar`, undefined, {
+        headers: headersForPurchase(sucursalId),
+      })
+      .then((response) => response.data)
   },
 
-  remove(id: number) {
-    return apiClient.delete<string>(`/compra/${id}`).then((response) => response.data)
+  remove(id: number, sucursalId?: number) {
+    return apiClient
+      .delete<string>(`/compra/${id}`, { headers: headersForPurchase(sucursalId) })
+      .then((response) => response.data)
   },
 }

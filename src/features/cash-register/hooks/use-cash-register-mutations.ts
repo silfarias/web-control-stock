@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { cashRegisterApi } from '@/features/cash-register/api/cash-register-api'
 import { cashRegisterKeys } from '@/features/cash-register/api/query-keys'
+import { sucursalStore } from '@/features/sucursales/sucursal-store'
 import type {
   AbrirCajaRequest,
   CerrarCajaRequest,
@@ -15,7 +16,8 @@ export function useOpenCashRegister() {
     mutationFn: (payload: AbrirCajaRequest) => cashRegisterApi.abrir(payload),
     retry: false,
     onSuccess: async (caja) => {
-      queryClient.setQueryData(cashRegisterKeys.active(), caja)
+      const sucursalId = sucursalStore.getId()
+      queryClient.setQueryData(cashRegisterKeys.active(sucursalId), caja)
       queryClient.setQueryData(cashRegisterKeys.detail(caja.id), caja)
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: cashRegisterKeys.lists() }),
@@ -33,7 +35,8 @@ export function useCloseCashRegister() {
       cashRegisterApi.cerrar(id, payload),
     retry: false,
     onSuccess: async (result) => {
-      queryClient.setQueryData(cashRegisterKeys.active(), null)
+      const sucursalId = sucursalStore.getId()
+      queryClient.setQueryData(cashRegisterKeys.active(sucursalId), null)
       queryClient.setQueryData(cashRegisterKeys.detail(result.caja.id), result.caja)
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: cashRegisterKeys.lists() }),
@@ -53,7 +56,7 @@ export function useCreateCashMovement() {
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: cashRegisterKeys.movements() }),
-        queryClient.invalidateQueries({ queryKey: cashRegisterKeys.active() }),
+        queryClient.invalidateQueries({ queryKey: cashRegisterKeys.all }),
         queryClient.invalidateQueries({ queryKey: cashRegisterKeys.lists() }),
       ])
     },
@@ -61,7 +64,7 @@ export function useCreateCashMovement() {
       if (!normalizeApiError(error).isNetworkError) return
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: cashRegisterKeys.movements() }),
-        queryClient.invalidateQueries({ queryKey: cashRegisterKeys.active() }),
+        queryClient.invalidateQueries({ queryKey: cashRegisterKeys.all }),
       ])
     },
   })

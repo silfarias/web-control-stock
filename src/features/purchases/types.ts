@@ -1,5 +1,6 @@
 import type { Producto } from '@/features/products/types'
 import type { Proveedor } from '@/features/suppliers/types'
+import type { Sucursal } from '@/features/sucursales/types'
 import type { SearchParams } from '@/lib/api/types'
 
 export type EstadoCompra = 'BORRADOR' | 'CONFIRMADA' | 'CANCELADA'
@@ -32,6 +33,8 @@ export type Compra = {
   proveedor: Proveedor
   usuario: CompraUsuario
   items: ItemCompra[]
+  /** Sucursal de la compra (el header de mutaciones debe coincidir). */
+  sucursal?: Sucursal | null
   createdAt: string
   updatedAt: string
   deletedAt?: string | null

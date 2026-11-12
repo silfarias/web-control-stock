@@ -47,9 +47,15 @@ export function useDashboard() {
     [weekStartIso, todayIso],
   )
 
-  const salesTodayQuery = useSalesReport(todaySalesFiltro, { enabled: isAdmin })
-  const dailySalesQuery = useDailySalesReport(weekSalesFiltro, { enabled: isAdmin })
-  const lowStockQuery = useLowStockReport({}, { enabled: isAdmin })
+  const salesTodayQuery = useSalesReport(todaySalesFiltro, {
+    enabled: isAdmin,
+    forceLocal: true,
+  })
+  const dailySalesQuery = useDailySalesReport(weekSalesFiltro, {
+    enabled: isAdmin,
+    forceLocal: true,
+  })
+  const lowStockQuery = useLowStockReport({}, { enabled: isAdmin, forceLocal: true })
 
   const productsQuery = useProducts(COUNT_PARAMS)
   const movementsQuery = useStockMovements(COUNT_PARAMS, { enabled: isAdmin })

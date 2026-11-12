@@ -11,6 +11,10 @@ import type {
   SearchCajasParams,
   SearchMovimientosCajaParams,
 } from '@/features/cash-register/types'
+import {
+  requireSucursalId,
+  sucursalRequestHeaders,
+} from '@/features/sucursales/utils/require-sucursal-id'
 
 function toCajaQuery(params: SearchCajasParams) {
   const query: Record<string, string | number> = {}
@@ -62,7 +66,10 @@ export const cashRegisterApi = {
   },
 
   abrir(payload: AbrirCajaRequest) {
-    return apiClient.post<Caja>('/caja/abrir', payload).then((response) => response.data)
+    const sucursalId = requireSucursalId()
+    return apiClient
+      .post<Caja>('/caja/abrir', payload, { headers: sucursalRequestHeaders(sucursalId) })
+      .then((response) => response.data)
   },
 
   cerrar(id: number, payload: CerrarCajaRequest) {
@@ -88,8 +95,11 @@ export const cashRegisterApi = {
   },
 
   createMovimiento(payload: CreateMovimientoCajaRequest) {
+    const sucursalId = requireSucursalId()
     return apiClient
-      .post<MovimientoCaja>('/caja/movimientos', payload)
+      .post<MovimientoCaja>('/caja/movimientos', payload, {
+        headers: sucursalRequestHeaders(sucursalId),
+      })
       .then((response) => response.data)
   },
 }

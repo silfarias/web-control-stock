@@ -12,6 +12,10 @@ export function movementTypeLabel(tipo: TipoMovimientoStock): string {
       return 'Ajuste (entrada)'
     case 'AJUSTE_SALIDA':
       return 'Ajuste (salida)'
+    case 'TRANSFERENCIA_ENTRADA':
+      return 'Transferencia (entrada)'
+    case 'TRANSFERENCIA_SALIDA':
+      return 'Transferencia (salida)'
   }
 }
 
@@ -23,6 +27,8 @@ export function movementReferenceLabel(tipo: TipoReferenciaMovimiento): string {
       return 'Compra'
     case 'VENTA':
       return 'Venta'
+    case 'TRANSFERENCIA':
+      return 'Transferencia'
     case 'OTRO':
       return 'Otro'
   }
@@ -32,9 +38,11 @@ export function movementDirection(tipo: TipoMovimientoStock): MovementDirection 
   switch (tipo) {
     case 'COMPRA':
     case 'AJUSTE_ENTRADA':
+    case 'TRANSFERENCIA_ENTRADA':
       return 'in'
     case 'VENTA':
     case 'AJUSTE_SALIDA':
+    case 'TRANSFERENCIA_SALIDA':
       return 'out'
   }
 }

@@ -33,7 +33,18 @@ export function buildTicketHtml({ sale, settings, cashReceived }: TicketPrintInp
     Number.isFinite(cashReceived)
   const change = showCash ? Number((cashReceived - Number(sale.total)).toFixed(2)) : null
 
-  const headerLines = [settings.direccion, settings.telefono && `Tel. ${settings.telefono}`, settings.cuit && `CUIT ${settings.cuit}`]
+  const sucursalNombre = sale.sucursalNombre?.trim() || sale.sucursal?.nombre?.trim()
+  const sucursalDireccion =
+    sale.sucursalDireccion?.trim() || sale.sucursal?.direccion?.trim() || settings.direccion
+  const sucursalTelefono =
+    sale.sucursalTelefono?.trim() || sale.sucursal?.telefono?.trim() || settings.telefono
+
+  const headerLines = [
+    sucursalNombre && sucursalNombre !== comercio ? sucursalNombre : null,
+    sucursalDireccion,
+    sucursalTelefono && `Tel. ${sucursalTelefono}`,
+    settings.cuit && `CUIT ${settings.cuit}`,
+  ]
     .map((line) => line?.trim())
     .filter((line): line is string => Boolean(line))
     .map((line) => `<p class="center muted">${escapeHtml(line)}</p>`)

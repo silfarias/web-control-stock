@@ -3,6 +3,7 @@ import { Link, useLocation, useMatches } from 'react-router'
 import { ChevronRight, Menu } from 'lucide-react'
 import { HeaderClock } from '@/components/navigation/HeaderClock'
 import { navigation } from '@/components/navigation/nav-items'
+import { SucursalSelector } from '@/components/navigation/SucursalSelector'
 import { ThemeToggle } from '@/components/navigation/ThemeToggle'
 import { UserMenu } from '@/components/navigation/UserMenu'
 import { Separator } from '@/components/ui/Separator'
@@ -82,7 +83,8 @@ export function Header({ onOpenMenu, menuButtonRef }: HeaderProps) {
           </h1>
         </div>
       </div>
-      <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+      <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
+        <SucursalSelector compact className="order-first sm:order-none" />
         <HeaderClock />
         <Separator orientation="vertical" className="hidden h-8 sm:block" />
         <ThemeToggle />

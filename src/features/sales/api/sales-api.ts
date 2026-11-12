@@ -5,6 +5,10 @@ import type {
   SearchVentasParams,
   Venta,
 } from '@/features/sales/types'
+import {
+  requireSucursalId,
+  sucursalRequestHeaders,
+} from '@/features/sucursales/utils/require-sucursal-id'
 
 function toQuery(params: SearchVentasParams) {
   const query: Record<string, string | number> = {}
@@ -33,7 +37,10 @@ export const salesApi = {
   },
 
   create(payload: CreateVentaRequest) {
-    return apiClient.post<Venta>('/venta', payload).then((response) => response.data)
+    const sucursalId = requireSucursalId()
+    return apiClient
+      .post<Venta>('/venta', payload, { headers: sucursalRequestHeaders(sucursalId) })
+      .then((response) => response.data)
   },
 
   cancel(id: number) {

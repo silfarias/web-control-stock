@@ -16,8 +16,10 @@ import {
   waitForPeerTokens,
 } from '@/lib/api/auth-sync'
 import { normalizeApiError } from '@/lib/api/errors'
+import { resolveSucursalHeaderMode } from '@/lib/api/sucursal-header'
 import { tokenStore } from '@/lib/api/token-store'
 import type { LoginResponse } from '@/features/auth/types'
+import { sucursalStore } from '@/features/sucursales/sucursal-store'
 
 type RetriableConfig = InternalAxiosRequestConfig & {
   _retry?: boolean
@@ -155,6 +157,21 @@ apiClient.interceptors.request.use((config) => {
   const accessToken = tokenStore.getAccessToken()
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`
+  }
+
+  if (config.skipSucursalHeader) {
+    if (config.headers) {
+      delete config.headers['x-sucursal-id']
+      delete config.headers['X-Sucursal-Id']
+    }
+  } else {
+    const mode = resolveSucursalHeaderMode(config.method, config.url)
+    const pinned =
+      config.headers?.['x-sucursal-id'] ?? config.headers?.['X-Sucursal-Id']
+    const sucursalId = pinned != null && pinned !== '' ? pinned : sucursalStore.getId()
+    if ((mode === 'required' || mode === 'optional') && sucursalId != null) {
+      config.headers['x-sucursal-id'] = String(sucursalId)
+    }
   }
 
   return config

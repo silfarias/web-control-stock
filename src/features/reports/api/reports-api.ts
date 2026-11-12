@@ -23,41 +23,57 @@ function toQuery(filtro: FiltroReporte) {
   return query
 }
 
+type ReportRequestOptions = {
+  /** Sin header = consolidado de todas las sucursales (solo ADMIN). */
+  consolidated?: boolean
+}
+
+function requestConfig(options?: ReportRequestOptions) {
+  return options?.consolidated ? { skipSucursalHeader: true as const } : undefined
+}
+
 export const reportsApi = {
-  ventas(filtro: FiltroReporte = {}) {
+  ventas(filtro: FiltroReporte = {}, options?: ReportRequestOptions) {
     return apiClient
-      .get<ReporteVentas>('/reporte/ventas', { params: toQuery(filtro) })
+      .get<ReporteVentas>('/reporte/ventas', {
+        params: toQuery(filtro),
+        ...requestConfig(options),
+      })
       .then((response) => response.data)
   },
 
-  ventasDiario(filtro: FiltroReporte = {}) {
+  ventasDiario(filtro: FiltroReporte = {}, options?: ReportRequestOptions) {
     return apiClient
       .get<ReporteVentasDiarioItem[]>('/reporte/ventas/diario', {
         params: toQuery(filtro),
+        ...requestConfig(options),
       })
       .then((response) => response.data)
   },
 
-  productosTop(filtro: FiltroReporte = {}) {
+  productosTop(filtro: FiltroReporte = {}, options?: ReportRequestOptions) {
     return apiClient
       .get<ReporteProductoTopItem[]>('/reporte/productos-top', {
         params: toQuery(filtro),
+        ...requestConfig(options),
       })
       .then((response) => response.data)
   },
 
-  stockBajo(filtro: FiltroReporte = {}) {
+  stockBajo(filtro: FiltroReporte = {}, options?: ReportRequestOptions) {
     return apiClient
       .get<ReporteStockBajoItem[]>('/reporte/stock-bajo', {
         params: toQuery(filtro),
+        ...requestConfig(options),
       })
       .then((response) => response.data)
   },
 
-  inventario(filtro: FiltroReporte = {}) {
+  inventario(filtro: FiltroReporte = {}, options?: ReportRequestOptions) {
     return apiClient
       .get<ReporteInventario>('/reporte/inventario', {
         params: toQuery(filtro),
+        ...requestConfig(options),
       })
       .then((response) => response.data)
   },

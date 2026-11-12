@@ -52,27 +52,14 @@ export function ProductsPage() {
   const categoriaIdFromUrl = parseCategoriaId(searchParams.get('categoriaId'))
 
   const barcodeRef = useRef<HTMLInputElement>(null)
-  const dialogOpenRef = useRef(false)
   const [searchInput, setSearchInput] = useState(qFromUrl)
   const [urlQ, setUrlQ] = useState(qFromUrl)
   const [barcodeInput, setBarcodeInput] = useState(barcodeFromUrl)
   const [urlBarcode, setUrlBarcode] = useState(barcodeFromUrl)
 
-  function focusBarcode() {
+  useEffect(() => {
     barcodeRef.current?.focus({ preventScroll: true })
-  }
-
-  useEffect(() => {
-    dialogOpenRef.current = Boolean(deletingProduct)
-  }, [deletingProduct])
-
-  useEffect(() => {
-    focusBarcode()
   }, [])
-
-  useEffect(() => {
-    if (!deletingProduct) focusBarcode()
-  }, [deletingProduct])
 
   if (qFromUrl !== urlQ) {
     setUrlQ(qFromUrl)
@@ -186,7 +173,6 @@ export function ProductsPage() {
         {canManage ? (
           <Link
             to="/productos/nuevo"
-            data-products-keep-focus
             className={cn(buttonVariants({ variant: 'primary' }), 'shrink-0')}
           >
             <Plus className="size-4" aria-hidden />
@@ -197,43 +183,27 @@ export function ProductsPage() {
 
       <Card className="p-4 sm:p-5">
         <div className="grid items-center gap-3 lg:grid-cols-[minmax(0,1.4fr)_minmax(18rem,1fr)_auto]">
-          <div data-products-keep-focus>
-            <Input
-              type="search"
-              value={searchInput}
-              onChange={(event) => setSearchInput(event.target.value)}
-              placeholder="Buscar por nombre, código, código de barras o descripción"
-              leadingIcon={<Search className="size-4" aria-hidden />}
-              aria-label="Buscar productos"
-            />
-          </div>
+          <Input
+            type="search"
+            value={searchInput}
+            onChange={(event) => setSearchInput(event.target.value)}
+            placeholder="Buscar por nombre, código, código de barras o descripción"
+            leadingIcon={<Search className="size-4" aria-hidden />}
+            aria-label="Buscar productos"
+          />
 
           <Input
             ref={barcodeRef}
             type="search"
             value={barcodeInput}
             onChange={(event) => setBarcodeInput(event.target.value)}
-            onBlur={() => {
-              window.setTimeout(() => {
-                if (dialogOpenRef.current) return
-                const active = document.activeElement
-                if (active instanceof HTMLElement && active.closest('[data-products-keep-focus]')) {
-                  return
-                }
-                if (active instanceof HTMLElement && active.closest('[role="dialog"]')) return
-                focusBarcode()
-              }, 0)
-            }}
             placeholder="Buscar por código de barras"
             leadingIcon={<Barcode className="size-4" aria-hidden />}
             aria-label="Buscar por código de barras"
             autoComplete="off"
           />
 
-          <div
-            data-products-keep-focus
-            className="flex w-full items-center gap-2.5 text-sm lg:w-72"
-          >
+          <div className="flex w-full items-center gap-2.5 text-sm lg:w-72">
             <span className="shrink-0 font-medium whitespace-nowrap text-foreground">
               Categoría
             </span>
@@ -310,7 +280,7 @@ export function ProductsPage() {
       ) : null}
 
       {!productsQuery.isError && products.length > 0 ? (
-        <div className="flex flex-col gap-4" data-products-keep-focus>
+        <div className="flex flex-col gap-4">
           <ProductsTable
             products={products}
             canManage={canManage}
@@ -318,16 +288,14 @@ export function ProductsPage() {
           />
 
           {metadata ? (
-            <div data-products-keep-focus>
-              <ListPagination
-                pageNumber={metadata.pageNumber}
-                totalPages={metadata.totalPages}
-                count={metadata.count}
-                itemLabel={{ singular: 'producto', plural: 'productos' }}
-                disabled={productsQuery.isFetching}
-                onPageChange={setPage}
-              />
-            </div>
+            <ListPagination
+              pageNumber={metadata.pageNumber}
+              totalPages={metadata.totalPages}
+              count={metadata.count}
+              itemLabel={{ singular: 'producto', plural: 'productos' }}
+              disabled={productsQuery.isFetching}
+              onPageChange={setPage}
+            />
           ) : null}
         </div>
       ) : null}

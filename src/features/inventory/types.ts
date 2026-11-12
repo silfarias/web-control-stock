@@ -1,4 +1,5 @@
 import type { Producto } from '@/features/products/types'
+import type { Sucursal } from '@/features/sucursales/types'
 import type { SearchParams } from '@/lib/api/types'
 
 export type TipoMovimientoStock =
@@ -6,14 +7,22 @@ export type TipoMovimientoStock =
   | 'VENTA'
   | 'AJUSTE_ENTRADA'
   | 'AJUSTE_SALIDA'
+  | 'TRANSFERENCIA_ENTRADA'
+  | 'TRANSFERENCIA_SALIDA'
 
-export type TipoReferenciaMovimiento = 'AJUSTE' | 'COMPRA' | 'VENTA' | 'OTRO'
+export type TipoReferenciaMovimiento =
+  | 'AJUSTE'
+  | 'COMPRA'
+  | 'VENTA'
+  | 'TRANSFERENCIA'
+  | 'OTRO'
 
 export type Stock = {
   id: number
   cantidad: number
   /** Null si el producto fue eliminado del catálogo. */
   producto: Producto | null
+  sucursal?: Sucursal | null
   createdAt: string
   updatedAt: string
   deletedAt?: string | null
@@ -44,6 +53,7 @@ export type MovimientoStock = {
   /** Null si el producto fue eliminado del catálogo. */
   producto: Producto | null
   usuario: MovimientoUsuario
+  sucursal?: Sucursal | null
   createdAt: string
   updatedAt: string
   deletedAt?: string | null

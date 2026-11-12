@@ -2,6 +2,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/Ca
 import { PaymentMethodsTable } from '@/features/reports/components/PaymentMethodsTable'
 import { ReportFiltersBar } from '@/features/reports/components/ReportFiltersBar'
 import { ReportQueryState } from '@/features/reports/components/ReportQueryState'
+import { ReportScopeToggle } from '@/features/reports/components/ReportScopeToggle'
 import { ReportStatGrid } from '@/features/reports/components/ReportStatGrid'
 import { useReportFilterParams } from '@/features/reports/hooks/use-report-filter-params'
 import { useSalesReport } from '@/features/reports/hooks/use-reports'
@@ -15,10 +16,13 @@ export function SalesReportPage() {
 
   return (
     <div className="space-y-5">
-      <p className="text-sm text-muted">
-        Totales de ventas confirmadas y desglose por método de pago según los filtros
-        aplicados.
-      </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <p className="text-sm text-muted">
+          Totales de ventas confirmadas y desglose por método de pago según los filtros
+          aplicados.
+        </p>
+        <ReportScopeToggle className="shrink-0" />
+      </div>
 
       <Card className="p-4 sm:p-5">
         <ReportFiltersBar

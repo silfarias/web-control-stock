@@ -1,3 +1,4 @@
+import type { Sucursal } from '@/features/sucursales/types'
 import type { SearchParams } from '@/lib/api/types'
 
 export type EstadoCaja = 'ABIERTA' | 'CERRADA'
@@ -22,6 +23,7 @@ export type Caja = {
   cerradaEn?: string | null
   estado: EstadoCaja
   usuario: CajaUsuario
+  sucursal?: Sucursal | null
   createdAt: string
   updatedAt: string
   deletedAt?: string | null

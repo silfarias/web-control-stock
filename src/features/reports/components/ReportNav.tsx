@@ -11,9 +11,17 @@ const links = [
 ] as const
 
 function activeReportPath(pathname: string) {
-  const match = links.find((link) =>
-    link.to === '/reportes' ? pathname === '/reportes' : pathname.startsWith(link.to),
-  )
+  // Match exacto: `startsWith('/reportes/ventas')` también atrapa `/reportes/ventas-diarias`.
+  const exact = links.find((link) => link.to === pathname)
+  if (exact) return exact.to
+
+  const match = [...links]
+    .sort((a, b) => b.to.length - a.to.length)
+    .find((link) =>
+      link.to === '/reportes'
+        ? pathname === '/reportes'
+        : pathname.startsWith(`${link.to}/`),
+    )
   return match?.to ?? '/reportes'
 }
 

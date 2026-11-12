@@ -1,6 +1,7 @@
 import { Card } from '@/components/ui/Card'
 import { ReportFiltersBar } from '@/features/reports/components/ReportFiltersBar'
 import { ReportQueryState } from '@/features/reports/components/ReportQueryState'
+import { ReportScopeToggle } from '@/features/reports/components/ReportScopeToggle'
 import { TopProductsChart } from '@/features/reports/components/TopProductsChart'
 import { TopProductsTable } from '@/features/reports/components/TopProductsTable'
 import { useReportFilterParams } from '@/features/reports/hooks/use-report-filter-params'
@@ -16,9 +17,12 @@ export function TopProductsReportPage() {
 
   return (
     <div className="space-y-5">
-      <p className="text-sm text-muted">
-        Ranking por unidades. El gráfico muestra cuáles de esos productos aportan más ingresos.
-      </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <p className="text-sm text-muted">
+          Ranking por unidades. El gráfico muestra cuáles de esos productos aportan más ingresos.
+        </p>
+        <ReportScopeToggle className="shrink-0" />
+      </div>
 
       <Card className="p-4 sm:p-5">
         <ReportFiltersBar

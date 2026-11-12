@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import axios from 'axios'
 import { inventoryApi } from '@/features/inventory/api/inventory-api'
 import { inventoryKeys } from '@/features/inventory/api/query-keys'
+import { useSucursal } from '@/features/sucursales/hooks/use-sucursal'
 import type { Stock } from '@/features/inventory/types'
 
 export type ProductStockMap = Record<number, number | null>
@@ -31,34 +32,39 @@ async function fetchStockRecord(productoId: number): Promise<Stock | null> {
 
 /** Stock completo de un producto (cantidad + producto anidado). */
 export function useProductStockRecord(productoId: number | null) {
+  const { sucursalId, isReady } = useSucursal()
+
   return useQuery({
-    queryKey: inventoryKeys.stockByProduct(productoId ?? 0),
+    queryKey: inventoryKeys.stockByProduct(sucursalId, productoId ?? 0),
     queryFn: () => fetchStockRecord(productoId!),
-    enabled: productoId != null && productoId > 0,
+    enabled: isReady && productoId != null && productoId > 0,
   })
 }
 
 /** Solo la cantidad (compatibilidad con listado de productos). */
 export function useProductStockQuantity(productoId: number | null) {
+  const { sucursalId, isReady } = useSucursal()
+
   return useQuery({
-    queryKey: [...inventoryKeys.stockByProduct(productoId ?? 0), 'cantidad'] as const,
+    queryKey: [...inventoryKeys.stockByProduct(sucursalId, productoId ?? 0), 'cantidad'] as const,
     queryFn: () => fetchStockQuantity(productoId!),
-    enabled: productoId != null && productoId > 0,
+    enabled: isReady && productoId != null && productoId > 0,
   })
 }
 
 /** Cantidades de stock para los productos de la página actual. */
 export function useProductStocks(productoIds: number[]) {
+  const { sucursalId, isReady } = useSucursal()
   const stableIds = [...productoIds].sort((a, b) => a - b)
 
   return useQuery({
-    queryKey: inventoryKeys.stocksFor(stableIds),
+    queryKey: inventoryKeys.stocksFor(sucursalId, stableIds),
     queryFn: async (): Promise<ProductStockMap> => {
       const entries = await Promise.all(
         stableIds.map(async (id) => [id, await fetchStockQuantity(id)] as const),
       )
       return Object.fromEntries(entries)
     },
-    enabled: stableIds.length > 0,
+    enabled: isReady && stableIds.length > 0,
   })
 }

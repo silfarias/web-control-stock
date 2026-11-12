@@ -11,13 +11,15 @@ export function HeaderClock() {
     return () => window.clearInterval(intervalId)
   }, [])
 
+  const label = formatTime(now)
+
   return (
     <time
       dateTime={now.toISOString()}
-      className="hidden tabular-nums text-sm text-muted sm:block"
-      aria-label={`Hora actual: ${formatTime(now)}`}
+      className="hidden shrink-0 whitespace-nowrap tabular-nums text-sm leading-none text-muted sm:block"
+      aria-label={`Hora actual: ${label}`}
     >
-      {formatTime(now)}
+      {label}
     </time>
   )
 }

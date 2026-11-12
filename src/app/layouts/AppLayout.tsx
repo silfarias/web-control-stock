@@ -3,6 +3,7 @@ import { Outlet, useLocation, useMatches } from 'react-router'
 import { getRouteHandle } from '@/app/router/route-handle'
 import { Header } from '@/components/navigation/Header'
 import { Sidebar } from '@/components/navigation/Sidebar'
+import { RequireSucursal } from '@/features/sucursales/components/RequireSucursal'
 
 const collapsedStorageKey = 'sidebar-collapsed'
 
@@ -79,7 +80,9 @@ export function AppLayout() {
           className="panel-scroll min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-y-contain px-4 py-6 md:px-8 md:py-8"
         >
           <div className="mx-auto w-full max-w-[1240px] min-w-0 pb-4">
-            <Outlet />
+            <RequireSucursal>
+              <Outlet />
+            </RequireSucursal>
           </div>
         </main>
       </div>

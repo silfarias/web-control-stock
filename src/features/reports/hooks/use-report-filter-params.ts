@@ -11,6 +11,7 @@ import {
   filtroVentasFromSearch,
 } from '@/features/reports/utils/report-filters'
 import type { FiltroReporte } from '@/features/reports/types'
+import { useSucursal } from '@/features/sucursales/hooks/use-sucursal'
 
 type FilterMode = 'ventas' | 'top' | 'catalogo'
 
@@ -74,6 +75,7 @@ function pickProduct(products: Producto[], code: string) {
 
 export function useReportFilterParams(mode: FilterMode) {
   const [searchParams, setSearchParams] = useSearchParams()
+  const { sucursalId, isReady } = useSucursal()
   const codigo = searchParams.get('codigo')?.trim() || undefined
 
   const baseFiltro = useMemo(() => {
@@ -83,9 +85,9 @@ export function useReportFilterParams(mode: FilterMode) {
   }, [mode, searchParams])
 
   const lookup = useQuery({
-    queryKey: productKeys.list({ codigo, pageSize: 10 }),
+    queryKey: productKeys.list(sucursalId, { codigo, pageSize: 10 }),
     queryFn: () => productsApi.search({ codigo, pageSize: 10 }),
-    enabled: Boolean(codigo),
+    enabled: Boolean(codigo) && isReady,
   })
 
   const match = useMemo(() => {

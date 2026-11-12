@@ -2,6 +2,7 @@ import { Card } from '@/components/ui/Card'
 import { LowStockTable } from '@/features/reports/components/LowStockTable'
 import { ReportFiltersBar } from '@/features/reports/components/ReportFiltersBar'
 import { ReportQueryState } from '@/features/reports/components/ReportQueryState'
+import { ReportScopeToggle } from '@/features/reports/components/ReportScopeToggle'
 import { useReportFilterParams } from '@/features/reports/hooks/use-report-filter-params'
 import { useLowStockReport } from '@/features/reports/hooks/use-reports'
 import { hasActiveFilters } from '@/features/reports/utils/report-filters'
@@ -15,9 +16,12 @@ export function LowStockReportPage() {
 
   return (
     <div className="space-y-5">
-      <p className="text-sm text-muted">
-        Productos con cantidad menor o igual al mínimo configurado.
-      </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <p className="text-sm text-muted">
+          Productos con cantidad menor o igual al mínimo configurado.
+        </p>
+        <ReportScopeToggle className="shrink-0" />
+      </div>
 
       <Card className="p-4 sm:p-5">
         <ReportFiltersBar

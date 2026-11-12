@@ -68,6 +68,7 @@ export function PurchaseEditPage() {
     const updated = await updateMutation.mutateAsync({
       id: purchaseId!,
       payload: toUpdateCompraRequest(values),
+      sucursalId: purchase?.sucursal?.id,
     })
     pushToast({
       tone: 'success',

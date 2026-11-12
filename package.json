@@ -8,7 +8,9 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test:auth-lock": "node --test scripts/auth-refresh-lock.test.mjs"
+    "test:auth-lock": "node --test scripts/auth-refresh-lock.test.mjs",
+    "test:sucursal": "node --test scripts/sucursal-header.test.mjs",
+    "test": "node --test scripts/auth-refresh-lock.test.mjs scripts/sucursal-header.test.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.1",

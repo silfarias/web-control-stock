@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from '@/components/ui/Sonner'
 import { TooltipProvider } from '@/components/ui/Tooltip'
 import { AuthProvider } from '@/features/auth/context/AuthProvider'
+import { SucursalProvider } from '@/features/sucursales/context/SucursalProvider'
 import { ThemeProvider } from '@/features/theme/context/ThemeProvider'
 import { normalizeApiError } from '@/lib/api/errors'
 
@@ -27,10 +28,12 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthProvider>
-          <TooltipProvider delayDuration={250}>
-            {children}
-            <Toaster />
-          </TooltipProvider>
+          <SucursalProvider>
+            <TooltipProvider delayDuration={250}>
+              {children}
+              <Toaster />
+            </TooltipProvider>
+          </SucursalProvider>
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>

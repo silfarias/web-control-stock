@@ -76,8 +76,9 @@ const timeFormatter = new Intl.DateTimeFormat('es-AR', {
   second: '2-digit',
 })
 
+/** Hora en una sola línea (evita que “p. m.” quede en otra fila en el header). */
 export function formatTime(date: Date = new Date()) {
-  return timeFormatter.format(date)
+  return timeFormatter.format(date).replace(/\s/g, '\u00a0')
 }
 
 const dateTimeFormatter = new Intl.DateTimeFormat('es-AR', {

@@ -29,6 +29,15 @@ export type ItemVenta = {
   deletedAt?: string | null
 }
 
+export type VentaSucursal = {
+  id: number
+  nombre: string
+  codigo: string
+  direccion?: string | null
+  telefono?: string | null
+  activo?: boolean
+}
+
 export type Venta = {
   id: number
   /** Comprobante visible. El detalle y las acciones siguen usando `id`. */
@@ -38,6 +47,12 @@ export type Venta = {
   estado: EstadoVenta
   usuario: VentaUsuario
   items: ItemVenta[]
+  /** Sucursal vigente (puede haber cambiado desde la venta). */
+  sucursal?: VentaSucursal | null
+  /** Snapshot inmutable al momento de la venta (para tickets). */
+  sucursalNombre?: string | null
+  sucursalDireccion?: string | null
+  sucursalTelefono?: string | null
   createdAt: string
   updatedAt: string
   deletedAt?: string | null

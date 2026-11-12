@@ -26,6 +26,8 @@ const MOVEMENT_TYPES: TipoMovimientoStock[] = [
   'VENTA',
   'AJUSTE_ENTRADA',
   'AJUSTE_SALIDA',
+  'TRANSFERENCIA_ENTRADA',
+  'TRANSFERENCIA_SALIDA',
 ]
 
 function parsePage(value: string | null) {

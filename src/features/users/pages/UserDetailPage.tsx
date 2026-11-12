@@ -10,6 +10,7 @@ import { buttonVariants } from '@/components/ui/button-variants'
 import { useAuth } from '@/features/auth/hooks/use-auth'
 import { UserFormDialog } from '@/features/users/components/UserFormDialog'
 import { UserRoleBadge } from '@/features/users/components/UserRoleBadge'
+import { UserSucursalAssignments } from '@/features/users/components/UserSucursalAssignments'
 import { useUser } from '@/features/users/hooks/use-user'
 import {
   useDeleteUser,
@@ -197,6 +198,8 @@ export function UserDetailPage() {
               value={user.updatedAt ? formatDateTime(user.updatedAt) : '—'}
             />
           </Card>
+
+          <UserSucursalAssignments user={user} />
 
           <UserFormDialog
             open={formOpen}

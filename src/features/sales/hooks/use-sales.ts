@@ -1,17 +1,20 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { salesApi } from '@/features/sales/api/sales-api'
 import { saleKeys } from '@/features/sales/api/query-keys'
+import { useSucursal } from '@/features/sucursales/hooks/use-sucursal'
 import type { SearchVentasParams } from '@/features/sales/types'
 
 export function useSales(
   params: SearchVentasParams,
   options?: { enabled?: boolean },
 ) {
+  const { sucursalId, isReady } = useSucursal()
+
   return useQuery({
-    queryKey: saleKeys.list(params),
+    queryKey: saleKeys.list(sucursalId, params),
     queryFn: () => salesApi.search(params),
     placeholderData: keepPreviousData,
-    enabled: options?.enabled ?? true,
+    enabled: isReady && (options?.enabled ?? true),
   })
 }
 

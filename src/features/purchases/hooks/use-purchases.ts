@@ -1,13 +1,17 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { purchasesApi } from '@/features/purchases/api/purchases-api'
 import { purchaseKeys } from '@/features/purchases/api/query-keys'
+import { useSucursal } from '@/features/sucursales/hooks/use-sucursal'
 import type { SearchComprasParams } from '@/features/purchases/types'
 
 export function usePurchases(params: SearchComprasParams) {
+  const { sucursalId, isReady } = useSucursal()
+
   return useQuery({
-    queryKey: purchaseKeys.list(params),
+    queryKey: purchaseKeys.list(sucursalId, params),
     queryFn: () => purchasesApi.search(params),
     placeholderData: keepPreviousData,
+    enabled: isReady,
   })
 }
 

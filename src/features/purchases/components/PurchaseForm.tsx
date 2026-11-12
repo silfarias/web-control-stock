@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Package, Trash2 } from 'lucide-react'
@@ -6,8 +6,9 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { useToast } from '@/components/common/use-toast'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { Input } from '@/components/ui/Input'
 import { MoneyInput } from '@/components/ui/MoneyInput'
+import { QuantityInput } from '@/components/ui/QuantityInput'
+import { useQuantityHotkeys } from '@/hooks/use-quantity-hotkeys'
 import {
   Select,
   SelectContent,
@@ -66,8 +67,10 @@ export function PurchaseForm({
 }: PurchaseFormProps) {
   const { pushToast } = useToast()
   const createProductMutation = useCreateProduct()
+  const formRef = useRef<HTMLFormElement>(null)
   const [productDialogOpen, setProductDialogOpen] = useState(false)
   const [productInitialNombre, setProductInitialNombre] = useState('')
+  const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(null)
 
   const suppliersQuery = useSupplierOptions({ activo: true })
 
@@ -84,6 +87,8 @@ export function PurchaseForm({
     control,
     register,
     handleSubmit,
+    setValue,
+    getValues,
     setError,
     formState: { errors, isSubmitting },
   } = useForm<PurchaseFormValues>({
@@ -114,6 +119,19 @@ export function PurchaseForm({
   const currentInactive =
     currentSupplier != null && currentSupplier.activo === false
 
+  useQuantityHotkeys({
+    enabled: !busy && !productDialogOpen,
+    itemCount: fields.length,
+    selectedIndex: selectedItemIndex,
+    formRef,
+    getQuantity: (index) => getValues(`items.${index}.cantidad`) ?? '1',
+    setQuantity: (index, value) =>
+      setValue(`items.${index}.cantidad`, value, {
+        shouldDirty: true,
+        shouldValidate: true,
+      }),
+  })
+
   function handleAddProduct(product: Producto) {
     if (excludedProductIds.includes(product.id)) return
     append({
@@ -122,6 +140,17 @@ export function PurchaseForm({
       codigo: product.codigo,
       cantidad: '1',
       costoUnitario: formatMoneyInput(product.precioCosto ?? 0),
+    })
+    setSelectedItemIndex(fields.length)
+  }
+
+  function handleRemoveItem(index: number) {
+    remove(index)
+    setSelectedItemIndex((current) => {
+      if (current == null) return null
+      if (current === index) return null
+      if (current > index) return current - 1
+      return current
     })
   }
 
@@ -152,7 +181,7 @@ export function PurchaseForm({
 
   return (
     <>
-      <form className="flex flex-col gap-5" onSubmit={submit} noValidate>
+      <form ref={formRef} className="flex flex-col gap-5" onSubmit={submit} noValidate>
         <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
           {/* Izquierda: proveedor + ítems */}
           <div className="flex min-w-0 flex-col gap-5">
@@ -269,7 +298,14 @@ export function PurchaseForm({
                               ? estimateItemSubtotal(item.cantidad, item.costoUnitario)
                               : null
                           return (
-                            <TableRow key={field.id} className="hover:bg-transparent">
+                            <TableRow
+                              key={field.id}
+                              className={cn(
+                                'hover:bg-transparent',
+                                selectedItemIndex === index && 'bg-primary/5',
+                              )}
+                              onClick={() => setSelectedItemIndex(index)}
+                            >
                               <TableCell className="px-3 align-top sm:px-3">
                                 <input
                                   type="hidden"
@@ -290,31 +326,39 @@ export function PurchaseForm({
                                 ) : null}
                               </TableCell>
                               <TableCell className="px-3 align-top sm:px-3">
-                                <Input
-                                  type="number"
-                                  inputMode="numeric"
-                                  min={1}
-                                  step={1}
-                                  disabled={busy}
-                                  className="min-w-[4.5rem]"
-                                  error={errors.items?.[index]?.cantidad?.message}
-                                  {...register(`items.${index}.cantidad`)}
+                                <Controller
+                                  name={`items.${index}.cantidad`}
+                                  control={control}
+                                  render={({ field: qtyField }) => (
+                                    <QuantityInput
+                                      disabled={busy}
+                                      className="min-w-[4.5rem]"
+                                      error={errors.items?.[index]?.cantidad?.message}
+                                      aria-label={`Cantidad de ${field.nombre}`}
+                                      name={qtyField.name}
+                                      value={qtyField.value}
+                                      ref={qtyField.ref}
+                                      onBlur={qtyField.onBlur}
+                                      onFocus={() => setSelectedItemIndex(index)}
+                                      onChange={qtyField.onChange}
+                                    />
+                                  )}
                                 />
                               </TableCell>
                               <TableCell className="px-3 align-top sm:px-3">
                                 <Controller
                                   name={`items.${index}.costoUnitario`}
                                   control={control}
-                                  render={({ field }) => (
+                                  render={({ field: costField }) => (
                                     <MoneyInput
                                       disabled={busy}
                                       className="min-w-[5.5rem]"
                                       error={errors.items?.[index]?.costoUnitario?.message}
-                                      name={field.name}
-                                      value={field.value}
-                                      onBlur={field.onBlur}
-                                      getInputRef={field.ref}
-                                      onValueChange={(values) => field.onChange(values.value)}
+                                      name={costField.name}
+                                      value={costField.value}
+                                      onBlur={costField.onBlur}
+                                      getInputRef={costField.ref}
+                                      onValueChange={(values) => costField.onChange(values.value)}
                                     />
                                   )}
                                 />
@@ -333,7 +377,7 @@ export function PurchaseForm({
                                     className="size-9 text-muted hover:text-error-ink"
                                     disabled={busy}
                                     aria-label={`Quitar ${field.nombre}`}
-                                    onClick={() => remove(index)}
+                                    onClick={() => handleRemoveItem(index)}
                                   >
                                     <Trash2 className="size-4" />
                                   </Button>
