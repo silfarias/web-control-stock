@@ -11,9 +11,20 @@
       rel="stylesheet"
     />
     <title>Control de stock</title>
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem('wcs.theme')
+          if (theme !== 'light' && theme !== 'dark') theme = 'light'
+          if (theme === 'dark') document.documentElement.classList.add('dark')
+          document.documentElement.style.colorScheme = theme
+        } catch (e) {}
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
+

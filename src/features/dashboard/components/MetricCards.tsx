@@ -65,7 +65,7 @@ export function MetricCards({
             detail: employeeSummary.cashDetail,
             featured: true,
             icon: Wallet,
-            iconClassName: 'bg-white/15 text-white',
+            iconClassName: 'bg-primary-foreground/15 text-primary-foreground',
           },
           {
             label: 'Productos',
@@ -120,7 +120,7 @@ export function MetricCards({
               key={metric.label}
               className={cn(
                 'relative min-h-[138px] overflow-hidden p-4',
-                metric.featured && 'border-primary bg-primary text-white',
+                metric.featured && 'border-primary bg-primary text-primary-foreground',
               )}
             >
               {metric.featured ? (
@@ -133,7 +133,7 @@ export function MetricCards({
                 <p
                   className={cn(
                     'text-sm font-medium',
-                    metric.featured ? 'text-white/90' : 'text-muted',
+                    metric.featured ? 'text-primary-foreground/90' : 'text-muted',
                   )}
                 >
                   {metric.label}
@@ -155,7 +155,7 @@ export function MetricCards({
               <p
                 className={cn(
                   'relative mt-2 text-sm',
-                  metric.featured ? 'text-white/85' : 'text-muted',
+                  metric.featured ? 'text-primary-foreground/85' : 'text-muted',
                 )}
               >
                 {metric.detail}

@@ -3,6 +3,7 @@ import { Link, useLocation, useMatches } from 'react-router'
 import { ChevronRight, Menu } from 'lucide-react'
 import { HeaderClock } from '@/components/navigation/HeaderClock'
 import { navigation } from '@/components/navigation/nav-items'
+import { ThemeToggle } from '@/components/navigation/ThemeToggle'
 import { UserMenu } from '@/components/navigation/UserMenu'
 import { Separator } from '@/components/ui/Separator'
 import { getRouteHandle } from '@/app/router/route-handle'
@@ -81,9 +82,10 @@ export function Header({ onOpenMenu, menuButtonRef }: HeaderProps) {
           </h1>
         </div>
       </div>
-      <div className="flex shrink-0 items-center gap-3">
+      <div className="flex shrink-0 items-center gap-2 sm:gap-3">
         <HeaderClock />
         <Separator orientation="vertical" className="hidden h-8 sm:block" />
+        <ThemeToggle />
         <UserMenu key={location.pathname} />
       </div>
     </header>

@@ -422,10 +422,12 @@ export function SaleForm({
       </Card>
 
       <Card className="overflow-hidden p-0 lg:sticky lg:top-4">
-        <div className="bg-primary px-5 py-5 text-white">
-          <p className="text-xs font-medium tracking-wide text-white/75 uppercase">Total estimado</p>
+        <div className="bg-primary px-5 py-5 text-primary-foreground">
+          <p className="text-xs font-medium tracking-wide text-primary-foreground/75 uppercase">
+            Total estimado
+          </p>
           <p className="mt-1 text-3xl font-semibold tracking-tight tabular-nums">{totalLabel}</p>
-          <p className="mt-2 text-sm text-white/80">
+          <p className="mt-2 text-sm text-primary-foreground/80">
             {items.length} {items.length === 1 ? 'producto' : 'productos'} · {unitsTotal}{' '}
             {unitsTotal === 1 ? 'unidad' : 'unidades'}
           </p>

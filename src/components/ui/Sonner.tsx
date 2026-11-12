@@ -7,11 +7,14 @@ import {
   TriangleAlert,
 } from 'lucide-react'
 import { Toaster as SonnerToaster, type ToasterProps } from 'sonner'
+import { useTheme } from '@/features/theme/hooks/use-theme'
 
 export function Toaster({ ...props }: ToasterProps) {
+  const { theme } = useTheme()
+
   return (
     <SonnerToaster
-      theme="light"
+      theme={theme}
       className="toaster group"
       position="bottom-right"
       closeButton

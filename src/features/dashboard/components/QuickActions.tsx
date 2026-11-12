@@ -67,14 +67,16 @@ export function QuickActions() {
               className={cn(
                 'flex min-w-0 items-center gap-3 rounded-2xl px-3 py-3 transition-colors',
                 action.featured
-                  ? 'bg-primary text-white hover:bg-primary-hover'
+                  ? 'bg-primary text-primary-foreground hover:bg-primary-hover'
                   : 'bg-surface-muted text-foreground hover:bg-surface-muted-hover',
               )}
             >
               <span
                 className={cn(
                   'grid size-10 shrink-0 place-items-center rounded-xl',
-                  action.featured ? 'bg-white/15 text-white' : 'bg-surface text-primary',
+                  action.featured
+                    ? 'bg-primary-foreground/15 text-primary-foreground'
+                    : 'bg-surface text-primary',
                 )}
               >
                 <Icon className="size-[18px]" strokeWidth={1.75} aria-hidden />
@@ -84,7 +86,7 @@ export function QuickActions() {
                 <span
                   className={cn(
                     'block truncate text-xs',
-                    action.featured ? 'text-white/75' : 'text-muted',
+                    action.featured ? 'text-primary-foreground/75' : 'text-muted',
                   )}
                 >
                   {action.subtitle}

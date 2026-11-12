@@ -171,12 +171,12 @@ function SidebarChrome({
                         collapsed && !mobile && 'lg:justify-center lg:px-0',
                         isActive &&
                           children.length === 0 &&
-                          'bg-background text-sidebar hover:bg-background',
+                          'bg-white/15 text-sidebar-foreground hover:bg-white/15',
                         sectionOpen && 'bg-white/10 text-sidebar-foreground hover:bg-white/15',
                         collapsed &&
                           !mobile &&
                           sectionOpen &&
-                          'lg:bg-background lg:text-sidebar lg:hover:bg-background',
+                          'lg:bg-white/15 lg:text-sidebar-foreground lg:hover:bg-white/15',
                       )
                     }
                   >
@@ -223,7 +223,7 @@ function SidebarChrome({
                                 return cn(
                                   'flex h-9 items-center rounded-xl px-3 text-sm transition-colors focus-visible:outline-offset-[-2px]',
                                   active
-                                    ? 'bg-background font-medium text-sidebar'
+                                    ? 'bg-white/15 font-medium text-sidebar-foreground'
                                     : 'text-sidebar-foreground/80 hover:bg-white/10 hover:text-sidebar-foreground',
                                 )
                               }}

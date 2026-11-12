@@ -51,7 +51,7 @@ export function Dialog({
     <div className="fixed inset-0 z-50 flex items-end justify-center p-3 sm:items-center sm:p-4">
       <button
         type="button"
-        className="absolute inset-0 bg-foreground/40"
+        className="absolute inset-0 bg-black/50"
         aria-label="Cerrar diálogo"
         onClick={() => onOpenChange(false)}
       />

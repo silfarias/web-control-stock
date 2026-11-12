@@ -39,6 +39,42 @@
   color-scheme: light;
 }
 
+.dark {
+  /* Índigo más claro para contraste sobre fondos oscuros */
+  --primary: #7b8ae0;
+  --primary-hover: #97a3eb;
+  --primary-foreground: #12101c;
+  --accent: #d45ee0;
+  --accent-soft: #2a1f3d;
+  --accent-ink: #e9c8f2;
+  /* Fondos elegantes (no negro absoluto) */
+  --background: #12111a;
+  --surface: #1b1a26;
+  --surface-muted: #242332;
+  --surface-muted-hover: #2e2d3f;
+  --text-primary: #f1f0f7;
+  --text-secondary: #9d9ab0;
+  --border: #2f2e3f;
+  --border-strong: #46445a;
+  --success: #4db88a;
+  --success-soft: #1a2e26;
+  --success-ink: #9fd9bc;
+  --warning: #e0b05c;
+  --warning-soft: #32281a;
+  --warning-ink: #efd19a;
+  --error: #e07a88;
+  --error-soft: #332025;
+  --error-ink: #f0b4bc;
+  --info: #8a98d8;
+  --info-soft: #1f2438;
+  --info-ink: #c3caf0;
+  /* Sidebar conserva identidad violeta y contrasta con el contenido */
+  --sidebar: #1a0a36;
+  --sidebar-foreground: #f4f1fb;
+  --sidebar-muted: #b0a2cc;
+  color-scheme: dark;
+}
+
 @theme inline {
   --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
   --color-primary: var(--primary);
@@ -87,6 +123,8 @@
     height: 100%;
     min-height: 100svh;
     overflow: hidden;
+    background: var(--background);
+    color: var(--text-primary);
   }
 
   #root {
@@ -100,13 +138,13 @@
   }
 
   :focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--primary) 55%, white);
+    outline: 2px solid color-mix(in srgb, var(--primary) 55%, transparent);
     outline-offset: 2px;
   }
 
   a:focus-visible,
   button:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--primary) 55%, white);
+    outline: 2px solid color-mix(in srgb, var(--primary) 55%, transparent);
     outline-offset: 2px;
   }
 }
