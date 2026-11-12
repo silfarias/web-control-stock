@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, type ReactNode } from 'react'
+import { useEffect, useId, useRef, type CSSProperties, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
@@ -62,8 +62,9 @@ export function Dialog({
         aria-labelledby={titleId}
         aria-describedby={description ? descriptionId : undefined}
         tabIndex={-1}
+        style={{ '--animate-duration': '0.52s' } as CSSProperties}
         className={cn(
-          'relative z-10 flex w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-none outline-none',
+          'animate__animated animate__fadeInDownBig relative z-10 flex w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-none outline-none',
           'max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-2rem)]',
           className,
         )}
